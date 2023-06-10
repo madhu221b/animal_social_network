@@ -27,5 +27,11 @@ def read_graph(path, is_add_new_nodes=False):
     
     for node, degree in g.degree():
         node_color[node] =  mapper.to_rgba(degree)
-    # node_color = np.asarray([degrees[n] for n in nodes])
-    return g, edge_color, node_color
+    color_dict = {"node":node_color, "edge":edge_color}
+    centrality_dict = {"betweeness":nx.betweenness_centrality(g),
+                       "closeness": nx.closeness_centrality(g),
+                       "eigenvector": nx.eigenvector_centrality(g),
+                       "degree": nx.degree_centrality(g)
+    
+                }
+    return g, color_dict, centrality_dict

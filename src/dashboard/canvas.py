@@ -27,9 +27,9 @@ class MplCanvas(FigureCanvasQTAgg):
         super(MplCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-        graph, edge_color, node_color = read_graph(an2tex.get(parent.text)) # Handle Exception if animal is not in dataset
+        graph, color, metrics = read_graph(an2tex.get(parent.text)) # Handle Exception if animal is not in dataset
         self.mpl_connect('button_press_event', self.onclick)
-        self.plot_instance = InteractiveGraph(graph, node_color=node_color, edge_color=edge_color, ax=self.ax)
+        self.plot_instance = InteractiveGraph(graph, node_color=color["node"], edge_color=color["edge"], ax=self.ax)
 
     def onclick(self, event):
         if event.xdata is not None:
@@ -66,7 +66,7 @@ class Canvas(QMainWindow):
 
         tabs = QTabWidget()
         tabs.addTab(self.GraphUI(), "Social Graph")
-        tabs.addTab(self.NodeUI(), "Node Features Visualization")
+        tabs.addTab(self.NodeUI(), "TO DO")
         layout.addWidget(tabs)
      
     def GraphUI(self):
@@ -79,7 +79,8 @@ class Canvas(QMainWindow):
         self.canvas = MplCanvas(self,width=5, height=4, dpi=100)
        
         layout.addWidget(self.canvas)
-        layout.addWidget( self.SliderUI())
+        layout.addWidget(QLabel("Hi"))
+        # layout.addWidget( self.SliderUI())
         generalTab.setLayout(layout)
         return generalTab
 
