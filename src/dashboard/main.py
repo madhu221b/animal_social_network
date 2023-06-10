@@ -9,12 +9,12 @@ class ComboBox(QtWidgets.QComboBox):
         super(ComboBox, self).showPopup()
 
 class Window(QtWidgets.QWidget):
+
     def __init__(self):
         super(Window, self).__init__()
         title = "Social Network Analysis of Animals"
         self.setWindowTitle(title)
         self.setGeometry(0, 0, 500, 300)
-        print("coming here")
         self.combo = ComboBox(self)
         self.combo.popupAboutToBeShown.connect(self.populateCombo)
         self.combo.view().pressed.connect(self.handleItemPressed)

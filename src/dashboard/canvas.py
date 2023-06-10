@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout
 
 import matplotlib
 matplotlib.use("Qt5Agg")
@@ -54,14 +54,35 @@ class Canvas(QMainWindow):
     def __init__(self, text=None, *args, **kwargs):
         super(Canvas, self).__init__(*args, **kwargs)
         self.text = text
-        self.canvas = MplCanvas(self,width=5, height=4, dpi=100)
-        self.toolbar = NavigationToolbar2QT(self.canvas, self)
-
-        widget = QtWidgets.QWidget()
-        self.setCentralWidget(widget)
         self.setWindowTitle(text)
         self.setGeometry(0, 0, 700, 700)
-
+        
+        widget = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(widget)
+        self.setLayout(layout)
+        self.setCentralWidget(widget)
+
+        tabs = QTabWidget()
+        tabs.addTab(self.GraphUI(), "Social Graph")
+        tabs.addTab(self.NodeUI(), "Node Features Visualization")
+        layout.addWidget(tabs)
+     
+    def GraphUI(self):
+        generalTab = QWidget()
+        layout = QVBoxLayout()
+        self.canvas = MplCanvas(self,width=5, height=4, dpi=100)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
         # layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
+        generalTab.setLayout(layout)
+        return generalTab
+
+    def NodeUI(self):
+        generalTab = QWidget()
+        layout = QVBoxLayout()
+        self.canvas = MplCanvas(self,width=5, height=4, dpi=100)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
+        # layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+        generalTab.setLayout(layout)
+        return generalTab
