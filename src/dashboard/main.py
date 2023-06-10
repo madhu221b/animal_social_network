@@ -1,3 +1,8 @@
+"""
+pip install pyqt5
+pip install netgraph
+"""
+
 import sys
 
 from PyQt5 import QtWidgets
