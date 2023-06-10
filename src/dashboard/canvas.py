@@ -1,7 +1,9 @@
 import sys
 import os
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 import matplotlib
 matplotlib.use("Qt5Agg")
@@ -12,7 +14,7 @@ from netgraph import InteractiveGraph
 import networkx as nx
 
 from utils.graph_utils import read_graph
-
+from slider import BSlider, CSlider
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
 
@@ -68,12 +70,16 @@ class Canvas(QMainWindow):
         layout.addWidget(tabs)
      
     def GraphUI(self):
+        """
+         The Graph Visualization 
+        """
         generalTab = QWidget()
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
+        
         self.canvas = MplCanvas(self,width=5, height=4, dpi=100)
-        self.toolbar = NavigationToolbar2QT(self.canvas, self)
-        # layout.addWidget(self.toolbar)
+       
         layout.addWidget(self.canvas)
+        layout.addWidget( self.SliderUI())
         generalTab.setLayout(layout)
         return generalTab
 
@@ -86,3 +92,17 @@ class Canvas(QMainWindow):
         layout.addWidget(self.canvas)
         generalTab.setLayout(layout)
         return generalTab
+
+    def SliderUI(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+        
+       
+        slider_b = BSlider(title="Betweenness Centrality")
+        layout.addWidget(slider_b)
+       
+
+        slider_c = CSlider(title="Closeness Centrality")
+        layout.addWidget(slider_c)
+        widget.setLayout(layout)
+        return widget
