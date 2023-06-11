@@ -23,7 +23,7 @@ class Window(QtWidgets.QWidget):
 
     def populateCombo(self):
         if not self.combo.count():
-            list_of_animals = ["Animal 1", "Animal 2", "Animal 3"]
+            list_of_animals = ["Animal1", "Animal2", "Animal3"]
             self.combo.addItems(list_of_animals)
 
     def handleItemPressed(self, index):

@@ -1,5 +1,12 @@
 import sys
 import os
+myDir = os.getcwd()
+sys.path.append(myDir)
+from pathlib import Path
+path = Path(myDir)
+a=str(path.parent.absolute())
+sys.path.append(a)
+
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt5.QtCore import *
@@ -13,13 +20,13 @@ from matplotlib.figure import Figure
 from netgraph import InteractiveGraph
 import networkx as nx
 
-from utils.graph_utils import read_graph
-from slider import BSlider, CSlider
+from dashboard.utils.graph_utils import read_graph
+from dashboard.slider import BSlider, CSlider
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
 
 an2tex = {
-  "Animal 1" :  os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
+  "Animal1" :  os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
 }
 
 class MplCanvas(FigureCanvasQTAgg):
