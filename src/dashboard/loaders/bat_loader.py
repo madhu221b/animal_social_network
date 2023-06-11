@@ -1,4 +1,4 @@
-from dashboard.utils.graph_utils import read_graph, clean_nodes
+from src.dashboard.utils.graph_utils import read_graph, clean_nodes
 from sklearn import preprocessing
 import torch
 import networkx as nx

@@ -18,7 +18,7 @@ from pathlib import Path
 
 import logging
 import json
-from dashboard.utils.gae_utils import get_roc_score
+from src.dashboard.utils.gae_utils import get_roc_score
 
 def loss_function(preds, labels, mu, logvar, n_nodes, norm, pos_weight):
     cost = norm * F.binary_cross_entropy_with_logits(preds, labels, pos_weight=pos_weight)
