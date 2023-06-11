@@ -1,5 +1,14 @@
 import sys
 import os
+
+myDir = os.getcwd()
+sys.path.append(myDir)
+from pathlib import Path
+
+path = Path(myDir)
+a = str(path.parent.absolute())
+sys.path.append(a)
+
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt5.QtCore import *
@@ -20,8 +29,7 @@ from .slider import BSlider, CSlider
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
 
 GRAPHS = {
-    "Animal 1":
-        os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
+    "bat": os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
 }
 
 
@@ -35,7 +43,7 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.parent = parent
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-        graph, color, metrics = read_graph(GRAPHS[parent.text]) # Handle Exception if animal is not in dataset
+        graph, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
         self.mpl_connect('button_press_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.plot_instance = InteractiveGraph(graph,
@@ -110,7 +118,6 @@ class MainCanvas(QMainWindow):
         self.text = text
         self.setWindowTitle(text)
         self.setGeometry(0, 0, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-
         widget = QtWidgets.QWidget()
         self.layout = QtWidgets.QVBoxLayout(widget)
         self.setLayout(self.layout)
@@ -131,13 +138,11 @@ class MainCanvas(QMainWindow):
     #     layout = QHBoxLayout()
 
     #     self.graph_page = GraphCanvas(self, width=5, height=4, dpi=100)
-
     #     layout.addWidget(QLabel("Left"))
     #     layout.addWidget(self.graph_page)
     #     layout.addWidget(QLabel("Right"))
     #     tab.setLayout(layout)
     #     return tab
-
     # def NodeUI(self):
     #     generalTab = QWidget()
     #     layout = QVBoxLayout()
@@ -147,7 +152,6 @@ class MainCanvas(QMainWindow):
     #     layout.addWidget(self.canvas)
     #     generalTab.setLayout(layout)
     #     return generalTab
-
     # def SliderUI(self):
     #     widget = QWidget()
     #     layout = QVBoxLayout()

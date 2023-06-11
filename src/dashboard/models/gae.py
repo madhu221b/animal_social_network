@@ -11,13 +11,14 @@ from torch.nn.parameter import Parameter
 import torch.nn.modules.loss
 from torch import optim
 
+import os
 import numpy as np
 import pathlib
 from pathlib import Path
 
 import logging
 import json
-from utils.gae_utils import get_roc_score
+from src.dashboard.utils.gae_utils import get_roc_score
 
 def loss_function(preds, labels, mu, logvar, n_nodes, norm, pos_weight):
     cost = norm * F.binary_cross_entropy_with_logits(preds, labels, pos_weight=pos_weight)
@@ -29,8 +30,6 @@ def loss_function(preds, labels, mu, logvar, n_nodes, norm, pos_weight):
     logvar = torch.nn.functional.normalize(logvar,dim=1)
     KLD = -0.5 / n_nodes * torch.mean(torch.sum(
         1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))
-#     print("KLD", KLD)
-    # return cost
     return cost + KLD
 
 class GraphConvolution(Module):
@@ -63,9 +62,10 @@ class GraphConvolution(Module):
                + str(self.out_features) + ')'
 
 
-class EncoderCora(nn.Module):
+class Encoder(nn.Module):
     def __init__(self, input_feat_dim, hidden_dim1=4, hidden_dim2=4, dropout=0):
-        super(EncoderCora, self).__init__()
+        super(Encoder, self).__init__()
+        print("hidden dim 1 used: ", hidden_dim1, "hidden dim 2 used: ", hidden_dim2)
         self.gc1 = GraphConvolution(input_feat_dim, hidden_dim1, dropout, act=F.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
@@ -79,11 +79,11 @@ class EncoderCora(nn.Module):
         mu = self.forward(x, adj)[0]
         return mu
 
-class DecoderCora(nn.Module):
+class Decoder(nn.Module):
     """Decoder for using inner product for prediction."""
 
     def __init__(self, dropout=0, act=torch.sigmoid):
-        super(DecoderCora, self).__init__()
+        super(Decoder, self).__init__()
         self.dropout = dropout
         self.act = act
 
@@ -92,11 +92,11 @@ class DecoderCora(nn.Module):
         adj = self.act(torch.mm(z, z.t()))
         return adj
 
-class GraphAutoEncoderCora(nn.Module):
+class GraphAutoEncoder(nn.Module):
     def __init__(
         self,
-        encoder: EncoderCora,
-        decoder: DecoderCora,
+        encoder: Encoder,
+        decoder: Decoder,
         name: str = "model",
         loss_f: callable = loss_function,
     ):
@@ -105,7 +105,7 @@ class GraphAutoEncoderCora(nn.Module):
         Parameters:
         ----------
         """
-        super(GraphAutoEncoderCora, self).__init__()
+        super(GraphAutoEncoder, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.name = name
@@ -144,7 +144,6 @@ class GraphAutoEncoderCora(nn.Module):
         mu, logvar = self.encoder(x, adj)
         z = self.reparameterize(mu, logvar)
         decode = self.decoder(z)
-        # print("decoder output: ", decode )
         return decode, mu, logvar
 
     def train_epoch(
@@ -165,7 +164,6 @@ class GraphAutoEncoderCora(nn.Module):
         self.train()
         optimizer.zero_grad()
         recovered, mu, logvar = self.forward(train_loader_feats,train_loader_adj_norm)
-#         print(recovered, mu, logvar)
         loss = loss_function(preds=recovered, labels=adj_label,
                              mu=mu, logvar=logvar, n_nodes=n_nodes,
                              norm=norm, pos_weight=pos_weight)
@@ -190,6 +188,7 @@ class GraphAutoEncoderCora(nn.Module):
         val_edges_false,
         test_edges,
         test_edges_false,
+        animal,
         save_dir: pathlib.Path,
         n_epoch: int = 100,
         patience: int = 10,
@@ -213,8 +212,9 @@ class GraphAutoEncoderCora(nn.Module):
             if checkpoint_interval > 0 and epoch % checkpoint_interval == 0:
                 n_checkpoint = 1 + epoch // checkpoint_interval
                 print(f"Saving checkpoint {n_checkpoint} in {save_dir}")
+                file = f"{save_dir}/{self.name}_{animal}_checkpoint{n_checkpoint}.pt" 
                 path_to_checkpoint = (
-                    save_dir / f"{self.name}_checkpoint{n_checkpoint}.pt"
+                   file
                 )
                 torch.save(self.state_dict(), path_to_checkpoint)
                 self.checkpoints_files.append(path_to_checkpoint)
@@ -223,17 +223,15 @@ class GraphAutoEncoderCora(nn.Module):
                 break
         print(f"Saving the model in {save_dir}")
         self.cpu()
-        self.save(save_dir)
+        self.save(save_dir, animal)
         self.to(device)
 
         roc_score, ap_score = get_roc_score(hidden_emb, adj_orig, test_edges, test_edges_false)
-        logging.info(f'Test ROC score: {str(roc_score)}')
-        logging.info(f'Test AP score: {str(ap_score)}')
-
-    
+        print(f'Test ROC score: {str(roc_score)}')
+        print(f'Test AP score: {str(ap_score)}')
 
 
-    def save(self, directory: pathlib.Path) -> None:
+    def save(self, directory, animal) -> None:
         """Save a model and corresponding metadata.
 
         Parameters:
@@ -242,35 +240,7 @@ class GraphAutoEncoderCora(nn.Module):
             Path to the directory where to save the data.
         """
         model_name = self.name
-        self.save_metadata(directory)
-        path_to_model = directory / (model_name + ".pt")
+        file_name = "{}_{}.pt".format(model_name, animal)
+        path_to_model = os.path.join(directory, file_name)
         torch.save(self.state_dict(), path_to_model)
 
-    def load_metadata(self, directory: pathlib.Path) -> dict:
-        """Load the metadata of a training directory.
-
-        Parameters:
-        -----------
-        directory : pathlib.Path
-            Path to folder where model is saved. For example './experiments/mnist'.
-        """
-        path_to_metadata = directory / (self.name + ".json")
-
-        with open(path_to_metadata) as metadata_file:
-            metadata = json.load(metadata_file)
-        return metadata
-
-    def save_metadata(self, directory: pathlib.Path, **kwargs) -> None:
-        """Load the metadata of a training directory.
-
-        Parameters:
-        -----------
-        directory: string
-            Path to folder where to save model. For example './experiments/mnist'.
-        kwargs:
-            Additional arguments to `json.dump`
-        """
-        path_to_metadata = directory / (self.name + ".json")
-        metadata = {"name": self.name}
-        with open(path_to_metadata, "w") as f:
-            json.dump(metadata, f, indent=4, sort_keys=True, **kwargs)
