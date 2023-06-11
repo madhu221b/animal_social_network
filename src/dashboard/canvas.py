@@ -1,12 +1,10 @@
 import sys
 import os
-
 myDir = os.getcwd()
 sys.path.append(myDir)
 from pathlib import Path
-
 path = Path(myDir)
-a = str(path.parent.absolute())
+a=str(path.parent.absolute())
 sys.path.append(a)
 
 from PyQt5 import QtWidgets
@@ -15,7 +13,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import matplotlib
-
 matplotlib.use("Qt5Agg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
@@ -23,15 +20,14 @@ from matplotlib.figure import Figure
 from netgraph import InteractiveGraph
 import networkx as nx
 
-from .utils.graph_utils import read_graph
-from .slider import BSlider, CSlider
+from src.dashboard.utils.graph_utils import read_graph
+from src.dashboard.slider import BSlider, CSlider
 
-DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
+DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
 
 GRAPHS = {
-    "bat": os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
+  "bat" :  os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
 }
-
 
 class GraphCanvas(FigureCanvasQTAgg):
     """
@@ -52,7 +48,6 @@ class GraphCanvas(FigureCanvasQTAgg):
                                               ax=self.ax)
 
     def onclick(self, event):
-
         if event.xdata is not None:
             # Clicked on a node
             node_name, node, _ = self.get_closest_node(event.xdata, event.ydata)
@@ -69,7 +64,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 self.parent.graph_page.left_page.setText("")
         else:
             self.parent.graph_page.left_page.setText("")
-
+    
     def get_closest_node(self, x, y):
         # Loop over all nodes, select the one closest to click
         closest_node = None
@@ -83,8 +78,6 @@ class GraphCanvas(FigureCanvasQTAgg):
                 closest_node = node
                 closest_node_name = name
         return closest_node_name, closest_node, distance < closest_node.radius
-
-
 class GraphPage(QWidget):
     """
     This is the page that belongs to the "graph" tab. It consists of three sub-pages:
@@ -103,7 +96,7 @@ class GraphPage(QWidget):
         layout.addWidget(self.graph_page)
         layout.addWidget(self.right_page)
         self.setLayout(layout)
-
+        
 
 class MainCanvas(QMainWindow):
     """
@@ -118,6 +111,7 @@ class MainCanvas(QMainWindow):
         self.text = text
         self.setWindowTitle(text)
         self.setGeometry(0, 0, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        
         widget = QtWidgets.QWidget()
         self.layout = QtWidgets.QVBoxLayout(widget)
         self.setLayout(self.layout)
@@ -129,7 +123,7 @@ class MainCanvas(QMainWindow):
         tabs.addTab(self.graph_page, "Social Graph")
         # tabs.addTab(self.NodeUI(), "TO DO")
         self.layout.addWidget(tabs)
-
+     
     # def _create_graph_page(self):
     #     """
     #      The Graph Visualization
@@ -138,11 +132,13 @@ class MainCanvas(QMainWindow):
     #     layout = QHBoxLayout()
 
     #     self.graph_page = GraphCanvas(self, width=5, height=4, dpi=100)
+        
     #     layout.addWidget(QLabel("Left"))
     #     layout.addWidget(self.graph_page)
     #     layout.addWidget(QLabel("Right"))
     #     tab.setLayout(layout)
     #     return tab
+       
     # def NodeUI(self):
     #     generalTab = QWidget()
     #     layout = QVBoxLayout()
@@ -152,6 +148,7 @@ class MainCanvas(QMainWindow):
     #     layout.addWidget(self.canvas)
     #     generalTab.setLayout(layout)
     #     return generalTab
+       
     # def SliderUI(self):
     #     widget = QWidget()
     #     layout = QVBoxLayout()

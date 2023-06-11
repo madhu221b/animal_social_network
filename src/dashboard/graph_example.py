@@ -1,52 +1,57 @@
-# """
-# pip install pyqt5
-# pip install netgraph
-# """
+"""
+pip install pyqt5
+pip install netgraph
+"""
 
-# import sys
+import sys
 
-# from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets
 
-# import matplotlib
+import matplotlib
 
-# matplotlib.use("Qt5Agg")
+matplotlib.use("Qt5Agg")
 
-# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
-# from matplotlib.figure import Figure
 
-# from netgraph import InteractiveGraph
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.figure import Figure
 
-# import networkx as nx
+from netgraph import InteractiveGraph
 
-# graph_path = "/Users/madhurapawar/Documents/lab_assgs/mma/animalsocialnw_team7/datasets/vampirebats_carter_mouth_licking_attribute_new.graphml"
+import networkx as nx
 
-# class MplCanvas(FigureCanvasQTAgg):
-#     def __init__(self, parent=None, width=5, height=4, dpi=100):
-#         super(MplCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
-#         self.setParent(parent)
-#         self.ax = self.figure.add_subplot(111)
-#         graph = nx.read_graphml(graph_path)
-#         self.plot_instance = InteractiveGraph(graph, ax=self.ax)
+graph_path = "/Users/madhurapawar/Documents/lab_assgs/mma/animalsocialnw_team7/datasets/vampirebats_carter_mouth_licking_attribute_new.graphml"
 
-# class MainWindow(QtWidgets.QMainWindow):
-#     def __init__(self, text=None, *args, **kwargs):
-#         super(MainWindow, self).__init__(*args, **kwargs)
+class MplCanvas(FigureCanvasQTAgg):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        super(MplCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
+        self.setParent(parent)
+        self.ax = self.figure.add_subplot(111)
+        graph = nx.read_graphml(graph_path)
+        self.plot_instance = InteractiveGraph(graph, ax=self.ax)
 
-#         self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
-#         self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
-#         widget = QtWidgets.QWidget()
-#         self.setCentralWidget(widget)
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self, text=None, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+        
+        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
-#         layout = QtWidgets.QVBoxLayout(widget)
-#         layout.addWidget(self.toolbar)
-#         layout.addWidget(self.canvas)
+        widget = QtWidgets.QWidget()
+        self.setCentralWidget(widget)
 
-# def main():
-#     app = QtWidgets.QApplication(sys.argv)
-#     w = MainWindow()
-#     w.show()
-#     app.exec_()
+        layout = QtWidgets.QVBoxLayout(widget)
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
 
-# if __name__ == "__main__":
-#     main()
+
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    app.exec_()
+
+
+if __name__ == "__main__":
+    main()
+
