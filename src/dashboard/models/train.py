@@ -20,10 +20,15 @@ import scipy.sparse as sp
 
 from dashboard.canvas import an2tex
 from dashboard.utils.gae_utils import mask_test_edges, preprocess_graph
+from dashboard.models.gae import Encoder, Decoder, GraphAutoEncoder
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_epochs = 100
-    
+
+training_dict = {
+ "bat" : {"hidden_dim1": 4, "hidden_dim2": 4}
+
+}
 def get_preprocessed_adj(adj, features):
     # # Preprocess the data
     n_nodes, feat_dim = features.shape
@@ -41,7 +46,7 @@ def get_preprocessed_adj(adj, features):
     pos_weight = torch.Tensor([(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()])
     norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
 
-    return features, adj_norm, adj_label, n_nodes, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false
+    return adj_norm, adj_label, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false
 
 def train_model(animal):
     path = an2tex[animal]
@@ -49,28 +54,26 @@ def train_model(animal):
     if animal == "bat":
         from dashboard.loaders.bat_loader import load_dataset
         features, edgelist, adj, _= load_dataset(path)
-        features, adj_norm, adj_label, n_nodes, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false = get_preprocessed_adj(adj, features)
-            
-        encoder = EncoderCora(input_feat_dim=feat_dim)
-        decoder = DecoderCora()
-        autoencoder = GraphAutoEncoderCora(encoder, decoder)
-        encoder.to(device)
-        decoder.to(device)
 
-        # Train the Graph vae
-        save_dir = Path.cwd() 
+    adj_norm, adj_label, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false = get_preprocessed_adj(adj, features)
+    n_nodes, feat_dim = features.shape
+    encoder = Encoder(input_feat_dim=feat_dim,hidden_dim1=training_dict[animal]["hidden_dim1"],
+                    hidden_dim2=training_dict[animal]["hidden_dim2"])
+    decoder = Decoder()
+    autoencoder = GraphAutoEncoder(encoder, decoder)
+    encoder.to(device)
+    decoder.to(device)
 
-        if not save_dir.exists():
-        os.makedirs(save_dir)
+    # Train the Graph vae
+    save_dir = "dashboard/results/models/" 
 
+    autoencoder.fit(device, features,adj_norm, adj_label, n_nodes, norm, pos_weight,
+    adj_orig,val_edges, val_edges_false, test_edges, test_edges_false,animal,save_dir, n_epochs)
 
-        autoencoder.fit(device, features,adj_norm, adj_label, n_nodes, norm, pos_weight,
-        adj_orig,val_edges, val_edges_false, test_edges, test_edges_false, save_dir, n_epochs)
-
-
-        autoencoder.load_state_dict(
-        torch.load(save_dir / (autoencoder.name + ".pt")), strict=False
-        )
+    file_name = "model_{}.pt".format(animal)
+    autoencoder.load_state_dict(
+    torch.load(os.path.join(save_dir,file_name)), strict=False
+    )
 
 
 
