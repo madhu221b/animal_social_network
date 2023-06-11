@@ -26,7 +26,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_epochs = 100
 
 training_dict = {
- "bat" : {"hidden_dim1": 4, "hidden_dim2": 4}
+ "bat" : {"hidden_dim1": 2, "hidden_dim2": 2}
 
 }
 def get_preprocessed_adj(adj, features):

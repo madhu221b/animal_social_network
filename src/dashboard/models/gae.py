@@ -226,8 +226,8 @@ class GraphAutoEncoder(nn.Module):
         self.to(device)
 
         roc_score, ap_score = get_roc_score(hidden_emb, adj_orig, test_edges, test_edges_false)
-        logging.info(f'Test ROC score: {str(roc_score)}')
-        logging.info(f'Test AP score: {str(ap_score)}')
+        print(f'Test ROC score: {str(roc_score)}')
+        print(f'Test AP score: {str(ap_score)}')
 
 
     def save(self, directory, animal) -> None:
