@@ -9,9 +9,18 @@ shades = plt.get_cmap('Pastel1')
 
 random_state = np.random.RandomState(42)
 
+def clean_nodes(g):
+    remove_arr = []
+    for node, data in g.nodes(data=True):
+         if len(data.keys()) == 0:     
+            remove_arr.append(node)
+    [g.remove_node(node) for node in remove_arr]
+    return g
+
 def read_graph(path, is_add_new_nodes=False):
     g = nx.read_graphml(path)
-
+    g = clean_nodes(g)
+    
     edge_color, node_color = dict(), dict()
     if is_add_new_nodes:
          print("Implementation to Build")
