@@ -26,7 +26,7 @@ from dashboard.slider import BSlider, CSlider
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
 
 an2tex = {
-  "Animal1" :  os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
+  "bat" :  os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
 }
 
 class MplCanvas(FigureCanvasQTAgg):
