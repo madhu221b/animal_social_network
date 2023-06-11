@@ -65,6 +65,7 @@ class GraphConvolution(Module):
 class Encoder(nn.Module):
     def __init__(self, input_feat_dim, hidden_dim1=4, hidden_dim2=4, dropout=0):
         super(Encoder, self).__init__()
+        print("hidden dim 1 used: ", hidden_dim1, "hidden dim 2 used: ", hidden_dim2)
         self.gc1 = GraphConvolution(input_feat_dim, hidden_dim1, dropout, act=F.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)

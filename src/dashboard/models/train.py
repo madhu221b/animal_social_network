@@ -5,10 +5,13 @@ Usage :  python train.py --animal bat
 """
 import numpy as np
 import torch
+
 from argparse import ArgumentParser
 
 import sys
 import os
+import random
+
 myDir = os.getcwd()
 sys.path.append(myDir)
 from pathlib import Path
@@ -26,7 +29,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_epochs = 100
 
 training_dict = {
- "bat" : {"hidden_dim1": 2, "hidden_dim2": 2}
+ "bat" : {"hidden_dim1": 32, "hidden_dim2": 16}
 
 }
 def get_preprocessed_adj(adj, features):
@@ -70,17 +73,11 @@ def train_model(animal):
     autoencoder.fit(device, features,adj_norm, adj_label, n_nodes, norm, pos_weight,
     adj_orig,val_edges, val_edges_false, test_edges, test_edges_false,animal,save_dir, n_epochs)
 
-    file_name = "model_{}.pt".format(animal)
-    autoencoder.load_state_dict(
-    torch.load(os.path.join(save_dir,file_name)), strict=False
-    )
-
-
 
 if __name__ == '__main__':
     argp = ArgumentParser()
 
-    argp.add_argument('--seed', default=0, type=int)
+    argp.add_argument('--seed', default=42, type=int)
     argp.add_argument('--animal', default="bat")
 
     
