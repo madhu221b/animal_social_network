@@ -9,7 +9,12 @@ pip install netgraph
 conda clean --all
 ```
 
-## Running Command
+## Launching Dashboard 
 ```bash
 python src/dashboard/main.py
+```
+
+## Training Graph-VAE Model 
+```bash
+python src/dashboard/models/train.py --animal <<animal_name>>
 ```
