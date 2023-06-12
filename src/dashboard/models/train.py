@@ -56,7 +56,7 @@ def train_model(animal):
      
     if animal == "bat":
         from src.dashboard.loaders.bat_loader import load_dataset
-        features, edgelist, adj, _= load_dataset(path)
+        features, edgelist, adj, _, _ = load_dataset(path)
 
     adj_norm, adj_label, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false = get_preprocessed_adj(adj, features)
     n_nodes, feat_dim = features.shape

@@ -75,4 +75,8 @@ def load_dataset(path, is_add_new_nodes=False):
         edgelist[i] = torch.Tensor([node_dict[u],node_dict[v]])
         i += 1
     adj =  nx.adjacency_matrix(g)
-    return feat, edgelist, adj, node_dict
+
+    features = {}
+    for node, data in g.nodes(data=True):
+        features[node] = data
+    return feat, edgelist, adj, node_dict, features
