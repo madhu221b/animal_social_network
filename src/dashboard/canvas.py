@@ -24,6 +24,8 @@ from src.dashboard.utils.graph_utils import read_graph
 from src.dashboard.slider import BSlider, CSlider
 from src.dashboard.loaders.bat_loader import load_dataset
 
+from src.dashboard.graph_analytics import GraphAnalytics
+
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
 
 GRAPHS = {
@@ -83,6 +85,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 closest_node = node
                 closest_node_name = name
         return closest_node_name, closest_node, distance < closest_node.radius
+
 class GraphPage(QWidget):
     """
     This is the page that belongs to the "graph" tab. It consists of three sub-pages:
@@ -161,8 +164,9 @@ class MainCanvas(QMainWindow):
         # Menu
         tabs = QTabWidget()
         self.graph_page = GraphPage(self)
+        self.graph_analytics = GraphAnalytics(self)
         tabs.addTab(self.graph_page, "Social Graph")
-        # tabs.addTab(self.NodeUI(), "TO DO")
+        tabs.addTab(self.graph_analytics, "Graph Analytics")
         self.layout.addWidget(tabs)
      
     # def _create_graph_page(self):
