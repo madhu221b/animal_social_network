@@ -22,8 +22,8 @@ sys.path.append(a)
 import scipy.sparse as sp
 
 from src.dashboard.canvas import GRAPHS
-from src.dashboard.utils.gae_utils import mask_test_edges, preprocess_graph
-from src.dashboard.models.gae import Encoder, Decoder, GraphAutoEncoder
+from src.utils.gae_utils import mask_test_edges, preprocess_graph
+from src.models.gae import Encoder, Decoder, GraphAutoEncoder
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_epochs = 100
@@ -55,7 +55,7 @@ def train_model(animal):
     path = GRAPHS[animal]
      
     if animal == "bat":
-        from src.dashboard.loaders.bat_loader import load_dataset
+        from src.loaders.bat_loader import load_dataset
         features, edgelist, adj, _, _ = load_dataset(path)
 
     adj_norm, adj_label, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false = get_preprocessed_adj(adj, features)
@@ -68,7 +68,7 @@ def train_model(animal):
     decoder.to(device)
 
     # Train the Graph vae
-    save_dir = "src/dashboard/results/models/" 
+    save_dir = "src/results/models/" 
 
     autoencoder.fit(device, features,adj_norm, adj_label, n_nodes, norm, pos_weight,
     adj_orig,val_edges, val_edges_false, test_edges, test_edges_false,animal,save_dir, n_epochs)
