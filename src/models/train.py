@@ -1,3 +1,4 @@
+
 """
 Usage :  python train.py --animal bat
 
@@ -14,7 +15,6 @@ import random
 myDir = os.getcwd()
 sys.path.append(myDir)
 from pathlib import Path
-
 path = Path(myDir)
 a = str(path.parent.absolute())
 sys.path.append(a)
@@ -40,8 +40,8 @@ def get_preprocessed_adj(adj, features):
         (adj_orig.diagonal()[np.newaxis, :], [0]), shape=adj_orig.shape)
     adj_orig.eliminate_zeros()
     adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj)
-    adj = adj_train
-
+    adj = adj_train  
+    
     # Some preprocessing
     adj_norm = preprocess_graph(adj)
     adj_label = adj_train + sp.eye(adj_train.shape[0])
@@ -54,16 +54,20 @@ def get_preprocessed_adj(adj, features):
 
 def train_model(animal):
     path = GRAPHS[animal]
-
+     
     if animal == "bat":
         from src.loaders.bat_loader import load_dataset
         features, edgelist, adj, _, _ = load_dataset(path)
+    elif animal == "junglefowl":
+        from src.loaders.junglefowl_loader import load_dataset
+        features, edgelist, adj, _, _ = load_dataset(path)
+         
 
     adj_norm, adj_label, norm, pos_weight, adj_orig, val_edges, val_edges_false, test_edges, test_edges_false = get_preprocessed_adj(adj, features)
     n_nodes, feat_dim = features.shape
     encoder = Encoder(input_feat_dim=feat_dim,
                       hidden_dim1=training_dict[animal]["hidden_dim1"],
-                      hidden_dim2=training_dict[animal]["hidden_dim2"])
+                    hidden_dim2=training_dict[animal]["hidden_dim2"])
     decoder = Decoder()
     autoencoder = GraphAutoEncoder(encoder, decoder)
     encoder.to(device)
@@ -95,9 +99,12 @@ if __name__ == '__main__':
     argp.add_argument('--seed', default=42, type=int)
     argp.add_argument('--animal', default="bat")
 
+    
     args = argp.parse_args()
     if args.seed:
         np.random.seed(args.seed)
         torch.manual_seed(args.seed)
 
     train_model(args.animal)
+    
+    

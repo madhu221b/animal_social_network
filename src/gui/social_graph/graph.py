@@ -9,12 +9,12 @@ from netgraph import InteractiveGraph
 import networkx as nx
 
 from src.utils.graph_utils import read_graph
-from src.loaders.bat_loader import load_dataset
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
 
 GRAPHS = {
-    "bat": os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
+    "bat": os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml"),
+    "junglefowl": os.path.join(DATASETS_PATH, "junglefowl_mcdonald_sexual_network_group9_attribute.graphml") 
 }
 
 
@@ -30,7 +30,14 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax = self.figure.add_subplot(111)
         graph, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
         self.metrics = metrics
-        _, _, _, _, features = load_dataset(GRAPHS.get(parent.text))
+
+        if parent.text == "bat":
+            from src.loaders.bat_loader import load_dataset
+            _, _, _, _, features = load_dataset(GRAPHS.get(parent.text))
+        elif parent.text == "junglefowl":
+            from src.loaders.junglefowl_loader import load_dataset
+            _, _, _, _, features = load_dataset(GRAPHS.get(parent.text))
+             
         self.features = features
         self.mpl_connect('button_press_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
