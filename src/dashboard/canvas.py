@@ -19,7 +19,7 @@ from src.dashboard.slider import BSlider, CSlider
 from src.loaders.bat_loader import load_dataset
 
 from src.dashboard.graph_analytics import GraphAnalytics
-from src.dashboard.utils.common import swap_dict_keys
+from src.utils.common import swap_dict_keys
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
 
