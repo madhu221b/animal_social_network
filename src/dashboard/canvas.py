@@ -22,6 +22,9 @@ import networkx as nx
 
 from src.dashboard.utils.graph_utils import read_graph
 from src.dashboard.slider import BSlider, CSlider
+from src.dashboard.loaders.bat_loader import load_dataset
+
+from src.dashboard.graph_analytics import GraphAnalytics
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
 
@@ -40,18 +43,22 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
         graph, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
+        self.metrics = metrics
+        _, _, _, _, features = load_dataset(GRAPHS.get(parent.text))
+        self.features = features
         self.mpl_connect('button_press_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.plot_instance = InteractiveGraph(graph,
-                                              node_color=color["node"],
-                                              edge_color=color["edge"],
-                                              ax=self.ax)
+                                        node_color=color["node"],
+                                        edge_color=color["edge"],
+                                        ax=self.ax)
 
+       
     def onclick(self, event):
         if event.xdata is not None:
             # Clicked on a node
             node_name, node, _ = self.get_closest_node(event.xdata, event.ydata)
-            self.parent.graph_page.right_page.setText(node_name)
+            self.parent.graph_page.right_page.update(node_name)
 
     def on_hover(self, event):
 
@@ -59,11 +66,11 @@ class GraphCanvas(FigureCanvasQTAgg):
             node_name, node, is_hovering = self.get_closest_node(event.xdata, event.ydata)
             if is_hovering:
                 # Mouse is over a node
-                self.parent.graph_page.left_page.setText(node_name)
+                self.parent.graph_page.left_page.update(node_name)
             else:
-                self.parent.graph_page.left_page.setText("")
+                self.parent.graph_page.left_page.update("")
         else:
-            self.parent.graph_page.left_page.setText("")
+            self.parent.graph_page.left_page.update("")
     
     def get_closest_node(self, x, y):
         # Loop over all nodes, select the one closest to click
@@ -78,6 +85,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 closest_node = node
                 closest_node_name = name
         return closest_node_name, closest_node, distance < closest_node.radius
+
 class GraphPage(QWidget):
     """
     This is the page that belongs to the "graph" tab. It consists of three sub-pages:
@@ -89,14 +97,50 @@ class GraphPage(QWidget):
     def __init__(self, parent):
         super().__init__()
         layout = QHBoxLayout()
-        self.left_page = QLabel("Left")
         self.graph_page = GraphCanvas(parent, width=5, height=4, dpi=100)
-        self.right_page = QLabel("Right")
+        self.left_page = NodeInfoPage(self.graph_page.features,self.graph_page.metrics)
+        self.right_page = NodeInfoPage(self.graph_page.features,self.graph_page.metrics)
         layout.addWidget(self.left_page)
         layout.addWidget(self.graph_page)
         layout.addWidget(self.right_page)
         self.setLayout(layout)
         
+
+class NodeInfoPage(QWidget):
+    def __init__(self, features, metrics):
+        super(NodeInfoPage, self).__init__()
+
+        self.features = features
+        self.metrics = metrics
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+    def update(self, node_name):
+        while self.layout.count():
+            item = self.layout.takeAt(0)            
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        if not node_name:
+            return
+
+        title_label = QLabel('Features')
+        title_label.setStyleSheet("font-weight: bold; font-size: 18px;")
+        self.layout.addWidget(title_label)
+        for feat in self.features[node_name]:
+            if feat == 'population' or feat == 'Group' or feat == 'sex':
+                feature_label = QLabel(f"{feat}: {self.features[node_name][feat]}")
+                self.layout.addWidget(feature_label)
+
+        title_label = QLabel('Metrics')
+        title_label.setStyleSheet("font-weight: bold; font-size: 18px;")
+        self.layout.addWidget(title_label)
+        for key, value in self.metrics.items():
+            metric_label = QLabel(f"{key}: {round(value[node_name], 2)}")
+            self.layout.addWidget(metric_label)
+
 
 class MainCanvas(QMainWindow):
     """
@@ -120,8 +164,9 @@ class MainCanvas(QMainWindow):
         # Menu
         tabs = QTabWidget()
         self.graph_page = GraphPage(self)
+        self.graph_analytics = GraphAnalytics(self)
         tabs.addTab(self.graph_page, "Social Graph")
-        # tabs.addTab(self.NodeUI(), "TO DO")
+        tabs.addTab(self.graph_analytics, "Graph Analytics")
         self.layout.addWidget(tabs)
      
     # def _create_graph_page(self):
