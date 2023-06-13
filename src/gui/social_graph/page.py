@@ -12,6 +12,7 @@ matplotlib.use("Qt5Agg")
 from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
 
+from .add_node_form import AddNodeForm
 
 class GraphPage(QWidget):
     """
@@ -58,12 +59,18 @@ class GraphPage(QWidget):
 
     def _add_action(self):
         # Show a pop-up window when 'add' icon is clicked
-        msgBox = QMessageBox()
-        msgBox.setIcon(QMessageBox.Information)
-        msgBox.setText("Add action was clicked!")
-        msgBox.setWindowTitle("Add Action")
-        msgBox.setStandardButtons(QMessageBox.Ok)
-        msgBox.exec()
+        # msgBox = QMessageBox()
+        # msgBox.setIcon(QMessageBox.Information)
+        # msgBox.setText("Add action was clicked!")
+        # msgBox.setWindowTitle("Add Action")
+        # msgBox.setStandardButtons(QMessageBox.Ok)
+        # msgBox.exec()
+
+        # @Gergely This is how I am showing the Form
+        # commented your pop up box component, do what's necessary to put it later
+        self.node_form = AddNodeForm(self.parent.text, self.graph_page.features)
+        self.node_form.show()
+        self.hide()
 
     def _undo_action(self):
         pass
