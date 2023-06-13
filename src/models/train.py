@@ -21,7 +21,7 @@ sys.path.append(a)
 
 import scipy.sparse as sp
 
-from src.dashboard.canvas import GRAPHS
+from src.gui.canvas import GRAPHS
 from src.utils.gae_utils import mask_test_edges, preprocess_graph
 from src.models.gae import Encoder, Decoder, GraphAutoEncoder
 

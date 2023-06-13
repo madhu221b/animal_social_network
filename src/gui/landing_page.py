@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
-from .canvas import MainCanvas, GRAPHS
+from .canvas import MainCanvas
+from .social_graph import GRAPHS
 
 
 class DropDownListBox(QtWidgets.QComboBox):

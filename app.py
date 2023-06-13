@@ -2,7 +2,7 @@ import sys
 import argparse
 
 from PyQt5 import QtWidgets, QtCore
-from src.dashboard.landing_page import LandingPage
+from src.gui.landing_page import LandingPage
 
 parser = argparse.ArgumentParser(description='Simple settings.')
 parser.add_argument('--debug', action='store_true')
