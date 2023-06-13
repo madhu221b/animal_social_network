@@ -70,7 +70,7 @@ class GraphPage(QWidget):
         # commented your pop up box component, do what's necessary to put it later
         self.node_form = AddNodeForm(self.parent.text, self.graph_page.features)
         self.node_form.show()
-        self.hide()
+        # self.hide()
 
     def _undo_action(self):
         pass
