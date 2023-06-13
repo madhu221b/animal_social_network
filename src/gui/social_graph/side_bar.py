@@ -53,7 +53,11 @@ class NodeInfoPage(QWidget):
         # Populate the table with titles and dummy values
         columns = columns if columns is not None else list(data.keys())
 
-       
+        # if it is a feature table
+        if "betweeness" not in columns: # first entry of the features table is Name
+            columns = list(columns)
+            columns.insert(0, "Name")
+
         for key in columns:
             row = table.rowCount()
             table.insertRow(row)
@@ -68,12 +72,15 @@ class NodeInfoPage(QWidget):
 
     def update(self, node_name):
         if node_name:
-            self._update_table(self.feature_table, self.features[node_name])
+            self._update_table(self.feature_table, self.features[node_name],node_name=node_name)
             self._update_table(self.metric_table, self.metrics[node_name])
 
-    def _update_table(self, table, data):
+    def _update_table(self, table, data, node_name=None):
         for row in range(table.rowCount()):
             key_item = table.item(row, 0)
-            value = data.get(key_item.text(), "")
+            if node_name and key_item.text().lower() == "name":
+                value = node_name
+            else:
+                 value = data.get(key_item.text(), "")
             value = f"{value:.2f}" if isinstance(value, float) else value
             table.setItem(row, 1, QTableWidgetItem(str(value)))
