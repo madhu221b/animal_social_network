@@ -7,17 +7,17 @@ import torch
 
 from argparse import ArgumentParser
 
-# import sys
-# import os
-# import random
+import sys
+import os
+import random
 
-# myDir = os.getcwd()
-# sys.path.append(myDir)
-# from pathlib import Path
+myDir = os.getcwd()
+sys.path.append(myDir)
+from pathlib import Path
 
-# path = Path(myDir)
-# a = str(path.parent.absolute())
-# sys.path.append(a)
+path = Path(myDir)
+a = str(path.parent.absolute())
+sys.path.append(a)
 
 import scipy.sparse as sp
 
