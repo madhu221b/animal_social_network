@@ -14,9 +14,9 @@ from matplotlib.figure import Figure
 from netgraph import InteractiveGraph
 import networkx as nx
 
-from src.dashboard.utils.graph_utils import read_graph
+from src.utils.graph_utils import read_graph
 from src.dashboard.slider import BSlider, CSlider
-from src.dashboard.loaders.bat_loader import load_dataset
+from src.loaders.bat_loader import load_dataset
 
 from src.dashboard.graph_analytics import GraphAnalytics
 
