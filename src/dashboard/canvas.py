@@ -1,18 +1,12 @@
-import sys
 import os
-myDir = os.getcwd()
-sys.path.append(myDir)
-from pathlib import Path
-path = Path(myDir)
-a=str(path.parent.absolute())
-sys.path.append(a)
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QToolBar, QAction, QMessageBox
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import matplotlib
+
 matplotlib.use("Qt5Agg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
@@ -26,11 +20,12 @@ from src.dashboard.loaders.bat_loader import load_dataset
 
 from src.dashboard.graph_analytics import GraphAnalytics
 
-DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets" 
+DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
 
 GRAPHS = {
-  "bat" :  os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
+    "bat": os.path.join(DATASETS_PATH, "vampirebats_carter_mouth_licking_attribute_new.graphml")
 }
+
 
 class GraphCanvas(FigureCanvasQTAgg):
     """
@@ -49,11 +44,10 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.mpl_connect('button_press_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.plot_instance = InteractiveGraph(graph,
-                                        node_color=color["node"],
-                                        edge_color=color["edge"],
-                                        ax=self.ax)
+                                              node_color=color["node"],
+                                              edge_color=color["edge"],
+                                              ax=self.ax)
 
-       
     def onclick(self, event):
         if event.xdata is not None:
             # Clicked on a node
@@ -71,7 +65,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 self.parent.graph_page.left_page.update("")
         else:
             self.parent.graph_page.left_page.update("")
-    
+
     def get_closest_node(self, x, y):
         # Loop over all nodes, select the one closest to click
         closest_node = None
@@ -86,6 +80,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 closest_node_name = name
         return closest_node_name, closest_node, distance < closest_node.radius
 
+
 class GraphPage(QWidget):
     """
     This is the page that belongs to the "graph" tab. It consists of three sub-pages:
@@ -96,17 +91,63 @@ class GraphPage(QWidget):
 
     def __init__(self, parent):
         super().__init__()
+
+        self.actions = {
+            "add": "add.png", "undo": "undo.png", "open": "open.png", "save": "save.png"
+        }
+
+        self.parent = parent
+        self._create_tool_bars()
+
         layout = QHBoxLayout()
         self.graph_page = GraphCanvas(parent, width=5, height=4, dpi=100)
-        self.left_page = NodeInfoPage(self.graph_page.features,self.graph_page.metrics)
-        self.right_page = NodeInfoPage(self.graph_page.features,self.graph_page.metrics)
+        self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
+        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         layout.addWidget(self.left_page)
         layout.addWidget(self.graph_page)
         layout.addWidget(self.right_page)
         self.setLayout(layout)
-        
+
+    def _create_tool_bars(self):
+        self.toolbar = QToolBar(self.parent)
+        self.parent.addToolBar(Qt.LeftToolBarArea, self.toolbar)
+
+        self.icon_actions = {}
+        for action, img_filename in self.actions.items():
+            self.icon_actions[action] = QAction(self)
+            icon = QIcon(f"./res/icons/{img_filename}")
+            self.icon_actions[action].setIcon(icon)
+            self.icon_actions[action].setToolTip(
+                action)  # Set tooltip to display action name on hover
+            self.toolbar.addAction(self.icon_actions[action])
+
+        # Connect the 'add' action to the _add_action method
+        self.icon_actions['add'].triggered.connect(self._add_action)
+
+    def _add_action(self):
+        # Show a pop-up window when 'add' icon is clicked
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText("Add action was clicked!")
+        msgBox.setWindowTitle("Add Action")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec()
+
+    def _undo_action(self):
+        pass
+
+    def _delete_action(self):
+        pass
+
+    def _open_action(self):
+        pass
+
+    def _save_action(self):
+        pass
+
 
 class NodeInfoPage(QWidget):
+
     def __init__(self, features, metrics):
         super(NodeInfoPage, self).__init__()
 
@@ -118,7 +159,7 @@ class NodeInfoPage(QWidget):
 
     def update(self, node_name):
         while self.layout.count():
-            item = self.layout.takeAt(0)            
+            item = self.layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
@@ -155,20 +196,30 @@ class MainCanvas(QMainWindow):
         self.text = text
         self.setWindowTitle(text)
         self.setGeometry(0, 0, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-        
+
         widget = QtWidgets.QWidget()
         self.layout = QtWidgets.QVBoxLayout(widget)
         self.setLayout(self.layout)
         self.setCentralWidget(widget)
 
-        # Menu
+        # Add pages
         tabs = QTabWidget()
         self.graph_page = GraphPage(self)
         self.graph_analytics = GraphAnalytics(self)
         tabs.addTab(self.graph_page, "Social Graph")
         tabs.addTab(self.graph_analytics, "Graph Analytics")
         self.layout.addWidget(tabs)
-     
+
+        # Center the window on the screen
+        self._center_window()
+
+    def _center_window(self):
+        """Center the window on the screen"""
+        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry()
+        x = (screen_geometry.width() - self.WINDOW_WIDTH) // 2
+        y = (screen_geometry.height() - self.WINDOW_HEIGHT) // 2
+        self.move(x, y)
+
     # def _create_graph_page(self):
     #     """
     #      The Graph Visualization
@@ -177,13 +228,13 @@ class MainCanvas(QMainWindow):
     #     layout = QHBoxLayout()
 
     #     self.graph_page = GraphCanvas(self, width=5, height=4, dpi=100)
-        
+
     #     layout.addWidget(QLabel("Left"))
     #     layout.addWidget(self.graph_page)
     #     layout.addWidget(QLabel("Right"))
     #     tab.setLayout(layout)
     #     return tab
-       
+
     # def NodeUI(self):
     #     generalTab = QWidget()
     #     layout = QVBoxLayout()
@@ -193,7 +244,7 @@ class MainCanvas(QMainWindow):
     #     layout.addWidget(self.canvas)
     #     generalTab.setLayout(layout)
     #     return generalTab
-       
+
     # def SliderUI(self):
     #     widget = QWidget()
     #     layout = QVBoxLayout()
