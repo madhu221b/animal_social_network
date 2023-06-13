@@ -13,7 +13,7 @@ class NodeInfoPage(QWidget):
         self.LEFT_WIDTH = 200
         self.RIGHT_WIDTH = 200
         self.CELL_HEIGHT = 30
-        self.FEATURES = ['population', 'Group', 'sex']
+        self.FEATURES =  None        
         self.METRICS = None  # None == select all
 
         self.features = features
@@ -25,7 +25,10 @@ class NodeInfoPage(QWidget):
         self.feature_title_label = QLabel("Features")
         self.feature_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         self.layout.addWidget(self.feature_title_label)
-
+        
+        for _, data in self.features.items():
+            self.FEATURES = data.keys()
+            break
         self.feature_table = self._create_table(self.features, self.LEFT_WIDTH, self.FEATURES)
         self.layout.addWidget(self.feature_table)
 
@@ -49,6 +52,8 @@ class NodeInfoPage(QWidget):
 
         # Populate the table with titles and dummy values
         columns = columns if columns is not None else list(data.keys())
+
+       
         for key in columns:
             row = table.rowCount()
             table.insertRow(row)
