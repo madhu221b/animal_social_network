@@ -4,12 +4,18 @@ QLabel, QLineEdit, QMenu, QMenuBar, QPushButton, QSpinBox, QTextEdit,
 QVBoxLayout)
 
 
+
 class AddNodeForm(QDialog):
 
     def __init__(self, animal, features):
         super(AddNodeForm, self).__init__()
 
         self.features = features
+        self.animal = animal
+        self.form_instances = []
+        self.new_node = None
+      
+
         self.createFormGroupBox()
         
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -21,7 +27,7 @@ class AddNodeForm(QDialog):
         mainLayout.addWidget(buttonBox)
         self.setLayout(mainLayout)
         
-        self.setWindowTitle(f"Add a new {animal} node")
+        self.setWindowTitle(f"Add a new {self.animal} node")
         
     def createFormGroupBox(self):
         self.formGroupBox = QGroupBox("")
@@ -38,9 +44,32 @@ class AddNodeForm(QDialog):
                  dropdown = QComboBox()
                  list_of_vals = set([ data[form_label] for _, data in self.features.items()])
                  dropdown.addItems(list_of_vals)
+                 dropdown.setCurrentIndex(0)
                  layout.addRow(QLabel(form_label), dropdown)
+                 self.form_instances.append({form_label:dropdown})
             else: 
                 pass   # to do as other data types come
               
         # layout.addRow(QLabel("Age:"), QSpinBox())
         self.formGroupBox.setLayout(layout)
+
+    
+    def accept(self):
+        new_node, new_name, new_id  = {}, "", 1
+        for form_instance in self.form_instances: 
+            key, val = None, None
+            for form_label, form_obj in form_instance.items():
+                key, val = form_label, form_obj.currentText()
+                new_node[key] = val
+                break
+        # Assign a new name to the node of convention new_<<animal_name>>_id
+        names = [node for node, _ in self.features.items() if node.startswith("new")]
+      
+        if names: # give the last most id
+            new_id = int(names.sort()[-1].split("_")[-1])+1
+
+        new_name = "new_{}_{}".format(self.animal, new_id)
+        self.new_node = (new_name, new_node)
+
+        
+        

@@ -30,6 +30,7 @@ class GraphPage(QWidget):
         }
 
         self.parent = parent
+        self.new_node = None
         self._create_tool_bars()
 
         layout = QHBoxLayout()
@@ -68,9 +69,11 @@ class GraphPage(QWidget):
 
         # @Gergely This is how I am showing the Form
         # commented your pop up box component, do what's necessary to put it later
-        self.node_form = AddNodeForm(self.parent.text, self.graph_page.features)
-        self.node_form.show()
+        self.node_form = AddNodeForm(self.parent.text ,self.graph_page.features)
         # self.hide()
+        self.node_form.show()
+  
+        
 
     def _undo_action(self):
         pass

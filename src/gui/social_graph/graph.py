@@ -31,14 +31,8 @@ class GraphCanvas(FigureCanvasQTAgg):
         graph, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
         self.metrics = metrics
 
-        if parent.text == "bat":
-            from src.loaders.bat_loader import load_dataset
-            _, _, _, _, features = load_dataset(GRAPHS.get(parent.text))
-        elif parent.text == "junglefowl":
-            from src.loaders.junglefowl_loader import load_dataset
-            _, _, _, _, features = load_dataset(GRAPHS.get(parent.text))
-             
-        self.features = features
+    
+        self.features = {node:data for node,data in graph.nodes(data=True)}
         self.mpl_connect('button_press_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.plot_instance = InteractiveGraph(graph,
