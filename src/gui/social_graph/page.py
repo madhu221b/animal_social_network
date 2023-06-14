@@ -44,9 +44,9 @@ class GraphPage(QWidget):
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
 
-        self.node_form = AddNodeForm(parent.text, self.graph_page.features)
-        self.node_form.hide()
-        self.node_form.signal.connect(self.on_change)
+        # self.node_form = AddNodeForm(parent.text, self.graph_page.features)
+        # self.node_form.hide()
+        # self.node_form.signal.connect(self.on_change)
 
         layout.addWidget(self.left_page)
         layout.addWidget(self.graph_page)
@@ -83,6 +83,8 @@ class GraphPage(QWidget):
         # commented your pop up box component, do what's necessary to put it later
         
         # self.hide()
+        self.node_form = AddNodeForm(self.parent.text, self.graph_page.features)
+        self.node_form.signal.connect(self.on_change)
         self.node_form.show()
   
         

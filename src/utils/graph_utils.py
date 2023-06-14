@@ -51,10 +51,17 @@ def get_edited_graph(g, new_node=None, new_edges=None):
 
         if new_node:
             g.add_nodes_from([new_node])
+        if new_edges:
+            # print("New edges", new_edges)
+            g.add_edges_from(new_edges)
+
         for _, edge in enumerate(g.edges):
+            u, v = edge
+            if new_edges and ((u,v) in new_edges or (v,u) in new_edges):
+                edge_color[edge] = 'tab:blue' 
+            else:
                 edge_color[edge] = 'tab:gray' 
-            # else:
-            #     edge_color[edge] = 'tab:blue' 
+        
         
         minval = min([degree for _, degree in g.degree()])
         maxval = max([degree for _, degree in g.degree()])

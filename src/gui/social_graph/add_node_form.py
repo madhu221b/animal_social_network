@@ -66,9 +66,10 @@ class AddNodeForm(QDialog):
                 break
         # Assign a new name to the node of convention new_<<animal_name>>_id
         names = [node for node, _ in self.features.items() if node.startswith("new")]
-      
+        
         if names: # give the last most id
-            new_id = int(names.sort()[-1].split("_")[-1])+1
+            names = sorted(names)
+            new_id = int(names[-1].split("_")[-1])+1
 
         new_name = "new_{}_{}".format(self.animal, new_id)
         self.new_node = (new_name, new_node)

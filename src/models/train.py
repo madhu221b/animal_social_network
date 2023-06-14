@@ -22,15 +22,12 @@ sys.path.append(a)
 import scipy.sparse as sp
 
 from src.gui.social_graph import GRAPHS
-from src.utils.gae_utils import mask_test_edges, preprocess_graph
+from src.utils.gae_utils import mask_test_edges, preprocess_graph, training_dict
 from src.models.gae import Encoder, Decoder, GraphAutoEncoder
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_epochs = 100
 
-training_dict = {"bat": {"hidden_dim1": 32, "hidden_dim2": 16},
-                "junglefowl": {"hidden_dim1": 6, "hidden_dim2": 4},
-                }
 
 
 def get_preprocessed_adj(adj, features):

@@ -3,6 +3,10 @@ import numpy as np
 from sklearn.metrics import roc_auc_score, average_precision_score
 import torch
 
+training_dict = {"bat": {"hidden_dim1": 32, "hidden_dim2": 16},
+                "junglefowl": {"hidden_dim1": 6, "hidden_dim2": 4},
+                }
+                
 def mask_test_edges(adj):
     # Function to build test set with 10% positive links
 

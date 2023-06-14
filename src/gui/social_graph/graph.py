@@ -9,6 +9,7 @@ from netgraph import InteractiveGraph
 import networkx as nx
 
 from src.utils.graph_utils import read_graph, get_edited_graph
+from src.models.inference import get_pred_edges
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
 
@@ -41,10 +42,15 @@ class GraphCanvas(FigureCanvasQTAgg):
     
 
     def update_graph(self, new_node=None, new_edges=None):
-        graph, color, metrics = get_edited_graph(self.graph, new_node)
-        self.graph = graph
-        self.metrics = metrics
-        self.features = {node:data for node,data in self.graph.nodes(data=True)}
+        if new_node: # infer new edges
+            new_graph, _ , _ = get_edited_graph(self.graph, new_node=new_node)
+            pred_edges = get_pred_edges(new_graph, self.parent.text, new_node[0])
+
+            graph, color, metrics = get_edited_graph(new_graph, new_node=new_node, new_edges=pred_edges)
+            self.graph = graph
+            self.metrics = metrics
+            self.features = {node:data for node,data in self.graph.nodes(data=True)}
+
 
         self.ax.cla() # Clears the existing plot
         self.plot_instance = InteractiveGraph(self.graph,
