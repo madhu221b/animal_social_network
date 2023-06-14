@@ -29,7 +29,7 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.parent = parent
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-        graph, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
+        graph, pos, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
         self.graph = graph
         self.metrics = metrics
         self.features = {node:data for node,data in self.graph.nodes(data=True)}
@@ -37,16 +37,17 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.plot_instance = InteractiveGraph(graph,
                                               node_color=color["node"],
+                                              node_layout = pos,
                                               edge_color=color["edge"],
                                               ax=self.ax)
     
 
     def update_graph(self, new_node=None, new_edges=None):
         if new_node: # infer new edges
-            new_graph, _ , _ = get_edited_graph(self.graph, new_node=new_node)
+            new_graph, pos, _ , _ = get_edited_graph(self.graph, new_node=new_node)
             pred_edges = get_pred_edges(new_graph, self.parent.text, new_node[0])
 
-            graph, color, metrics = get_edited_graph(new_graph, new_node=new_node, new_edges=pred_edges)
+            graph, pos, color, metrics = get_edited_graph(new_graph, new_node=new_node, new_edges=pred_edges)
             self.graph = graph
             self.metrics = metrics
             self.features = {node:data for node,data in self.graph.nodes(data=True)}
@@ -55,6 +56,7 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla() # Clears the existing plot
         self.plot_instance = InteractiveGraph(self.graph,
                                               node_color=color["node"],
+                                              node_layout = pos,
                                               edge_color=color["edge"],
                                               ax=self.ax)
         

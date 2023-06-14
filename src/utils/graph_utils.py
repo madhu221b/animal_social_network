@@ -3,7 +3,7 @@ import numpy as np
 
 from matplotlib import cm, colors
 import matplotlib.pyplot as plt
-
+import math
 shades = plt.get_cmap('Pastel1')
 
 
@@ -42,7 +42,10 @@ def read_graph(path, is_add_new_nodes=False):
                        "degree": nx.degree_centrality(g)
     
                 }
-    return g, color_dict, centrality_dict
+
+     
+    pos = nx.spring_layout(g, k=12/math.sqrt(g.order()), seed=random_state)        
+    return g, pos, color_dict, centrality_dict
 
 def get_edited_graph(g, new_node=None, new_edges=None):
         g = clean_nodes(g)
@@ -77,4 +80,5 @@ def get_edited_graph(g, new_node=None, new_edges=None):
                         "degree": nx.degree_centrality(g)
         
                     }
-        return g, color_dict, centrality_dict
+        pos = nx.spring_layout(g, k=12/math.sqrt(g.order()), seed=random_state)              
+        return g, pos, color_dict, centrality_dict
