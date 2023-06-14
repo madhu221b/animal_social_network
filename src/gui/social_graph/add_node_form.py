@@ -2,14 +2,16 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog,
 QDialogButtonBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
 QLabel, QLineEdit, QMenu, QMenuBar, QPushButton, QSpinBox, QTextEdit,
 QVBoxLayout)
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 
 
 class AddNodeForm(QDialog):
 
+    signal = pyqtSignal(tuple)
     def __init__(self, animal, features):
         super(AddNodeForm, self).__init__()
-
         self.features = features
         self.animal = animal
         self.form_instances = []
@@ -70,6 +72,7 @@ class AddNodeForm(QDialog):
 
         new_name = "new_{}_{}".format(self.animal, new_id)
         self.new_node = (new_name, new_node)
+        self.signal.emit(self.new_node)
+        self.hide()
 
-        
         

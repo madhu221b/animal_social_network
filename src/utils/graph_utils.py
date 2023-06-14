@@ -22,12 +22,11 @@ def read_graph(path, is_add_new_nodes=False):
     g = clean_nodes(g)
     
     edge_color, node_color = dict(), dict()
-    if is_add_new_nodes:
-         print("Implementation to Build")
 
     
     for _, edge in enumerate(g.edges):
-        edge_color[edge] = 'tab:gray' 
+              edge_color[edge] = 'tab:gray' 
+  
     
     minval = min([degree for _, degree in g.degree()])
     maxval = max([degree for _, degree in g.degree()])
@@ -44,3 +43,31 @@ def read_graph(path, is_add_new_nodes=False):
     
                 }
     return g, color_dict, centrality_dict
+
+def get_edited_graph(g, new_node=None, new_edges=None):
+        g = clean_nodes(g)
+        
+        edge_color, node_color = dict(), dict()
+
+        if new_node:
+            g.add_nodes_from([new_node])
+        for _, edge in enumerate(g.edges):
+                edge_color[edge] = 'tab:gray' 
+            # else:
+            #     edge_color[edge] = 'tab:blue' 
+        
+        minval = min([degree for _, degree in g.degree()])
+        maxval = max([degree for _, degree in g.degree()])
+        norm = colors.Normalize(vmin=minval, vmax=maxval, clip=True)
+        mapper = cm.ScalarMappable(norm=norm, cmap=shades)
+        
+        for node, degree in g.degree():
+            node_color[node] =  mapper.to_rgba(degree)
+        color_dict = {"node":node_color, "edge":edge_color}
+        centrality_dict = {"betweeness":nx.betweenness_centrality(g),
+                        "closeness": nx.closeness_centrality(g),
+                        "eigenvector": nx.eigenvector_centrality(g),
+                        "degree": nx.degree_centrality(g)
+        
+                    }
+        return g, color_dict, centrality_dict
