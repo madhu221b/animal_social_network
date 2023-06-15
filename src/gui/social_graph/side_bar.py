@@ -70,8 +70,11 @@ class NodeInfoPage(QWidget):
 
         return table
 
-    def update(self, node_name):
+    def update(self, node_name, features=None, metrics=None):
+        
         if node_name:
+            self.features = features
+            self.metrics = swap_dict_keys(metrics)
             self._update_table(self.feature_table, self.features[node_name],node_name=node_name)
             self._update_table(self.metric_table, self.metrics[node_name])
 

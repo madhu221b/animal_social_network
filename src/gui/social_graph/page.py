@@ -5,6 +5,12 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolBar, QAction, QMessageBox
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+
+from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog,
+QDialogButtonBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
+QLabel, QLineEdit, QMenu, QMenuBar, QPushButton, QSpinBox, QTextEdit,
+QVBoxLayout)
+
 import matplotlib
 
 matplotlib.use("Qt5Agg")
@@ -37,9 +43,15 @@ class GraphPage(QWidget):
         self.graph_page = GraphCanvas(parent, width=5, height=4, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
+
+        # self.node_form = AddNodeForm(parent.text, self.graph_page.features)
+        # self.node_form.hide()
+        # self.node_form.signal.connect(self.on_change)
+
         layout.addWidget(self.left_page)
         layout.addWidget(self.graph_page)
         layout.addWidget(self.right_page)
+        # layout.addWidget(self.node_form)
         self.setLayout(layout)
 
     def _create_tool_bars(self):
@@ -69,8 +81,10 @@ class GraphPage(QWidget):
 
         # @Gergely This is how I am showing the Form
         # commented your pop up box component, do what's necessary to put it later
-        self.node_form = AddNodeForm(self.parent.text ,self.graph_page.features)
+        
         # self.hide()
+        self.node_form = AddNodeForm(self.parent.text, self.graph_page.features)
+        self.node_form.signal.connect(self.on_change)
         self.node_form.show()
   
         
@@ -86,3 +100,8 @@ class GraphPage(QWidget):
 
     def _save_action(self):
         pass
+
+    @pyqtSlot(tuple)
+    def on_change(self,data):
+        self.graph_page.update_graph(new_node=data)
+

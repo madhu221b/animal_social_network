@@ -8,7 +8,8 @@ from matplotlib.figure import Figure
 from netgraph import InteractiveGraph
 import networkx as nx
 
-from src.utils.graph_utils import read_graph
+from src.utils.graph_utils import read_graph, get_edited_graph
+from src.models.inference import get_pred_edges
 
 DATASETS_PATH = os.getcwd().split("src")[0] + "/datasets"
 
@@ -28,23 +29,42 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.parent = parent
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-        graph, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
+        graph, pos, color, metrics = read_graph(GRAPHS.get(parent.text)) # Handle Exception if animal is not in dataset
+        self.graph = graph
         self.metrics = metrics
-
-    
-        self.features = {node:data for node,data in graph.nodes(data=True)}
+        self.features = {node:data for node,data in self.graph.nodes(data=True)}
         self.mpl_connect('button_press_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.plot_instance = InteractiveGraph(graph,
                                               node_color=color["node"],
+                                              node_layout = pos,
                                               edge_color=color["edge"],
                                               ax=self.ax)
+    
 
+    def update_graph(self, new_node=None, new_edges=None):
+        if new_node: # infer new edges
+            new_graph, pos, _ , _ = get_edited_graph(self.graph, new_node=new_node)
+            pred_edges = get_pred_edges(new_graph, self.parent.text, new_node[0])
+
+            graph, pos, color, metrics = get_edited_graph(new_graph, new_node=new_node, new_edges=pred_edges)
+            self.graph = graph
+            self.metrics = metrics
+            self.features = {node:data for node,data in self.graph.nodes(data=True)}
+
+
+        self.ax.cla() # Clears the existing plot
+        self.plot_instance = InteractiveGraph(self.graph,
+                                              node_color=color["node"],
+                                              node_layout = pos,
+                                              edge_color=color["edge"],
+                                              ax=self.ax)
+        
     def onclick(self, event):
         if event.xdata is not None:
             # Clicked on a node
             node_name, node, _ = self.get_closest_node(event.xdata, event.ydata)
-            self.parent.graph_page.right_page.update(node_name)
+            self.parent.graph_page.right_page.update(node_name, self.features, self.metrics)
 
     def on_hover(self, event):
 
@@ -52,7 +72,7 @@ class GraphCanvas(FigureCanvasQTAgg):
             node_name, node, is_hovering = self.get_closest_node(event.xdata, event.ydata)
             if is_hovering:
                 # Mouse is over a node
-                self.parent.graph_page.left_page.update(node_name)
+                self.parent.graph_page.left_page.update(node_name, self.features, self.metrics)
             else:
                 self.parent.graph_page.left_page.update("")
         else:
