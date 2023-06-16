@@ -25,7 +25,7 @@ def read_graph(path, is_add_new_nodes=False):
 
     
     for _, edge in enumerate(g.edges):
-              edge_color[edge] = 'tab:gray' 
+        edge_color[edge] = 'tab:gray' 
   
     
     minval = min([degree for _, degree in g.degree()])

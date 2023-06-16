@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
-from .canvas import MainCanvas
-from .social_graph import GRAPHS
+from .main_window import MainWindow
+from ..static import IDS, LANDING_PAGE_TITLE, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT, PageState
 
 
 class DropDownListBox(QtWidgets.QComboBox):
@@ -19,17 +19,12 @@ class LandingPage(QtWidgets.QWidget):
     with the chosen content pops up.
     """
 
-    WINDOW_TITLE = "Social Network Analysis of Animals"
-    WINDOW_WIDTH = 500
-    WINDOW_HEIGHT = 100
-    USER_OPTIONS = list(GRAPHS.keys())
-
     def __init__(self):
         super(LandingPage, self).__init__()
 
         # Set default layout
-        self.setWindowTitle(self.WINDOW_TITLE)
-        self.setGeometry(0, 0, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setWindowTitle(LANDING_PAGE_TITLE)
+        self.setGeometry(0, 0, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT)
         self.layout = QtWidgets.QHBoxLayout(
             self)  # Change to QHBoxLayout to place elements side by side
 
@@ -45,8 +40,8 @@ class LandingPage(QtWidgets.QWidget):
     def _center_window(self):
         """Center the window on the screen"""
         screen_geometry = QtWidgets.QApplication.desktop().screenGeometry()
-        x = (screen_geometry.width() - self.WINDOW_WIDTH) // 2
-        y = (screen_geometry.height() - self.WINDOW_HEIGHT) // 2
+        x = (screen_geometry.width() - LANDING_PAGE_WIDTH) // 2
+        y = (screen_geometry.height() - LANDING_PAGE_HEIGHT) // 2
         self.move(x, y)
 
     def _create_dropdown_list(self):
@@ -54,7 +49,7 @@ class LandingPage(QtWidgets.QWidget):
         dropdown_list = DropDownListBox(self)
 
         # Define all choices the users can choose from
-        dropdown_list.addItems(self.USER_OPTIONS)
+        dropdown_list.addItems(IDS)
         dropdown_list.setCurrentIndex(0)  # Select the first item by default
 
         # Add widget to the layout
@@ -84,16 +79,18 @@ class LandingPage(QtWidgets.QWidget):
         """
 
         # Select item
-        item = self.dropdown_list.currentText()
-        print("Item Selected:", item)
+        page_id = self.dropdown_list.currentText()
+        print("Item Selected:", page_id)
 
         # In case we already opened, close the previous one
         if hasattr(self, "main_window"):
             # TODO what if we keep all canvas and just show and hide them
+            PageState.clear()
             self.main_window.destroy()
 
         # Create new window and hide this one
-        self.main_window = MainCanvas(text=item)
+        PageState.select_id(page_id)
+        self.main_window = MainWindow()
         self.main_window.show()
         self.hide()
 
