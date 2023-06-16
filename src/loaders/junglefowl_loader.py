@@ -12,7 +12,7 @@ def name_2_id(g):
     return node_dict
 
 def load_dataset(path, is_add_new_nodes=False):
-    g,_,_ = read_graph(path,is_add_new_nodes)
+    g,_,_,_ = read_graph(path,is_add_new_nodes)
     g = clean_nodes(g)     # 1. Remove unnecesary nodes
       
     node_dict = name_2_id(g) # 2. Map string names of animals to ids

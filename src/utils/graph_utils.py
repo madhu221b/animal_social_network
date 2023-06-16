@@ -3,6 +3,7 @@ import numpy as np
 
 from matplotlib import cm, colors
 import matplotlib.pyplot as plt
+import math
 
 shades = plt.get_cmap('Pastel1')
 
@@ -41,7 +42,9 @@ def read_graph(path, is_add_new_nodes=False):
         "eigenvector": nx.eigenvector_centrality(g),
         "degree": nx.degree_centrality(g)
     }
-    return g, color_dict, centrality_dict
+
+    pos = nx.spring_layout(g, seed=42)
+    return g, pos, color_dict, centrality_dict
 
 
 def get_edited_graph(g, new_node=None, new_edges=None):
@@ -52,6 +55,7 @@ def get_edited_graph(g, new_node=None, new_edges=None):
     if new_node:
         g.add_nodes_from([new_node])
     if new_edges:
+        # print("New edges", new_edges)
         g.add_edges_from(new_edges)
 
     for _, edge in enumerate(g.edges):
@@ -75,4 +79,5 @@ def get_edited_graph(g, new_node=None, new_edges=None):
         "eigenvector": nx.eigenvector_centrality(g),
         "degree": nx.degree_centrality(g)
     }
-    return g, color_dict, centrality_dict
+    pos = nx.spring_layout(g, k=12 / math.sqrt(g.order()), seed=random_state)
+    return g, pos, color_dict, centrality_dict

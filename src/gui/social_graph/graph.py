@@ -1,7 +1,7 @@
-import os
+import networkx as nx
 import matplotlib
 from matplotlib import pyplot as plt
-import numpy as np
+import math
 from copy import deepcopy
 
 matplotlib.use("Qt5Agg")
@@ -82,9 +82,11 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla()  # Clears the existing plot
 
         seed_everything(42)
-
-        if not isinstance(self.node_layout, str) and len(self.node_layout) != len(self.graph.nodes):
-            self.node_layout = 'spring'
+        pos = nx.spring_layout(self.graph.graph, k=12 / math.sqrt(self.graph.graph.order()))
+        if hasattr(self, 'plot_instance') and len(pos) > len(self.node_layout):
+            for key, value in pos.items():
+                if key not in self.node_layout:
+                    self.node_layout[key] = value
 
         self.plot_instance = InteractiveGraph(self.graph.graph,
                                               node_color=self.node_colors,

@@ -14,7 +14,7 @@ def name_2_id(g):
 def load_dataset(path=None, graph=None, is_add_new_nodes=False):
 
     if graph is None:
-        g,_,_ = read_graph(path,is_add_new_nodes)
+        g,_,_,_ = read_graph(path,is_add_new_nodes)
     else:
         g = graph
     g = clean_nodes(g)     # 1. Remove unnecesary nodes
