@@ -56,6 +56,6 @@ class AddNodeForm(QDialog):
         self.form_group_box.setLayout(layout)
 
     def send(self):
-        node = {k: v.currentText() for (k, v) in self.form.items()}
-        self.callback(node=node)
+        node_data = {k: v.currentText() for (k, v) in self.form.items()}
+        self.callback(node_data=node_data)
         self.close()

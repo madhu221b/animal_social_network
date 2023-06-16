@@ -14,3 +14,8 @@ class AddNodeIcon(IconAction):
             callback = perform_action_on_graph(self.parent.graph_page, AddNode)
             self.parent.node_form = AddNodeForm(self.parent.graph_page.features, callback=callback)
             self.parent.node_form.show()
+
+    def cancel(self):
+        if hasattr(self.parent, "node_form"):
+            self.parent.node_form.close()
+            del self.parent.node_form

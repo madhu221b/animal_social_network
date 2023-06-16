@@ -9,6 +9,8 @@ class Predict(GraphAction):
         super().__init__(*args, **kwargs)
         self.nodes = nodes if nodes else self._get_hanging_nodes()
         self.directed_edges = self._predict_edges()
+        self._edges_were = self.graph_gui.graph.selected_directed_edges
+        self._nodes_were = self.graph_gui.graph.selected_nodes
 
     def do(self):
         super().do()
@@ -16,11 +18,11 @@ class Predict(GraphAction):
         self.graph_gui.graph.deselect()
         self.graph_gui.graph.select(nodes=self.nodes, edges=self.directed_edges)
 
-    def undo(self, node_data):
-        super().do()
-        # TODO:
-        # self.graph.remove(node, coords)
-        pass
+    def undo(self):
+        super().undo()
+        self.graph_gui.remove_edges(self.directed_edges)
+        self.graph_gui.graph.deselect()
+        self.graph_gui.graph.select(nodes=self._nodes_were, edges=self._edges_were)
 
     def _get_hanging_nodes(self):
         return [(n, v) for (n, v) in self.graph_gui.graph.hanging_nodes.items()]

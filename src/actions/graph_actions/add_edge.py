@@ -11,8 +11,6 @@ class AddEdge(GraphAction):
         super().do()
         self.graph_gui.add_edge(self.directed_edge)
 
-    def undo(self, node_data):
-        super().do()
-        # TODO:
-        # self.graph.remove(node, coords)
-        pass
+    def undo(self):
+        super().undo()
+        self.graph_gui.remove_edge(self.directed_edge)

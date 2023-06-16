@@ -19,7 +19,6 @@ class MainWindow(QMainWindow):
 
         widget = QtWidgets.QWidget()
         self.layout = QtWidgets.QVBoxLayout(widget)
-        self.setLayout(self.layout)
         self.setCentralWidget(widget)
 
         # Add pages

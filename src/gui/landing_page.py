@@ -80,7 +80,6 @@ class LandingPage(QtWidgets.QWidget):
 
         # Select item
         page_id = self.dropdown_list.currentText()
-        print("Item Selected:", page_id)
 
         # In case we already opened, close the previous one
         if hasattr(self, "main_window"):

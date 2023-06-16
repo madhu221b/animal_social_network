@@ -1,5 +1,10 @@
 import sys
 import argparse
+import numpy as np
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
+np.seterr(divide='ignore', invalid='ignore')
 
 from PyQt5 import QtWidgets, QtCore
 from src.gui.landing_page import LandingPage

@@ -2,6 +2,7 @@ import os
 import matplotlib
 from matplotlib import pyplot as plt
 import numpy as np
+from copy import deepcopy
 
 matplotlib.use("Qt5Agg")
 
@@ -27,11 +28,10 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.parent = parent
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-
-        seed_everything(42)
+        self.node_layout = "spring"
 
         self.graph = Graph.from_file()
-        self.mpl_connect('button_press_event', self.onclick)
+        self.mpl_connect('button_release_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.refresh()
 
@@ -49,25 +49,9 @@ class GraphCanvas(FigureCanvasQTAgg):
                                            vmax=self.graph.max_degree,
                                            clip=True)
         mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap=SHADES)
-        # return {node: mapper.to_rgba(degree) for (node, degree) in self.graph.degrees.items()}
-
-        # Set the border color for selected nodes
-        selected_border_color = "black"  # Change this to your desired border color
-        selected_border_width = 2  # Change this to your desired border width
-
         colors = {}
         for node, degree in self.graph.degrees.items():
-            if node in self.graph.selected_nodes:
-                # Modify the node style for selected nodes
-                color = mapper.to_rgba(degree)
-                edge_color = selected_border_color
-                edge_width = selected_border_width
-            else:
-                color = mapper.to_rgba(degree)
-                edge_color = 'none'
-                edge_width = 0
-
-            colors[node] = {'node_color': color, 'edge_color': edge_color, 'edge_width': edge_width}
+            colors[node] = mapper.to_rgba(degree)
         return colors
 
     @property
@@ -79,13 +63,37 @@ class GraphCanvas(FigureCanvasQTAgg):
             edge_colors[directed_edge] = f"tab:{color}"
         return edge_colors
 
+    @property
+    def node_width(self):
+        width = {}
+        for node_name, node in self.graph.nodes:
+            width[node_name] = 1. if node_name in self.graph.selected_nodes else 0.5
+        return width
+
+    @property
+    def edge_width(self):
+        width = {}
+        for edge in self.graph.directed_edges:
+            undirected_edge = set(edge)
+            width[edge] = 1.5 if undirected_edge in self.graph.selected_undirected_edges else 1.
+        return width
+
     def refresh(self):
         self.ax.cla()  # Clears the existing plot
+
         seed_everything(42)
+
+        if not isinstance(self.node_layout, str) and len(self.node_layout) != len(self.graph.nodes):
+            self.node_layout = 'spring'
+
         self.plot_instance = InteractiveGraph(self.graph.graph,
                                               node_color=self.node_colors,
                                               edge_color=self.edge_colors,
+                                              node_edge_width=self.node_width,
+                                              edge_width=self.edge_width,
+                                              node_layout=self.node_layout,
                                               ax=self.ax)
+        self.node_layout = deepcopy(self.plot_instance.node_positions)
 
     def add_nodes(self, new_nodes, refresh=True):
         self.graph.add_nodes(new_nodes)
@@ -102,6 +110,26 @@ class GraphCanvas(FigureCanvasQTAgg):
 
     def add_edge(self, new_edge, refresh=True):
         self.add_edges([new_edge], refresh)
+        if refresh:
+            self.parent.graph_page.refresh()
+
+    def remove_nodes(self, new_nodes, refresh=True):
+        self.graph.remove_nodes(new_nodes)
+        if refresh:
+            self.parent.graph_page.refresh()
+
+    def remove_node(self, new_node, refresh=True):
+        self.remove_nodes([new_node], refresh)
+
+    def remove_edges(self, new_edges, refresh=True):
+        self.graph.remove_edges(new_edges)
+        if refresh:
+            self.parent.graph_page.refresh()
+
+    def remove_edge(self, new_edge, refresh=True):
+        self.remove_edges([new_edge], refresh)
+        if refresh:
+            self.parent.graph_page.refresh()
 
     def predict_edges(self, nodes=None, refresh=True):
         nodes = nodes if nodes else self.graph.selected_nodes
@@ -119,16 +147,25 @@ class GraphCanvas(FigureCanvasQTAgg):
     def onclick(self, event):
         if event.xdata is not None:
             # Clicked on a node
-            node_name, node, is_hovering = self.get_closest_node(event.xdata, event.ydata)
-            if is_hovering:
+            node_name, _, is_hovering, was_dragged = self.get_closest_node(event.xdata, event.ydata)
+            if is_hovering and not was_dragged:
+                # Click
                 self.parent.graph_page.right_page.update(node_name, self.features, self.metrics)
-                self.parent.graph_page.graph.toggle_status_of_node(node)
+                self.parent.graph_page.graph_page.graph.toggle_status_of_node(node_name)
                 self.parent.graph_page.refresh()
+            elif is_hovering and was_dragged:
+                self.node_layout[node_name] = self.plot_instance.node_positions[node_name]
+            else:
+                self.graph.deselect()
+                self.parent.graph_page.refresh()
+        else:
+            self.graph.deselect()
+            self.parent.graph_page.refresh()
 
     def on_hover(self, event):
 
         if event.xdata is not None:
-            node_name, _, is_hovering = self.get_closest_node(event.xdata, event.ydata)
+            node_name, _, is_hovering, _ = self.get_closest_node(event.xdata, event.ydata)
         else:
             is_hovering = False
 
@@ -149,4 +186,12 @@ class GraphCanvas(FigureCanvasQTAgg):
                 distance = dist
                 closest_node = node
                 closest_node_name = name
-        return closest_node_name, closest_node, distance < closest_node.radius
+
+        hovering = distance < closest_node.radius
+        was_dragged = False
+        if hovering and hasattr(self, "plot_instance") and not isinstance(self.node_layout, str):
+            was = tuple(self.node_layout[closest_node_name])
+            now = tuple(self.plot_instance.node_positions[closest_node_name])
+            was_dragged = not was == now
+
+        return closest_node_name, closest_node, hovering, was_dragged

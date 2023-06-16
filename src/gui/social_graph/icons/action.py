@@ -24,12 +24,12 @@ class IconAction(QAction):
 
     def onclick(self):
         raise NotImplementedError
-    
+
     def cancel(self):
         pass
 
-    def refresh(self, active):
-        if active:
+    def refresh(self, set_enabled):
+        if set_enabled:
             self.enable()
         else:
             self.disable()
