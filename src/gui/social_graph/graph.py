@@ -83,17 +83,16 @@ class GraphCanvas(FigureCanvasQTAgg):
 
         seed_everything(42)
         pos = nx.spring_layout(self.graph.graph, k=12 / math.sqrt(self.graph.graph.order()))
-        if hasattr(self, 'plot_instance') and len(pos) > len(self.node_layout):
+        if hasattr(self, 'plot_instance') and not len(pos) == len(self.node_layout):
             for key, value in pos.items():
-                if key not in self.node_layout:
-                    self.node_layout[key] = value
+                pos[key] = self.node_layout[key] if key in self.node_layout else value
 
         self.plot_instance = InteractiveGraph(self.graph.graph,
                                               node_color=self.node_colors,
                                               edge_color=self.edge_colors,
                                               node_edge_width=self.node_width,
                                               edge_width=self.edge_width,
-                                              node_layout=self.node_layout,
+                                              node_layout=pos,
                                               ax=self.ax)
         self.node_layout = deepcopy(self.plot_instance.node_positions)
 
