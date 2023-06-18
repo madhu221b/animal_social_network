@@ -1,18 +1,21 @@
-
 from ..action import GraphAction
+
 
 class AddNode(GraphAction):
 
-    def do(self, node):
-        super().do()
-        # TODO:
-        # self.node = node
-        # self.coords = ...
-        # self.graph.add(self.node, self.coords)
-        pass
+    _unique_id = 0
 
-    def undo(self, node):
+    def __init__(self, *args, node_data, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.node_data = node_data
+        self.node_name = f"new_node#{AddNode._unique_id}"
+        self.node = (self.node_name, self.node_data)
+        AddNode._unique_id += 1
+
+    def do(self):
         super().do()
-        # TODO:
-        # self.graph.remove(node, coords)
-        pass
+        self.graph_gui.add_node(self.node)
+
+    def undo(self):
+        super().undo()
+        self.graph_gui.remove_node(self.node_name)

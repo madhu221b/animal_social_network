@@ -1,24 +1,56 @@
+import logging
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from .action import GraphAction
+from .graph_actions import *
 
-class GraphActionStack:
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('graph')
 
-    def __init__(self):
-        self.done_stack = []
-        self.undone_stack = []
 
-    def add(self, item):
+class _ActionStack(QObject):
+    done_stack = []
+    undone_stack = []
+
+    done_stack_changed = pyqtSignal(int, name="done_change")
+    undone_stack_changed = pyqtSignal(int, name="undone_change")
+
+    @staticmethod
+    def add(item):
         assert isinstance(item, GraphAction), f"Action must be GraphAction, not {type(item)}"
-        self.done_stack.append(item)
-        self.undone_stack = []
+        item.do()
+        ActionStack.done_stack.append(item)
+        ActionStack.undone_stack = []
+        ActionStack.trigger_events()
 
-    def undo(self):
-        item = self.done_stack.pop()
-        self.undone_stack.append(item)
+    @staticmethod
+    def undo():
+        item = ActionStack.done_stack.pop()
+        ActionStack.undone_stack.append(item)
         item.undo()
+        ActionStack.trigger_events()
 
-    def redo(self):
-        if len(self.undone_stack):
-            item = self.undone_stack.pop()
-            self.done_stack.append(item)
+    @staticmethod
+    def redo():
+        if len(ActionStack.undone_stack):
+            item = ActionStack.undone_stack.pop()
+            ActionStack.done_stack.append(item)
             item.do()
+            ActionStack.trigger_events()
+
+    @staticmethod
+    def trigger_events():
+        ActionStack.done_stack_changed.emit(len(ActionStack.done_stack))
+        ActionStack.undone_stack_changed.emit(len(ActionStack.undone_stack))
+
+
+ActionStack = _ActionStack()
+
+
+def perform_action_on_graph(graph, action_class):
+
+    def _perform_action(**kwargs):
+        action = action_class(graph, **kwargs)
+        ActionStack.add(action)
+
+    return _perform_action
