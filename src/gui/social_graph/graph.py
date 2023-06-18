@@ -82,9 +82,9 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla()  # Clears the existing plot
 
         seed_everything(42)
-        pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1/self.graph.graph.order()))
-        
-        if hasattr(self, 'plot_instance') and not len(pos) == len(self.node_layout):
+        pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()))
+
+        if hasattr(self, 'plot_instance'):
             for key, value in pos.items():
                 pos[key] = self.node_layout[key] if key in self.node_layout else value
 
