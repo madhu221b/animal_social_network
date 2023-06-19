@@ -1,6 +1,7 @@
 import os
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QMainWindow, QTabWidget
+from PyQt6.QtGui import QGuiApplication
 
 from src.gui.graph_analytics import GraphAnalytics
 from .social_graph import GraphPage
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
 
     def _center_window(self):
         """Center the window on the screen"""
-        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry()
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
         x = (screen_geometry.width() - MAIN_WINDOW_WIDTH) // 2
         y = (screen_geometry.height() - MAIN_WINDOW_HEIGHT) // 2
         self.move(x, y)
