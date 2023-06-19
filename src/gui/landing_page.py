@@ -1,4 +1,5 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets
+from PyQt6.QtGui import QScreen
 from .main_window import MainWindow
 from ..static import IDS, LANDING_PAGE_TITLE, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT, PageState
 
@@ -39,7 +40,8 @@ class LandingPage(QtWidgets.QWidget):
 
     def _center_window(self):
         """Center the window on the screen"""
-        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry()
+        
+        screen_geometry = QtWidgets.QApplication.primaryScreen().geometry()
         x = (screen_geometry.width() - LANDING_PAGE_WIDTH) // 2
         y = (screen_geometry.height() - LANDING_PAGE_HEIGHT) // 2
         self.move(x, y)

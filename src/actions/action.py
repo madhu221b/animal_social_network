@@ -1,5 +1,5 @@
 from abc import ABC
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 
 from ..gui.social_graph.graph import GraphCanvas
 

@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolBar
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar
+from PyQt6.QtGui import QAction
+from PyQt6.QtCore import Qt
 import matplotlib
 
 matplotlib.use("Qt5Agg")
@@ -42,7 +43,7 @@ class GraphPage(QWidget):
 
         # Define menu/toolbar
         self.toolbar = QToolBar(self.parent)
-        self.parent.addToolBar(Qt.LeftToolBarArea, self.toolbar)
+        self.parent.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
         # Icons listed from top to bottom
         self.icons = {
