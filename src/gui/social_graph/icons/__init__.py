@@ -4,3 +4,8 @@ from .add_edge import AddEdgeIcon
 from .undo import UndoIcon
 from .redo import RedoIcon
 from .pred import PredEdgesIcon
+from .add_edge import AddEdgeIcon
+from .add_node import AddNodeIcon
+from .redo import RedoIcon
+from .undo import UndoIcon
+from .save import SaveIcon
