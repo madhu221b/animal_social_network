@@ -7,7 +7,7 @@ matplotlib.use("Qt5Agg")
 
 from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
-from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon
+from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon
 
 
 class GraphPage(QWidget):
@@ -51,7 +51,8 @@ class GraphPage(QWidget):
             "add_edge": AddEdgeIcon(self),
             "undo": UndoIcon(self),
             "redo": RedoIcon(self),
-            "pred": PredEdgesIcon(self)
+            "pred": PredEdgesIcon(self),
+            "save": SaveIcon(self)
         }
         for action in list(self.icons.values()):
             self.toolbar.addAction(action)
