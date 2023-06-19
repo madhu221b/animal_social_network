@@ -43,9 +43,7 @@ class GraphPage(QWidget):
 
         # Define menu/toolbar
         self.toolbar = QToolBar(self.parent)
-        action = QAction("Action", self.parent)
-        self.toolbar.addAction(action)
-        # self.parent.addToolBar(Qt.ToolBarArea, self.toolbar)
+        self.parent.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
         # Icons listed from top to bottom
         self.icons = {

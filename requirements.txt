@@ -1,5 +1,5 @@
 torch
-PyQt5==5.15.9
+PyQt6==6.5.1
 matplotlib==3.7.1
 netgraph==4.12.11
 networkx==3.1
