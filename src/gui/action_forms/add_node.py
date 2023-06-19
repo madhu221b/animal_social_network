@@ -22,7 +22,7 @@ class AddNodeForm(QDialog):
 
         self.create_form_group_box()
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self.send)
         button_box.rejected.connect(self.reject)
 
