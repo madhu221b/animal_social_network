@@ -1,6 +1,6 @@
 import os
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QIcon, QPixmap, QImage, qGray
+from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QIcon, QPixmap, QImage, qGray
 
 
 class IconAction(QAction):

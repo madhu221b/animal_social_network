@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import networkx as nx
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal
 
 from .static import PageState
 

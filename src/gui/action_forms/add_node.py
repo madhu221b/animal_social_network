@@ -1,12 +1,12 @@
-from PyQt5.QtWidgets import (QComboBox,
+from PyQt6.QtWidgets import (QComboBox,
                              QDialog,
                              QDialogButtonBox,
                              QFormLayout,
                              QGroupBox,
                              QLabel,
                              QVBoxLayout)
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 
 
 class AddNodeForm(QDialog):
