@@ -66,10 +66,10 @@ class GraphAnalytics(QWidget):
 
     def attribute_distribution_plot(self):
         fig = Figure(figsize=(5, 4), dpi=100)
-        ax = fig.add_subplot(111)
+        ax = fig.add_subplot(121)
         ax.set_title('Attribute Distribution')
         node_features = self.parent.graph_page.graph_page.features
-        attribute_names = set([key for _, value in node_features.items() for key, _ in value.items()])
+        attribute_names = sorted(set([key for _, value in node_features.items() for key, _ in value.items()]))
 
         attribute_counts = {}
         for att in attribute_names:
@@ -86,8 +86,8 @@ class GraphAnalytics(QWidget):
             count = list(element_counts.values())
 
             ax.barh(attribute, count[0], label=values[0], color=shades(0))
-            ax.legend(loc='upper center', ncol=len(values), bbox_to_anchor=(0.5, -0.15))
             for i in range(1, len(values)):
                 ax.barh(attribute, count[i], left=sum(count[:i]), label=values[i], color=shades(i))
+                ax.legend(loc='upper right', ncol=len(values),bbox_to_anchor=(2, 1.05))
         
         return FigureCanvasQTAgg(fig)
