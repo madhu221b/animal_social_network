@@ -13,7 +13,6 @@ from netgraph import InteractiveGraph
 from src.utils.graph_utils import read_graph, get_edited_graph
 from src.models.inference import get_pred_edges
 from src.graph import Graph
-from src.utils.common import seed_everything
 
 SHADES = plt.get_cmap("Pastel1")
 
@@ -108,8 +107,6 @@ class GraphCanvas(FigureCanvasQTAgg):
 
     def refresh(self):
         self.ax.cla()  # Clears the existing plot
-
-        seed_everything(42)
         pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()))
 
         if hasattr(self, 'plot_instance'):

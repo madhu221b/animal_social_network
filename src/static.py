@@ -26,7 +26,7 @@ GRAPH_DATA = {
     }
 }
 
-IDS = set(GRAPH_DATA.keys())
+IDS = list(GRAPH_DATA.keys())
 
 # ==================================================
 # Variables
