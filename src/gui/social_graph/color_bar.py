@@ -12,6 +12,7 @@ mpl.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
+# TODO
 
 class ColorBar(QWidget):
 
