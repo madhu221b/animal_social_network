@@ -21,7 +21,7 @@ sys.path.append(a)
 
 import scipy.sparse as sp
 
-from src.gui.social_graph import GRAPHS
+
 from src.utils.gae_utils import mask_test_edges, preprocess_graph, training_dict
 from src.models.gae import Encoder, Decoder, GraphAutoEncoder
 
@@ -111,6 +111,7 @@ def train_model(animal, features, edgelist, adj):
         save_dir,
         n_epochs,
     )
+
 
 
 if __name__ == "__main__":

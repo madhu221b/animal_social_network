@@ -31,8 +31,11 @@ def clean_nodes(g):
 
 
 class ASNRGraph:
-    def __init__(self, path) -> None:
-        self.graph = clean_nodes(nx.read_graphml(path))
+    def __init__(self, path=None, graph_obj=None) -> None:
+        if graph_obj is None:
+           self.graph = clean_nodes(nx.read_graphml(path))
+        else:
+            self.graph = graph_obj
         self.colors, self.centrality = self._init_colors()
 
     def _init_colors(self):

@@ -139,8 +139,10 @@ class GraphCanvas(FigureCanvasQTAgg):
         for node in nodes:
             pred_edges.extend(get_pred_edges(self.graph, self.parent.id, node))
         self.graph.add_edges(pred_edges)
+   
         if refresh:
             self.parent.graph_page.refresh()
+
 
     def add_node_and_predict_edges(self, new_node):
         self.add_node(new_node, refresh=False)
