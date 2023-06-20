@@ -1,8 +1,9 @@
 from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout
 from collections import Counter
 import networkx as nx
 import pandas as pd
+import numpy as np
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -13,100 +14,93 @@ matplotlib.use("Qt5Agg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout
 
 
 class GraphAnalytics(QWidget):
-    def __init__(self, parent=None):
-        super(GraphAnalytics, self).__init__(parent)
+    """
+    Graph analytics page, contains metrics and visualizations
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
         self.parent = parent
-        self.setParent(parent)
-        self.layout = QGridLayout(self)
-        self.heatmap = Heatmap(self)
-        self.chord_diagram = ChordDiagram(self)
-        self.bar_chart = BarChart(self)
-        self.layout.addWidget(self.bar_chart, 0, 0, 1, 2)
-        self.layout.addWidget(self.heatmap, 1, 0)
-        self.layout.addWidget(self.chord_diagram, 1, 1)
-        self.setLayout(self.layout)
+
         self.node_features = self.parent.graph_page.graph_page.features
-        self.graph = self.parent.graph_page.graph_page.graph
         self.features_df = pd.DataFrame(self.node_features).T
         self.features_df.index.name = 'node'
-        self.edges_df = pd.DataFrame(nx.to_pandas_edgelist(self.graph), columns=['source', 'target'])
-        self.graph_df = pd.merge(self.edges_df, self.features_df, left_on='source', right_on='node', how='left')
-        self.graph_df = pd.merge(self.graph_df, self.features_df, left_on='target', right_on='node', how='left')
 
-        self.bar_chart.display_bar_chart()
+        self.setup_ui()
 
-        attribute_names = self.features_df.columns
-        attribute_values = {}
-        for column in self.features_df.columns:
-            attribute_values[column] = list(set(self.features_df[column].unique()))
-
-        column_names = [(column, value) for column, values in attribute_values.items() for value in values]
-        df = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(column_names),
-                          columns=pd.MultiIndex.from_tuples(column_names))
-
-        for _, row in self.edges_df.iterrows():
-            for att in attribute_names:
-                source_value = self.features_df.loc[row['source']][att]
-                target_value = self.features_df.loc[row['target']][att]
-                df[(att, source_value)][(att, target_value)] += 1
         
+    def setup_ui(self):
+        main_layout = QGridLayout(self)
 
-class Heatmap(QWidget):
-    def __init__(self, parent=None):
-        super(Heatmap, self).__init__(parent)
-        self.parent = parent
-        self.layout = QGridLayout(self)
-        self.figure = Figure()
-        self.canvas = FigureCanvasQTAgg(self.figure)
-        self.layout.addWidget(self.canvas, 0, 0)
-        self.setLayout(self.layout)
+        # Add attribute distribution plot
+        attribute_distribution_plot = self.attribute_distribution_plot()
+        main_layout.addWidget(attribute_distribution_plot, 0, 0, 1, 2)
 
+        # Add adjacency matrix plot
+        adj_matrix_plot = self.adjacency_matrix()
+        main_layout.addWidget(adj_matrix_plot, 1, 0)
 
-class ChordDiagram(QWidget):
-    def __init__(self, parent=None):
-        super(ChordDiagram, self).__init__(parent)
-        self.parent = parent
-        self.layout = QGridLayout(self)
-        self.figure = Figure()
-        self.canvas = FigureCanvasQTAgg(self.figure)
-        self.layout.addWidget(self.canvas, 0, 0)
-        self.setLayout(self.layout)
+        # # Add chord diagram
+        chord_diagram = self.chord_diagram()
+        main_layout.addWidget(chord_diagram, 1, 1)
 
 
-class BarChart(QWidget):
-    def __init__(self, parent=None):
-        super(BarChart, self).__init__(parent)
-        self.parent = parent
-        self.layout = QVBoxLayout(self)
-        self.figure = Figure()
-        self.canvas = FigureCanvasQTAgg(self.figure)
-        self.layout.addWidget(self.canvas)
-        self.setLayout(self.layout)
+    def attribute_distribution_plot(self):
+        plt.rcParams.update({'font.size': 8})
+        fig = Figure(figsize=(5, 4), dpi=100)
+        fig.suptitle('Attribute Distribution')
 
-    
-    def display_bar_chart(self):
-        attribute_values = self.parent.features_df.to_dict(orient='list')
+        attribute_values = self.features_df.to_dict(orient='list')
         num_attributes = len(attribute_values)
         num_rows = num_attributes // 3 + num_attributes % 3 
         num_cols = 3 
-        self.figure.subplots_adjust(hspace=7, left=0.05, right=0.95, top=0.95, bottom=0.15)
+        fig.subplots_adjust(hspace=5, wspace=0.3, left=0.08, right=0.98, top=0.93, bottom=0.15)
 
         for i, (attribute, values) in enumerate(attribute_values.items()):
             value_counts = Counter(values)
             values = list(value_counts.keys())
             count = list(value_counts.values())
 
-            ax = self.figure.add_subplot(num_rows, num_cols, i+1)
+            ax = fig.add_subplot(num_rows, num_cols, i+1)
             ax.barh(attribute, count[0], label=values[0], color=shades(0))
             for j in range(1, len(values)):
                 ax.barh(attribute, count[j], left=sum(count[:j]), label=values[j], color=shades(j))
 
             ax.set_xlim(0, sum(count))
             ax.set_xticks(range(0, sum(count) + 1, 2))
-            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1.25), ncol=4)
+            ax.set_xticklabels(range(0, sum(count) + 1, 2), fontsize=5)
 
-        self.canvas.draw()
+            if len(values) > 8:
+                ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1.5), ncol=5, fontsize=4)
+            else:
+                ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1.5), ncol=4, fontsize=5)
+        
+        return FigureCanvasQTAgg(fig)
+    
+
+    def adjacency_matrix(self):
+        fig = Figure(figsize=(3,3), dpi=100)
+        graph = self.parent.graph_page.graph_page.graph.graph
+        adj_matrix = nx.adjacency_matrix(graph)
+        ax = fig.add_subplot(111)
+        ax.set_title('Adjacency Matrix')
+        im = ax.matshow(adj_matrix.todense())
+        nodes = list(graph.nodes)
+        ax.set_xticks(np.arange(len(nodes)))
+        ax.set_yticks(np.arange(len(nodes)))
+        ax.set_xticklabels(nodes)
+        ax.set_yticklabels(nodes)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
+
+        fig.colorbar(im, ax=ax, label="Interaction Count")
+
+        return FigureCanvasQTAgg(fig)
+    
+
+    def chord_diagram(self):
+        fig = Figure(figsize=(3,3), dpi=100)
+
+        return FigureCanvasQTAgg(fig)
