@@ -4,6 +4,7 @@ import numpy as np
 from src.models.gae import Encoder, Decoder, GraphAutoEncoder
 from src.utils.gae_utils import training_dict, preprocess_graph
 
+from src.loaders.asnr_dataloader import ASNRGraph
 
 def load_model(path, animal, feat_dim):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -30,10 +31,11 @@ def get_pred_edges(graph, animal, new_name):
     file_name = "model_{}.pt".format(animal)
     path_to_model = os.path.join(save_dir, file_name)
 
-    if animal == "bat":
-        from ..loaders.bat_loader import load_dataset
-        features, edgelist, adj, node_dict, _ = load_dataset(graph=graph)
-
+    # if animal == "bat":
+    #     from ..loaders.bat_loader import load_dataset
+    #     features, edgelist, adj, node_dict, _ = load_dataset(graph=graph)
+    
+    features, edgelist, adj, node_dict, _ = ASNRGraph(graph_obj=graph).preprocess()
     n_nodes, feat_dim = features.shape
     adj_norm = preprocess_graph(adj)
     model = load_model(path_to_model, animal, feat_dim)
