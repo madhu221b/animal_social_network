@@ -1,24 +1,14 @@
-import os
-
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolBar, QAction, QMessageBox
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
-
-from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog,
-QDialogButtonBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
-QLabel, QLineEdit, QMenu, QMenuBar, QPushButton, QSpinBox, QTextEdit,
-QVBoxLayout)
-
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar
+from PyQt6.QtGui import QAction
+from PyQt6.QtCore import Qt
 import matplotlib
 
 matplotlib.use("Qt5Agg")
 
 from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
+from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon
 
-from .add_node_form import AddNodeForm
 
 class GraphPage(QWidget):
     """
@@ -30,78 +20,43 @@ class GraphPage(QWidget):
 
     def __init__(self, parent):
         super().__init__()
-
-        self.actions = {
-            "add": "add.png", "undo": "undo.png", "open": "open.png", "save": "save.png"
-        }
-
         self.parent = parent
-        self.new_node = None
-        self._create_tool_bars()
 
+        # Toolbar
+        self._create_tool_bar()
+
+        # Page
         layout = QHBoxLayout()
+
+        # Sub-pages definition
         self.graph_page = GraphCanvas(parent, width=5, height=4, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
 
-        # self.node_form = AddNodeForm(parent.text, self.graph_page.features)
-        # self.node_form.hide()
-        # self.node_form.signal.connect(self.on_change)
-
+        # Sub-pages allocation on main page
         layout.addWidget(self.left_page)
         layout.addWidget(self.graph_page)
         layout.addWidget(self.right_page)
-        # layout.addWidget(self.node_form)
         self.setLayout(layout)
 
-    def _create_tool_bars(self):
+    def _create_tool_bar(self):
+
+        # Define menu/toolbar
         self.toolbar = QToolBar(self.parent)
-        self.parent.addToolBar(Qt.LeftToolBarArea, self.toolbar)
+        self.parent.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
-        self.icon_actions = {}
-        for action, img_filename in self.actions.items():
-            self.icon_actions[action] = QAction(self)
-            icon = QIcon(f"./res/icons/{img_filename}")
-            self.icon_actions[action].setIcon(icon)
-            self.icon_actions[action].setToolTip(
-                action)  # Set tooltip to display action name on hover
-            self.toolbar.addAction(self.icon_actions[action])
+        # Icons listed from top to bottom
+        self.icons = {
+            "add_node": AddNodeIcon(self),
+            "add_edge": AddEdgeIcon(self),
+            "undo": UndoIcon(self),
+            "redo": RedoIcon(self),
+            "pred": PredEdgesIcon(self),
+            "save": SaveIcon(self)
+        }
+        for action in list(self.icons.values()):
+            self.toolbar.addAction(action)
 
-        # Connect the 'add' action to the _add_action method
-        self.icon_actions['add'].triggered.connect(self._add_action)
-
-    def _add_action(self):
-        # Show a pop-up window when 'add' icon is clicked
-        # msgBox = QMessageBox()
-        # msgBox.setIcon(QMessageBox.Information)
-        # msgBox.setText("Add action was clicked!")
-        # msgBox.setWindowTitle("Add Action")
-        # msgBox.setStandardButtons(QMessageBox.Ok)
-        # msgBox.exec()
-
-        # @Gergely This is how I am showing the Form
-        # commented your pop up box component, do what's necessary to put it later
-        
-        # self.hide()
-        self.node_form = AddNodeForm(self.parent.text, self.graph_page.features)
-        self.node_form.signal.connect(self.on_change)
-        self.node_form.show()
-  
-        
-
-    def _undo_action(self):
-        pass
-
-    def _delete_action(self):
-        pass
-
-    def _open_action(self):
-        pass
-
-    def _save_action(self):
-        pass
-
-    @pyqtSlot(tuple)
-    def on_change(self,data):
-        self.graph_page.update_graph(new_node=data)
-
+    def refresh(self):
+        self.graph_page.refresh()
+        self.icons["pred"].refresh(self.graph_page.graph.predictable)

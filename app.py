@@ -1,7 +1,12 @@
 import sys
 import argparse
+import numpy as np
+import warnings
 
-from PyQt5 import QtWidgets, QtCore
+warnings.simplefilter(action='ignore', category=FutureWarning)
+np.seterr(divide='ignore', invalid='ignore')
+
+from PyQt6 import QtWidgets, QtCore
 from src.gui.landing_page import LandingPage
 
 parser = argparse.ArgumentParser(description='Simple settings.')
@@ -18,6 +23,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.debug:
         window._simulate_select_first_item()
+        # window.main_window.graph_page._add_action()
         # Add any simulated actions here that speeds up your tests
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -1,3 +1,5 @@
+from PyQt6 import QtWidgets
+from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from collections import Counter
 import networkx as nx
 import pandas as pd
@@ -27,7 +29,6 @@ class GraphAnalytics(QWidget):
         self.layout.addWidget(self.heatmap, 1, 0)
         self.layout.addWidget(self.chord_diagram, 1, 1)
         self.setLayout(self.layout)
-
         self.node_features = self.parent.graph_page.graph_page.features
         self.graph = self.parent.graph_page.graph_page.graph
         self.features_df = pd.DataFrame(self.node_features).T

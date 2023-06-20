@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 
 from src.utils.common import swap_dict_keys
 
@@ -47,8 +47,8 @@ class NodeInfoPage(QWidget):
         table.setColumnCount(2)
         table.horizontalHeader().hide()
         table.verticalHeader().hide()
-        table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Populate the table with titles and dummy values
         columns = columns if columns is not None else list(data.keys())
@@ -62,7 +62,7 @@ class NodeInfoPage(QWidget):
             row = table.rowCount()
             table.insertRow(row)
             item = QTableWidgetItem(f"{key}")
-            item.setFont(QFont('Arial', 10, QFont.Bold))
+            item.setFont(QFont('Arial', pointSize=10, weight=QFont.Weight.Bold))
             table.setItem(row, 0, item)
             table.setItem(row, 1, QTableWidgetItem(""))
 
