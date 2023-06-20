@@ -55,6 +55,34 @@ class GraphCanvas(FigureCanvasQTAgg):
         return colors
 
     @property
+    def node_sizes(self):
+        sizes = {}
+        predicted = self.graph.predicted_new_node_names
+        unpredicted = self.graph.unpredicted_new_node_names
+        for node_name, _ in self.graph.nodes:
+            if node_name in predicted:
+                sizes[node_name] = 5
+            elif node_name in unpredicted:
+                sizes[node_name] = 6
+            else:
+                sizes[node_name] = 3
+        return sizes
+
+    @property
+    def node_shapes(self):
+        shapes = {}
+        predicted = self.graph.predicted_new_node_names
+        unpredicted = self.graph.unpredicted_new_node_names
+        for node_name, _ in self.graph.nodes:
+            if node_name in predicted:
+                shapes[node_name] = "s"
+            elif node_name in unpredicted:
+                shapes[node_name] = "^"
+            else:
+                shapes[node_name] = "o"
+        return shapes
+
+    @property
     def edge_colors(self):
         edge_colors = {}
         for directed_edge in self.graph.directed_edges:
@@ -92,6 +120,8 @@ class GraphCanvas(FigureCanvasQTAgg):
                                               node_color=self.node_colors,
                                               edge_color=self.edge_colors,
                                               node_edge_width=self.node_width,
+                                              node_shape=self.node_shapes,
+                                              node_size=self.node_sizes,
                                               edge_width=self.edge_width,
                                               node_layout=pos,
                                               ax=self.ax)

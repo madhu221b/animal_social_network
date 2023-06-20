@@ -50,6 +50,20 @@ class Graph(QObject):
         return self._selected_nodes
 
     @property
+    def unpredicted_new_node_names(self):
+        degrees = self.degrees
+        return [
+            node[0] for node in self.nodes if node[0].startswith('new') and degrees[node[0]] == 0
+        ]
+
+    @property
+    def predicted_new_node_names(self):
+        degrees = self.degrees
+        return [
+            node[0] for node in self.nodes if node[0].startswith('new') and degrees[node[0]] != 0
+        ]
+
+    @property
     def selected_directed_edges(self):
         return self._selected_directed_edges
 
