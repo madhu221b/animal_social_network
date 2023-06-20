@@ -2,20 +2,7 @@ import os
 import pickle
 from src.loaders.asnr_dataloader import ASNRGraph
 from src.models.train import train_model
-
-
-def load_pickle(file_name):
-    file = open(file_name, 'rb')
-    data = pickle.load(file)
-    file.close()
-    return data
-
-
-def dump_pkl(content, file_name):
-    file = open(file_name, 'wb')
-    pickle.dump(content, file)
-    file.close()
-
+from src.utils.common import dump_pkl
 
 def retrain_model(graph, animal):
     try: 
