@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os
 import logging
 import networkx as nx
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from .static import PageState
+from src.utils.common import load_pickle
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('graph')
@@ -29,8 +31,22 @@ class Graph(QObject):
 
     @classmethod
     def from_file(cls) -> Graph:
-        logger.info(f"Reading graph {PageState.path}")
-        return cls(nx.read_graphml(PageState.path))
+        animal = PageState.id
+        graph_folder = f"results/graphs/{animal}"
+        graph_obj = None
+
+        if os.path.exists(graph_folder) and os.listdir(graph_folder):
+            ids = [int(_.split("_")[-1]) for _ in os.listdir(graph_folder)]
+            max_id = max(ids)
+            file_name = f"graph_{animal}_{max_id}"
+            file_path = os.path.join(graph_folder, file_name)
+            logger.info(f"Reading graph {file_path}")
+            graph_obj = cls(load_pickle(file_path))
+        else:
+           logger.info(f"Reading graph {PageState.path}")
+           graph_obj =  cls(nx.read_graphml(PageState.path))
+            
+        return graph_obj
 
     # =====================================================
     # Available features, metrics about the graph
