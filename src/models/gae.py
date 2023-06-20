@@ -20,24 +20,31 @@ import logging
 import json
 from src.utils.gae_utils import get_roc_score
 
+
 def loss_function(preds, labels, mu, logvar, n_nodes, norm, pos_weight):
-    cost = norm * F.binary_cross_entropy_with_logits(preds, labels, pos_weight=pos_weight)
+    cost = norm * F.binary_cross_entropy_with_logits(
+        preds, labels, pos_weight=pos_weight
+    )
 
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    logvar = torch.nn.functional.normalize(logvar,dim=1)
-    KLD = -0.5 / n_nodes * torch.mean(torch.sum(
-        1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))
+    logvar = torch.nn.functional.normalize(logvar, dim=1)
+    KLD = (
+        -0.5
+        / n_nodes
+        * torch.mean(torch.sum(1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))
+    )
     return cost + KLD
+
 
 class GraphConvolution(Module):
     """
     Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
     """
 
-    def __init__(self, in_features, out_features, dropout=0., act=F.relu):
+    def __init__(self, in_features, out_features, dropout=0.0, act=F.relu):
         super(GraphConvolution, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -57,9 +64,14 @@ class GraphConvolution(Module):
         return output
 
     def __repr__(self):
-        return self.__class__.__name__ + ' (' \
-               + str(self.in_features) + ' -> ' \
-               + str(self.out_features) + ')'
+        return (
+            self.__class__.__name__
+            + " ("
+            + str(self.in_features)
+            + " -> "
+            + str(self.out_features)
+            + ")"
+        )
 
 
 class Encoder(nn.Module):
@@ -68,15 +80,16 @@ class Encoder(nn.Module):
         self.gc1 = GraphConvolution(input_feat_dim, hidden_dim1, dropout, act=F.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
-        
+
     def forward(self, x, adj):
         hidden1 = self.gc1(x, adj)
         mu, logvar = self.gc2(hidden1, adj), self.gc3(hidden1, adj)
         return mu, logvar
-    
-    def mu(self, x, adj):   
+
+    def mu(self, x, adj):
         mu = self.forward(x, adj)[0]
         return mu
+
 
 class Decoder(nn.Module):
     """Decoder for using inner product for prediction."""
@@ -90,6 +103,7 @@ class Decoder(nn.Module):
         z = F.dropout(z, self.dropout, training=self.training)
         adj = self.act(torch.mm(z, z.t()))
         return adj
+
 
 class GraphAutoEncoder(nn.Module):
     def __init__(
@@ -111,7 +125,6 @@ class GraphAutoEncoder(nn.Module):
         self.loss_f = loss_f
         self.checkpoints_files = []
         self.lr = None
-    
 
     def reparameterize(self, mu, logvar):
         """Samples from a normal distribution using the reparameterization trick.
@@ -125,13 +138,13 @@ class GraphAutoEncoder(nn.Module):
             latent_dim)
         """
         if self.training:
-            logvar = torch.nn.functional.normalize(logvar,dim=1)
+            logvar = torch.nn.functional.normalize(logvar, dim=1)
             std = torch.exp(logvar)
             eps = torch.randn_like(std)
             return eps.mul(std).add_(mu)
         else:
             return mu
-    
+
     def forward(self, x, adj):
         """Forward pass of model.
 
@@ -155,22 +168,29 @@ class GraphAutoEncoder(nn.Module):
         norm,
         pos_weight,
         optimizer: torch.optim.Optimizer,
-        scheduler
-       ) -> np.ndarray:
-
-        train_loader_feats.to(device)
-        train_loader_adj_norm.to(device)
+        scheduler,
+    ) -> np.ndarray:
+        train_loader_feats = train_loader_feats.to(device)
+        train_loader_adj_norm = train_loader_adj_norm.to(device)
+        adj_label = adj_label.to(device)
+        pos_weight = pos_weight.to(device)
         self.train()
         optimizer.zero_grad()
-        recovered, mu, logvar = self.forward(train_loader_feats,train_loader_adj_norm)
-        loss = loss_function(preds=recovered, labels=adj_label,
-                             mu=mu, logvar=logvar, n_nodes=n_nodes,
-                             norm=norm, pos_weight=pos_weight)
+        recovered, mu, logvar = self.forward(train_loader_feats, train_loader_adj_norm)
+        loss = loss_function(
+            preds=recovered,
+            labels=adj_label,
+            mu=mu,
+            logvar=logvar,
+            n_nodes=n_nodes,
+            norm=norm,
+            pos_weight=pos_weight,
+        )
         loss.backward()
         cur_loss = loss.item()
         optimizer.step()
         # scheduler.step(loss)
-        hidden_emb = mu.data.numpy()
+        hidden_emb = mu.data.cpu().numpy()
         return hidden_emb, cur_loss
 
     def fit(
@@ -196,25 +216,45 @@ class GraphAutoEncoder(nn.Module):
         self.to(device)
         self.lr = 0.01
         optimizer = optim.Adam(self.parameters(), lr=self.lr)
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, 
-                                                        patience=10, threshold=0.0001, threshold_mode='abs')
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="min",
+            factor=0.1,
+            patience=10,
+            threshold=0.0001,
+            threshold_mode="abs",
+        )
         waiting_epoch = 0
         for epoch in range(n_epoch):
-            hidden_emb, train_loss = self.train_epoch(device, train_loader_feats, train_loader_adj_norm, 
-                      adj_label, n_nodes, norm, pos_weight,
-                      optimizer, scheduler)
-            roc_curr, ap_curr = get_roc_score(hidden_emb, adj_orig, val_edges, val_edges_false)     
-    
-            print("Epoch:", '%04d' % (epoch + 1), "train_loss=", "{:.5f}".format(train_loss),
-              "val_ap=", "{:.5f}".format(ap_curr))
-            
+            hidden_emb, train_loss = self.train_epoch(
+                device,
+                train_loader_feats,
+                train_loader_adj_norm,
+                adj_label,
+                n_nodes,
+                norm,
+                pos_weight,
+                optimizer,
+                scheduler,
+            )
+            roc_curr, ap_curr = get_roc_score(
+                hidden_emb, adj_orig, val_edges, val_edges_false
+            )
+
+            print(
+                "Epoch:",
+                "%04d" % (epoch + 1),
+                "train_loss=",
+                "{:.5f}".format(train_loss),
+                "val_ap=",
+                "{:.5f}".format(ap_curr),
+            )
+
             if checkpoint_interval > 0 and epoch % checkpoint_interval == 0:
                 n_checkpoint = 1 + epoch // checkpoint_interval
                 print(f"Saving checkpoint {n_checkpoint} in {save_dir}")
-                file = f"{save_dir}/{self.name}_{animal}_checkpoint{n_checkpoint}.pt" 
-                path_to_checkpoint = (
-                   file
-                )
+                file = f"{save_dir}/{self.name}_{animal}_checkpoint{n_checkpoint}.pt"
+                path_to_checkpoint = file
                 torch.save(self.state_dict(), path_to_checkpoint)
                 self.checkpoints_files.append(path_to_checkpoint)
             if waiting_epoch == patience:
@@ -225,10 +265,11 @@ class GraphAutoEncoder(nn.Module):
         self.save(save_dir, animal)
         self.to(device)
 
-        roc_score, ap_score = get_roc_score(hidden_emb, adj_orig, test_edges, test_edges_false)
-        print(f'Test ROC score: {str(roc_score)}')
-        print(f'Test AP score: {str(ap_score)}')
-
+        roc_score, ap_score = get_roc_score(
+            hidden_emb, adj_orig, test_edges, test_edges_false
+        )
+        print(f"Test ROC score: {str(roc_score)}")
+        print(f"Test AP score: {str(ap_score)}")
 
     def save(self, directory, animal) -> None:
         """Save a model and corresponding metadata.
@@ -242,4 +283,3 @@ class GraphAutoEncoder(nn.Module):
         file_name = "{}_{}.pt".format(model_name, animal)
         path_to_model = os.path.join(directory, file_name)
         torch.save(self.state_dict(), path_to_model)
-
