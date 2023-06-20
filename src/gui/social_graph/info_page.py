@@ -2,8 +2,6 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWi
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 
-from src.utils.common import swap_dict_keys
-
 
 class InfoPage(QWidget):
 

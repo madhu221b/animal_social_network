@@ -15,7 +15,7 @@ from src.models.inference import get_pred_edges
 from src.graph import Graph
 from src.utils.common import seed_everything
 
-SHADES = plt.get_cmap("Pastel1")
+SHADES =  plt.get_cmap("Pastel1")
 
 
 class GraphCanvas(FigureCanvasQTAgg):
@@ -82,7 +82,8 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla()  # Clears the existing plot
 
         seed_everything(42)
-        pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()))
+        print("comes here")
+        pos = nx.spring_layout(self.graph.graph, k=math.sqrt(12 / self.graph.graph.order()))
 
         if hasattr(self, 'plot_instance'):
             for key, value in pos.items():

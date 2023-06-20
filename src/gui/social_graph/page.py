@@ -8,6 +8,7 @@ matplotlib.use("Qt5Agg")
 from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
 from .info_page import InfoPage
+from .color_bar import ColorBar
 from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon
 
 
@@ -30,18 +31,20 @@ class GraphPage(QWidget):
         mainlayout = QVBoxLayout()
         hlayout = QHBoxLayout()
         # Sub-pages definition
-        self.graph_page = GraphCanvas(parent, width=5, height=4, dpi=100)
+        self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.top_page = InfoPage(self.graph_page.graph.graph)
-
+        self.color_bar = ColorBar(self.graph_page.graph.graph)
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)
         hlayout.addWidget(self.graph_page)
         hlayout.addWidget(self.right_page)
      
         mainlayout.addWidget(self.top_page)
+        mainlayout.addWidget(self.color_bar)
         mainlayout.addLayout(hlayout)
+        
         self.setLayout(mainlayout)
 
     def _create_tool_bar(self):
