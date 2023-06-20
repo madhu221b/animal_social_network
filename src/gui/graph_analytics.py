@@ -1,5 +1,7 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+import networkx as nx
+import numpy as np
 
 from collections import Counter
 import matplotlib
@@ -24,23 +26,41 @@ class GraphAnalytics(QWidget):
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
 
-        # Add GraphAnalytics canvas
-        graph_canvas = self.sampleplot()#GraphCanvas(self)
-        main_layout.addWidget(graph_canvas)
+        # # Add GraphAnalytics canvas
+        # graph_canvas = self.sampleplot()#GraphCanvas(self)
+        # main_layout.addWidget(graph_canvas)
 
         # Add attribute distribution plot
         attribute_distribution_plot = self.attribute_distribution_plot()
         main_layout.addWidget(attribute_distribution_plot)
 
-        # Add adjacency matrix label
-        adj_matrix_label = QLabel("Adjacency Matrix", self)
-        main_layout.addWidget(adj_matrix_label)
+        # Add adjacency matrix plot
+        adj_matrix_plot = self.adjacency_matrix()
+        main_layout.addWidget(adj_matrix_plot)
 
     def sampleplot(self):
         fig = Figure(figsize=(5, 4), dpi=100)
         ax = fig.add_subplot(111)
         ax.set_title('title')
         ax.plot([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
+
+        return FigureCanvasQTAgg(fig)
+    
+    def adjacency_matrix(self):
+        fig = Figure(figsize=(3,3), dpi=100)
+        graph = self.parent.graph_page.graph_page.graph.graph
+        adj_matrix = nx.adjacency_matrix(graph)
+        ax = fig.add_subplot(111)
+        ax.set_title('Adjacency Matrix')
+        im = ax.matshow(adj_matrix.todense())
+        nodes = list(graph.nodes)
+        ax.set_xticks(np.arange(len(nodes)))
+        ax.set_yticks(np.arange(len(nodes)))
+        ax.set_xticklabels(nodes)
+        ax.set_yticklabels(nodes)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
+
+        fig.colorbar(im, ax=ax, label="Interaction Count")
 
         return FigureCanvasQTAgg(fig)
 
