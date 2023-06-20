@@ -98,14 +98,15 @@ class GraphAnalytics(QWidget):
 
         ax = fig.add_subplot(111)
         ax.set_title('Binary Adjacency Matrix')
-        im = ax.matshow(bi_adj_matrix.todense())
+        im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
         ax.set_yticks(np.arange(len(nodes)))
         ax.set_xticklabels(nodes)
         ax.set_yticklabels(nodes)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
-        fig.colorbar(im, ax=ax, label="Edge Existence")
+
+        fig.colorbar(im, ax=ax, label="Edge Existence", cmap='binary', ticks=[0, 1])
 
         # ax = fig.add_subplot(122)
         # ax.set_title('Adjacency Matrix')
