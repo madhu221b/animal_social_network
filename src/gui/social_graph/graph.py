@@ -82,7 +82,6 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla()  # Clears the existing plot
 
         seed_everything(42)
-        print("comes here")
         pos = nx.spring_layout(self.graph.graph, k=math.sqrt(12 / self.graph.graph.order()))
 
         if hasattr(self, 'plot_instance'):
