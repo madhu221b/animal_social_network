@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget
 import networkx as nx
 import numpy as np
 
@@ -24,49 +24,106 @@ class GraphAnalytics(QWidget):
         self.setup_ui()
 
     def setup_ui(self):
-        main_layout = QVBoxLayout(self)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
 
-        # # Add GraphAnalytics canvas
-        # graph_canvas = self.sampleplot()#GraphCanvas(self)
-        # main_layout.addWidget(graph_canvas)
+        container_widget = QWidget()
+        container_layout = QHBoxLayout(container_widget)
 
+        # Create a vertical layout for the plots
+        plots_layout = QVBoxLayout()
+        
         # Add attribute distribution plot
         attribute_distribution_plot = self.attribute_distribution_plot()
-        main_layout.addWidget(attribute_distribution_plot)
+        plots_layout.addWidget(attribute_distribution_plot)
 
         # Add adjacency matrix plot
         adj_matrix_plot = self.adjacency_matrix()
-        main_layout.addWidget(adj_matrix_plot)
+        plots_layout.addWidget(adj_matrix_plot)
 
-    def sampleplot(self):
-        fig = Figure(figsize=(5, 4), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.set_title('title')
-        ax.plot([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
+        # Add the plots layout to the container layout
+        container_layout.addLayout(plots_layout)
 
-        return FigureCanvasQTAgg(fig)
-    
-    def adjacency_matrix(self):
-        fig = Figure(figsize=(3,3), dpi=100)
+        # Add graph analytics table
+        graph_analytics_table = self.graph_analytics_table()
+        container_layout.addWidget(graph_analytics_table)
+
+        scroll_area.setWidget(container_widget)
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(scroll_area)
+
+
+        # Add descriptive table
+    def graph_analytics_table(self):
         graph = self.parent.graph_page.graph_page.graph.graph
-        adj_matrix = nx.adjacency_matrix(graph)
+        n = graph.number_of_nodes()
+        graph_metrics = {
+            'Number of Nodes': graph.number_of_nodes(),
+            'Number of Edges': graph.number_of_edges(),
+            'Density': round(nx.density(graph), 3),
+            'Diameter': nx.diameter(graph),
+            'Average Degree': round(sum([d for _, d in graph.degree()]) / n,3),
+            'Average Clustering': round(nx.average_clustering(graph), 3),
+            'Average Shortest Path': round(nx.average_shortest_path_length(graph), 3),
+            'Average Betweenness Centrality': round(sum([b for _, b in nx.betweenness_centrality(graph).items()]) / n,3),
+            'Average Closeness Centrality': round(sum([c for _, c in nx.closeness_centrality(graph).items()]) / n,3),
+            'Average Eigenvector Centrality': round(sum([e for _, e in nx.eigenvector_centrality(graph).items()]) / n,3),
+            'Average PageRank': round(sum([p for _, p in nx.pagerank(graph).items()]) / n,3),
+            'Average Degree Centrality': round(sum([d for _, d in nx.degree_centrality(graph).items()]) / n,3)
+         }
+        table = QTableWidget()
+        table.setRowCount(len(graph_metrics))
+        table.setColumnCount(2)
+        table.setHorizontalHeaderLabels(['Metric', 'Value'])
+        # table.setVerticalHeaderLabels(graph_metrics.keys())
+        for i, (metric, value) in enumerate(graph_metrics.items()):
+            table.setItem(i, 0, QtWidgets.QTableWidgetItem(metric))
+            table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(value)))
+        table.resizeColumnsToContents()
+        table.resizeRowsToContents()
+
+        return table
+
+
+
+    
+    def update_ui(self):
+        self.setup_ui()
+
+    def adjacency_matrix(self):
+        fig = Figure(figsize=(6,5), dpi=100)
+        graph = self.parent.graph_page.graph_page.graph.graph
+        bi_adj_matrix = nx.adjacency_matrix(graph, weight=None)
+        # adj_matrix = nx.adjacency_matrix(graph, weight='weight')
+
         ax = fig.add_subplot(111)
-        ax.set_title('Adjacency Matrix')
-        im = ax.matshow(adj_matrix.todense())
+        ax.set_title('Binary Adjacency Matrix')
+        im = ax.matshow(bi_adj_matrix.todense())
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
         ax.set_yticks(np.arange(len(nodes)))
         ax.set_xticklabels(nodes)
         ax.set_yticklabels(nodes)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
+        fig.colorbar(im, ax=ax, label="Edge Existence")
 
-        fig.colorbar(im, ax=ax, label="Interaction Count")
+        # ax = fig.add_subplot(122)
+        # ax.set_title('Adjacency Matrix')
+        # im = ax.matshow(adj_matrix.todense())
+        # nodes = list(graph.nodes)
+        # ax.set_xticks(np.arange(len(nodes)))
+        # ax.set_yticks(np.arange(len(nodes)))
+        # ax.set_xticklabels(nodes)
+        # ax.set_yticklabels(nodes)
+        # plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
+        # fig.colorbar(im, ax=ax, label="Interaction Count")
+
 
         return FigureCanvasQTAgg(fig)
 
     def attribute_distribution_plot(self):
-        fig = Figure(figsize=(5, 4), dpi=100)
-        ax = fig.add_subplot(121)
+        fig = Figure(figsize=(6, 4), dpi=100)
+        ax = fig.add_subplot(111)
         ax.set_title('Attribute Distribution')
         node_features = self.parent.graph_page.graph_page.features
         attribute_names = sorted(set([key for _, value in node_features.items() for key, _ in value.items()]))
@@ -88,6 +145,6 @@ class GraphAnalytics(QWidget):
             ax.barh(attribute, count[0], label=values[0], color=shades(0))
             for i in range(1, len(values)):
                 ax.barh(attribute, count[i], left=sum(count[:i]), label=values[i], color=shades(i))
-                ax.legend(loc='upper right', ncol=len(values),bbox_to_anchor=(2, 1.05))
+                # ax.legend(loc='upper right', ncol=len(values),bbox_to_anchor=(2, 1.05))
         
         return FigureCanvasQTAgg(fig)
