@@ -35,14 +35,14 @@ class GraphPage(QWidget):
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.top_page = InfoPage(self.graph_page.graph.graph)
-        self.color_bar = ColorBar(self.graph_page.graph.graph, self.graph_page.ax, self.graph_page.figure)
+        # self.color_bar = ColorBar(self.graph_page.graph.graph, self.graph_page.ax, self.graph_page.figure)
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)
         hlayout.addWidget(self.graph_page)
         hlayout.addWidget(self.right_page)
      
         mainlayout.addWidget(self.top_page)
-        mainlayout.addWidget(self.color_bar)
+        # mainlayout.addWidget(self.color_bar)
         mainlayout.addLayout(hlayout)
         
         self.setLayout(mainlayout)
