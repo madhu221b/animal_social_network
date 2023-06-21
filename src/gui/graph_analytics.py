@@ -123,29 +123,48 @@ class GraphAnalytics(QWidget):
         return FigureCanvasQTAgg(fig)
 
     def attribute_distribution_plot(self):
-        fig = Figure(figsize=(6, 4), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.set_title('Attribute Distribution')
+        fig = Figure(figsize=(8, 5), dpi=100)
         node_features = self.parent.graph_page.graph_page.features
-        attribute_names = sorted(set([key for _, value in node_features.items() for key, _ in value.items()]))
-
-        attribute_counts = {}
-        for att in attribute_names:
-            attribute_counts[att] = []
-        
-        for features in node_features.values():
-            for att in attribute_names:
-                if att in features.keys():
-                    attribute_counts[att].append(features[att])
-
-        for attribute, counts in attribute_counts.items():
-            element_counts = Counter(counts)
+        attribute_labels = sorted(set([key for _, value in node_features.items() for key, _ in value.items()]), key=lambda x: x.lower())
+        n = len(attribute_labels)
+        fig.suptitle('Attribute Distribution')
+        fig.tight_layout(pad=3.0)
+        bars = []
+        for i in range(n):
+            ax = fig.add_subplot(n, 1, i+1)
+            attribute = attribute_labels[i]
+            attribute_values = [features[attribute] for features in node_features.values() if attribute in features.keys()]
+            element_counts = Counter(attribute_values)
             values = list(element_counts.keys())
             count = list(element_counts.values())
+ 
+            for i in range(len(values)):
+                bar = ax.barh(attribute, count[i], left=sum(count[:i]), label=values[i], color=shades(i))
+                bars.extend(bar)
+            ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
-            ax.barh(attribute, count[0], label=values[0], color=shades(0))
-            for i in range(1, len(values)):
-                ax.barh(attribute, count[i], left=sum(count[:i]), label=values[i], color=shades(i))
-                # ax.legend(loc='upper right', ncol=len(values),bbox_to_anchor=(2, 1.05))
+            # for bar in bars:
+            #     bar.set_picker(True)
+            
         
+        def onclick(event):
+            ax_save = None
+            for bar in bars:
+                if bar.contains(event)[0]:
+                    ax = bar.axes
+                    ax.legend(bbox_to_anchor=(1, 1), loc='best', borderaxespad=0.1)
+                    fig.canvas.draw_idle()
+                    ax_save = ax
+                    break
+
+            # This seems like a round-about way, but is necessary since mulitple bars are part of the same axes
+            for bar in bars:
+                ax = bar.axes
+                if ax != ax_save:
+                    ax.legend().remove()
+                    fig.canvas.draw_idle()
+            
+
+        fig.canvas.mpl_connect("button_press_event", onclick)
+
         return FigureCanvasQTAgg(fig)
