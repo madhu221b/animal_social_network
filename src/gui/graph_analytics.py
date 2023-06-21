@@ -2,6 +2,7 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget
 import networkx as nx
 import numpy as np
+from ..utils.analytics_utils import get_correlations_att_edge
 
 from collections import Counter
 import matplotlib
@@ -51,6 +52,10 @@ class GraphAnalytics(QWidget):
         adj_matrix_plot = self.adjacency_matrix()
         plots_layout.addWidget(adj_matrix_plot)
 
+        # Add heatmap
+        heatmap_plot = self.heatmap()
+        plots_layout.addWidget(heatmap_plot)
+
         # Add the plots layout to the container layout
         container_layout.addLayout(plots_layout)
 
@@ -63,7 +68,13 @@ class GraphAnalytics(QWidget):
         main_layout.addWidget(scroll_area)
 
 
-        # Add descriptive table
+    
+    
+    def heatmap(self):
+        graph = self.parent.graph_page.graph_page.graph.graph
+        node_features = self.parent.graph_page.graph_page.features
+        correlations = get_correlations_att_edge(graph, node_features)
+    
     def graph_analytics_table(self):
         graph = self.parent.graph_page.graph_page.graph.graph
         n = graph.number_of_nodes()
