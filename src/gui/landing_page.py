@@ -1,7 +1,7 @@
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QScreen
 from .main_window import MainWindow
-from ..static import IDS, LANDING_PAGE_TITLE, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT, PageState
+from ..static import IDS, LANDING_PAGE_TITLE, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT, PageState, versions
 
 
 class DropDownListBox(QtWidgets.QComboBox):
@@ -40,7 +40,7 @@ class LandingPage(QtWidgets.QWidget):
 
     def _center_window(self):
         """Center the window on the screen"""
-        
+
         screen_geometry = QtWidgets.QApplication.primaryScreen().geometry()
         x = (screen_geometry.width() - LANDING_PAGE_WIDTH) // 2
         y = (screen_geometry.height() - LANDING_PAGE_HEIGHT) // 2
@@ -49,6 +49,7 @@ class LandingPage(QtWidgets.QWidget):
     def _create_dropdown_list(self):
         """Create a clickable dropdown list to this window"""
         dropdown_list = DropDownListBox(self)
+        dropdown_list_version = DropDownListBox(self)
 
         # Define all choices the users can choose from
         dropdown_list.addItems(IDS)
@@ -56,7 +57,26 @@ class LandingPage(QtWidgets.QWidget):
 
         # Add widget to the layout
         self.layout.addWidget(dropdown_list)
+        self.layout.addWidget(dropdown_list_version)
         self.dropdown_list = dropdown_list
+        self.dropdown_list_version = dropdown_list_version
+
+        # Signal slot connection
+        dropdown_list.currentIndexChanged.connect(self._update_version_dropdown)
+
+        # Trigger the update manually for the first time
+        self._update_version_dropdown(0)
+
+    def _update_version_dropdown(self, index):
+        """Update the version dropdown based on the selected item in the first dropdown"""
+        selected_animal = self.dropdown_list.itemText(index)
+        self.dropdown_list_version.clear()
+        self.dropdown_list_version.addItems(versions[selected_animal])
+
+        if not len(versions[selected_animal]) == 1:
+            self.dropdown_list_version.setEnabled(True)
+        else:
+            self.dropdown_list_version.setDisabled(True)
 
     def _create_select_button(self):
         """Create a select button to this window"""
@@ -80,8 +100,9 @@ class LandingPage(QtWidgets.QWidget):
         and open the desired dashboard
         """
 
-        # Select item
+        # Select item and version
         page_id = self.dropdown_list.currentText()
+        page_version = self.dropdown_list_version.currentText()
 
         # In case we already opened, close the previous one
         if hasattr(self, "main_window"):
@@ -91,6 +112,7 @@ class LandingPage(QtWidgets.QWidget):
 
         # Create new window and hide this one
         PageState.select_id(page_id)
+        PageState.select_version(page_version, is_next_version=False)
         self.main_window = MainWindow()
         self.main_window.show()
         self.hide()

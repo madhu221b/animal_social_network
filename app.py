@@ -3,6 +3,8 @@ import argparse
 import numpy as np
 import warnings
 
+from src.utils.common import seed_everything
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -14,6 +16,8 @@ parser.add_argument('--debug', action='store_true')
 
 if __name__ == '__main__':
 
+    seed_everything(42)
+
     # Set up default window
     app = QtWidgets.QApplication(sys.argv)
     window = LandingPage()
@@ -23,7 +27,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.debug:
         window._simulate_select_first_item()
-        # window.main_window.graph_page._add_action()
         # Add any simulated actions here that speeds up your tests
 
     sys.exit(app.exec())
