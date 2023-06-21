@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import pickle
 
+
 def swap_dict_keys(dict_sample):
     d = {}
     # for each key and sub-dict in the main dict
@@ -23,15 +24,3 @@ def seed_everything(seed: int):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
-
-def load_pickle(file_name):
-    file = open(file_name, 'rb')
-    data = pickle.load(file)
-    file.close()
-    return data
-
-
-def dump_pkl(content, file_name):
-    file = open(file_name, 'wb')
-    pickle.dump(content, file)
-    file.close()

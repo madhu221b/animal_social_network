@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import os
 import logging
+import pickle
 import networkx as nx
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from .static import PageState
-from src.utils.common import load_pickle
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('graph')
@@ -28,25 +28,36 @@ class Graph(QObject):
         self.clean_empty_nodes()
         self._selected_nodes = []
         self._selected_directed_edges = []
+        self.fresh_nodes = []
+        self.node_layout = None
 
     @classmethod
-    def from_file(cls) -> Graph:
-        animal = PageState.id
-        graph_folder = f"results/graphs/{animal}"
-        graph_obj = None
-
-        if os.path.exists(graph_folder) and os.listdir(graph_folder):
-            ids = [int(_.split("_")[-1]) for _ in os.listdir(graph_folder)]
-            max_id = max(ids)
-            file_name = f"graph_{animal}_{max_id}"
-            file_path = os.path.join(graph_folder, file_name)
-            logger.info(f"Reading graph {file_path}")
-            graph_obj = cls(load_pickle(file_path))
-        else:
-           logger.info(f"Reading graph {PageState.path}")
-           graph_obj =  cls(nx.read_graphml(PageState.path))
-            
+    def from_graphml(cls, filepath) -> Graph:
+        logger.info(f"Reading graph {filepath}")
+        graph_obj = cls(nx.read_graphml(filepath))
         return graph_obj
+
+    @classmethod
+    def from_state_dict(cls, state_dict) -> Graph:
+        logger.info(f"Reading graph state_dict")
+        graph_obj = cls(state_dict.pop('graph'))
+        for key, value in state_dict.items():
+            setattr(graph_obj, key, value)
+        return graph_obj
+
+    @classmethod
+    def from_pkl(cls, filepath) -> Graph:
+        logger.info(f"Reading graph {filepath}")
+        with open(filepath, "rb") as f:
+            state_dict = pickle.load(f)
+        return cls.from_state_dict(state_dict)
+
+    @classmethod
+    def from_page_info(cls) -> Graph:
+        if PageState.version.lower() == "default":
+            return cls.from_graphml(PageState.graph_path)
+        else:
+            return cls.from_pkl(PageState.version_path)
 
     # =====================================================
     # Available features, metrics about the graph
@@ -64,6 +75,16 @@ class Graph(QObject):
     @property
     def selected_nodes(self):
         return self._selected_nodes
+
+    @property
+    def unpredicted_new_node_names(self):
+        degrees = self.degrees
+        return [node for node in self.fresh_nodes if degrees[node] == 0]
+
+    @property
+    def predicted_new_node_names(self):
+        degrees = self.degrees
+        return [node for node in self.fresh_nodes if degrees[node] != 0]
 
     @property
     def selected_directed_edges(self):
@@ -114,7 +135,8 @@ class Graph(QObject):
     @property
     def hanging_nodes(self):
         degrees = self.degrees
-        return {node: data for (node, data) in self.nodes if degrees[node] == 0}
+        nodes = self.nodes
+        return {nodes[node_name] for node_name in self.fresh_nodes if degrees[node_name] == 0}
 
     @property
     def predictable(self):
@@ -124,6 +146,10 @@ class Graph(QObject):
     @property
     def selected_undirected_edges(self):
         return [set([edge[0], edge[1]]) for edge in self.selected_directed_edges]
+
+    @property
+    def state_dict(self):
+        return {"graph": self.graph, "node_layout": self.node_layout}
 
     # =====================================================
     # Add / remove nodes
@@ -135,6 +161,7 @@ class Graph(QObject):
         self.graph.add_nodes_from(nodes)
         # Note: append would not work here, because we need to trigger .setter
         self.selected_nodes = self._selected_nodes + [name for name, _ in nodes]
+        self.fresh_nodes.extend([name for name, _ in nodes])
         logger.info(f"New nodes. Selected nodes are {self.selected_nodes}")
 
     def add_edges(self, edges):
@@ -154,6 +181,7 @@ class Graph(QObject):
         if nodes is None or nodes[0] is None:
             nodes = self.selected_nodes
         self.graph.remove_nodes_from(nodes)
+        self.fresh_nodes = [n for n in self.fresh_nodes if n not in nodes]
         new_selection = [x for x in self.selected_nodes if x not in nodes]
         self.selected_nodes = new_selection
 
@@ -225,3 +253,11 @@ class Graph(QObject):
                 remove_arr.append(node)
         [self.graph.remove_node(node) for node in remove_arr]
         return self.graph
+
+    def reset(self):
+        self.deselect()
+        self.clean_empty_nodes()
+        self.selected_nodes = []
+        self.selected_directed_edges = []
+        self.fresh_nodes = []
+        # Note: layout stays

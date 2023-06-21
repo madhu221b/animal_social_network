@@ -28,24 +28,31 @@ class GraphPage(QWidget):
         self._create_tool_bar()
 
         # Page
-        mainlayout = QVBoxLayout()
+        main_layout = QVBoxLayout()
         hlayout = QHBoxLayout()
+        content_layout = QVBoxLayout()
+
         # Sub-pages definition
         self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.top_page = InfoPage(self.graph_page.graph.graph)
-        # self.color_bar = ColorBar(self.graph_page.graph.graph, self.graph_page.ax, self.graph_page.figure)
+        self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
+
+        # Add content
+        content_layout.addWidget(self.graph_page, 8)
+        content_layout.addWidget(self.color_bar, 2)
+
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)
-        hlayout.addWidget(self.graph_page)
+        hlayout.addLayout(content_layout)
         hlayout.addWidget(self.right_page)
-     
-        mainlayout.addWidget(self.top_page)
-        # mainlayout.addWidget(self.color_bar)
-        mainlayout.addLayout(hlayout)
-        
-        self.setLayout(mainlayout)
+
+        main_layout.addWidget(self.top_page)
+        main_layout.addLayout(hlayout)
+        main_layout.addWidget(self.color_bar)
+
+        self.setLayout(main_layout)
 
     def _create_tool_bar(self):
 

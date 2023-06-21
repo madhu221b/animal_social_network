@@ -1,4 +1,5 @@
 import os
+import glob
 
 # ==================================================
 # Constants
@@ -12,6 +13,7 @@ MAIN_WINDOW_HEIGHT = 600
 MAIN_WINDOW_WIDTH = 1000
 
 DATA_ROOT = "./datasets"
+GRAPH_VERSION_FOLDER = "./results/graphs/"
 
 GRAPH_DATA = {
     "bat": {
@@ -26,7 +28,17 @@ GRAPH_DATA = {
     }
 }
 
-IDS = set(GRAPH_DATA.keys())
+IDS = list(GRAPH_DATA.keys())
+
+# Generated version table
+versions = {}
+for animal in GRAPH_DATA.keys():
+    animal_folder = os.path.join(GRAPH_VERSION_FOLDER, animal)
+    versions[animal] = ["default"]
+    if os.path.isdir(animal_folder):
+        filenames = [x for x in os.listdir(animal_folder) if x.endswith(".pkl")]
+        filenames.sort()
+        versions[animal].extend([x[:-4] for x in filenames])  # removing .pkl
 
 # ==================================================
 # Variables
@@ -47,5 +59,10 @@ class PageState:
     @staticmethod
     def select_id(id):
         PageState.id = id
-        PageState.path = GRAPH_DATA[id]["path"]
+        PageState.graph_path = GRAPH_DATA[id]["path"]
         PageState.title = GRAPH_DATA[id]["title"]
+
+    @staticmethod
+    def select_version(version):
+        PageState.version = version
+        PageState.version_path = os.path.join(GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl")
