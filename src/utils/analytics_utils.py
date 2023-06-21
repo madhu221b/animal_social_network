@@ -37,9 +37,9 @@ def get_correlations_att_edge(graph, features):
         attributes2 = string_attributes[n2]
         for k in attributes1.keys():
             if attributes1[k] == attributes2[k]:
-                ivs[k].append(1.)
+                ivs[k].append(1)
             else:
-                ivs[k].append(0.)
+                ivs[k].append(-1)
         
         attributes1 = number_attributes[n1] 
         attributes2 = number_attributes[n2] 

@@ -52,9 +52,9 @@ class GraphAnalytics(QWidget):
         adj_matrix_plot = self.adjacency_matrix()
         plots_layout.addWidget(adj_matrix_plot)
 
-        # Add heatmap
-        heatmap_plot = self.heatmap()
-        plots_layout.addWidget(heatmap_plot)
+        # # Add heatmap TODO
+        # heatmap_plot = self.heatmap()
+        # plots_layout.addWidget(heatmap_plot)
 
         # Add the plots layout to the container layout
         container_layout.addLayout(plots_layout)
@@ -195,7 +195,7 @@ class GraphAnalytics(QWidget):
             for bar in bars:
                 if bar.contains(event)[0]:
                     ax = bar.axes
-                    ax.legend(bbox_to_anchor=(1, 1), loc='best', borderaxespad=0.1)
+                    ax.legend(bbox_to_anchor=(0.8, 0.7), loc='best')
                     fig.canvas.draw_idle()
                     ax_save = ax
                     break
