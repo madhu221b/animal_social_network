@@ -26,6 +26,7 @@ class Graph(QObject):
         self.clean_empty_nodes()
         self._selected_nodes = []
         self._selected_directed_edges = []
+        self.fresh_nodes = []
 
     @classmethod
     def from_file(cls) -> Graph:
@@ -52,16 +53,12 @@ class Graph(QObject):
     @property
     def unpredicted_new_node_names(self):
         degrees = self.degrees
-        return [
-            node[0] for node in self.nodes if node[0].startswith('new') and degrees[node[0]] == 0
-        ]
+        return [node for node in self.fresh_nodes if degrees[node] == 0]
 
     @property
     def predicted_new_node_names(self):
         degrees = self.degrees
-        return [
-            node[0] for node in self.nodes if node[0].startswith('new') and degrees[node[0]] != 0
-        ]
+        return [node for node in self.fresh_nodes if degrees[node] != 0]
 
     @property
     def selected_directed_edges(self):
@@ -112,7 +109,8 @@ class Graph(QObject):
     @property
     def hanging_nodes(self):
         degrees = self.degrees
-        return {node: data for (node, data) in self.nodes if degrees[node] == 0}
+        nodes = self.nodes
+        return {nodes[node_name] for node_name in self.fresh_nodes if degrees[node_name] == 0}
 
     @property
     def predictable(self):
@@ -133,6 +131,7 @@ class Graph(QObject):
         self.graph.add_nodes_from(nodes)
         # Note: append would not work here, because we need to trigger .setter
         self.selected_nodes = self._selected_nodes + [name for name, _ in nodes]
+        self.fresh_nodes.extend([name for name, _ in nodes])
         logger.info(f"New nodes. Selected nodes are {self.selected_nodes}")
 
     def add_edges(self, edges):
@@ -152,6 +151,7 @@ class Graph(QObject):
         if nodes is None or nodes[0] is None:
             nodes = self.selected_nodes
         self.graph.remove_nodes_from(nodes)
+        self.fresh_nodes = [n for n in self.fresh_nodes if n not in nodes]
         new_selection = [x for x in self.selected_nodes if x not in nodes]
         self.selected_nodes = new_selection
 
