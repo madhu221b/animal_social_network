@@ -49,6 +49,7 @@ class NodeInfoPage(QWidget):
         table.verticalHeader().hide()
         table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
         # Populate the table with titles and dummy values
         columns = columns if columns is not None else list(data.keys())
@@ -86,4 +87,5 @@ class NodeInfoPage(QWidget):
             else:
                  value = data.get(key_item.text(), "")
             value = f"{value:.2f}" if isinstance(value, float) else value
-            table.setItem(row, 1, QTableWidgetItem(str(value)))
+            item = QTableWidgetItem(str(value))
+            table.setItem(row, 1, item)

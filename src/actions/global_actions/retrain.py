@@ -36,5 +36,4 @@ class Retrain(GlobalAction):
         self.graph_gui.graph.reset()
         ActionStack.reset()
         logger.info("Graph set as default, starting position.")
-
         self.graph_gui.refresh()
