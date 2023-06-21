@@ -30,7 +30,8 @@ class Retrain(GlobalAction):
         os.makedirs(graph_folder, exist_ok=True)
         version_id = f"v{len(os.listdir(graph_folder))}"
         versions[PageState.id].append(version_id)
-        PageState.select_version(version_id)
+        PageState.select_version(version_id, is_next_version=True)
+        print("previous version: ", PageState.curr_version)
 
         # Refresh on page
         self.graph_gui.graph.reset()

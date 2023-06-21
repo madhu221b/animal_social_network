@@ -50,6 +50,8 @@ class Graph(QObject):
         logger.info(f"Reading graph {filepath}")
         with open(filepath, "rb") as f:
             state_dict = pickle.load(f)
+            # graph_dict = pickle.load(f)
+            # state_dict = graph_dict["graph"]
         return cls.from_state_dict(state_dict)
 
     @classmethod
@@ -149,7 +151,7 @@ class Graph(QObject):
 
     @property
     def state_dict(self):
-        return {"graph": self.graph, "node_layout": self.node_layout}
+        return {"graph": self.graph, "node_layout": self.node_layout, "prev":PageState.curr_version}
 
     # =====================================================
     # Add / remove nodes

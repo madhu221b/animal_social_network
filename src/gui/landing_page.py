@@ -112,7 +112,7 @@ class LandingPage(QtWidgets.QWidget):
 
         # Create new window and hide this one
         PageState.select_id(page_id)
-        PageState.select_version(page_version)
+        PageState.select_version(page_version, is_next_version=False)
         self.main_window = MainWindow()
         self.main_window.show()
         self.hide()
