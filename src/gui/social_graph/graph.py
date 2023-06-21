@@ -27,9 +27,8 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.parent = parent
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-        self.node_layout = "spring"
 
-        self.graph = Graph.from_file()
+        self.graph = Graph.from_page_info()
         self.mpl_connect('button_release_event', self.onclick)
         self.mpl_connect('motion_notify_event', self.on_hover)
         self.refresh()
@@ -109,9 +108,9 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla()  # Clears the existing plot
         pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()))
 
-        if hasattr(self, 'plot_instance'):
+        if self.graph.node_layout is not None:
             for key, value in pos.items():
-                pos[key] = self.node_layout[key] if key in self.node_layout else value
+                pos[key] = self.graph.node_layout[key] if key in self.graph.node_layout else value
 
         self.plot_instance = InteractiveGraph(self.graph.graph,
                                               node_color=self.node_colors,
@@ -122,7 +121,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                                               edge_width=self.edge_width,
                                               node_layout=pos,
                                               ax=self.ax)
-        self.node_layout = deepcopy(self.plot_instance.node_positions)
+        self.graph.node_layout = deepcopy(self.plot_instance.node_positions)
 
     def add_nodes(self, new_nodes, refresh=True):
         self.graph.add_nodes(new_nodes)
@@ -166,6 +165,7 @@ class GraphCanvas(FigureCanvasQTAgg):
         for node in nodes:
             pred_edges.extend(get_pred_edges(self.graph, self.parent.id, node))
         self.graph.add_edges(pred_edges)
+
         if refresh:
             self.parent.graph_page.refresh()
 
@@ -183,7 +183,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 self.parent.graph_page.graph_page.graph.toggle_status_of_node(node_name)
                 self.parent.graph_page.refresh()
             elif is_hovering and was_dragged:
-                self.node_layout[node_name] = self.plot_instance.node_positions[node_name]
+                self.graph.node_layout[node_name] = self.plot_instance.node_positions[node_name]
             else:
                 self.graph.deselect()
                 self.parent.graph_page.refresh()
@@ -218,8 +218,9 @@ class GraphCanvas(FigureCanvasQTAgg):
 
         hovering = distance < closest_node.radius
         was_dragged = False
-        if hovering and hasattr(self, "plot_instance") and not isinstance(self.node_layout, str):
-            was = tuple(self.node_layout[closest_node_name])
+        if hovering and hasattr(self,
+                                "plot_instance") and not isinstance(self.graph.node_layout, str):
+            was = tuple(self.graph.node_layout[closest_node_name])
             now = tuple(self.plot_instance.node_positions[closest_node_name])
             was_dragged = not was == now
 

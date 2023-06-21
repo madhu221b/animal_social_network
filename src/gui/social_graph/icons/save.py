@@ -1,5 +1,6 @@
 from src.gui.social_graph.icons.action import IconAction
-
+from src.actions.stack import perform_global_action
+from src.actions.global_actions import Retrain, Save
 from src.actions.stack import ActionStack
 
 
@@ -20,5 +21,5 @@ class SaveIcon(IconAction):
 
     def onclick(self):
         if self.enabled:
-            # TODO
-            raise NotImplementedError
+            perform_global_action(Retrain)(graph_gui=self.parent.graph_page)
+            perform_global_action(Save)(graph=self.parent.graph_page.graph)
