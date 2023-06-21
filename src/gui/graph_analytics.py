@@ -125,7 +125,8 @@ class GraphAnalytics(QWidget):
     def attribute_distribution_plot(self):
         fig = Figure(figsize=(8, 5), dpi=100)
         node_features = self.parent.graph_page.graph_page.features
-        attribute_labels = sorted(set([key for _, value in node_features.items() for key, _ in value.items()]), key=lambda x: x.lower())
+        attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
+        # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
         n = len(attribute_labels)
         fig.suptitle('Attribute Distribution')
         fig.tight_layout(pad=3.0)
