@@ -27,7 +27,8 @@ class GraphCanvas(FigureCanvasQTAgg):
         super(GraphCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
         self.parent = parent
         self.setParent(parent)
-        self.ax = self.figure.add_subplot(111)
+        # self.ax = self.figure.add_subplot(111)
+        self.ax = self.figure.add_subplot(221)
         self.node_layout = "spring"
 
         self.graph = Graph.from_file()
