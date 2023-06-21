@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 shades = plt.get_cmap('Pastel1')
 
-matplotlib.use("Qt5Agg")
+matplotlib.use("QtAgg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -33,9 +33,19 @@ class GraphAnalytics(QWidget):
         # Create a vertical layout for the plots
         plots_layout = QVBoxLayout()
         
-        # Add attribute distribution plot
-        attribute_distribution_plot = self.attribute_distribution_plot()
-        plots_layout.addWidget(attribute_distribution_plot)
+        node_features = self.parent.graph_page.graph_page.features
+        disc_attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
+        cont_attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==float and int(v)!=v], key=lambda x: x.lower())
+
+        # Add discrete attribute distribution plot
+        if len(disc_attribute_labels) > 0:
+            attribute_distribution_plot = self.attribute_distribution_plot()
+            plots_layout.addWidget(attribute_distribution_plot)
+
+        # Add attribute distribution plot continuous variables
+        if len(cont_attribute_labels) > 0:
+            attribute_distribution_cont = self.attribute_distribution_cont()
+            plots_layout.addWidget(attribute_distribution_cont)
 
         # Add adjacency matrix plot
         adj_matrix_plot = self.adjacency_matrix()
@@ -121,9 +131,30 @@ class GraphAnalytics(QWidget):
 
 
         return FigureCanvasQTAgg(fig)
+    
+    def attribute_distribution_cont(self):
+        fig = Figure(figsize=(7, 5), dpi=100)
+        node_features = self.parent.graph_page.graph_page.features
+        attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==float and int(v)!=v], key=lambda x: x.lower())
+        n = len(attribute_labels)
+        fig.suptitle('Attribute Distribution (cont)')
+
+        m = np.gcd(n, 12)
+        k = int(n / m)
+        for i in range(n):
+            ax = fig.add_subplot(m, k, i+1)
+            attribute = attribute_labels[i]
+            attribute_values = [features[attribute] for features in node_features.values() if attribute in features.keys()]
+            ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5)
+            ax.tick_params(axis='y', labelsize=5)
+            ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+            ax.set_title(attribute, fontsize=6)
+
+        fig.tight_layout(pad=3.0)        
+        return FigureCanvasQTAgg(fig)
 
     def attribute_distribution_plot(self):
-        fig = Figure(figsize=(8, 5), dpi=100)
+        fig = Figure(figsize=(7, 5), dpi=100)
         node_features = self.parent.graph_page.graph_page.features
         attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
