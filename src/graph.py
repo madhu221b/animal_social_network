@@ -7,6 +7,7 @@ import networkx as nx
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from .static import PageState
+from src.loaders.asnr_dataloader import ASNRGraph
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('graph')
@@ -34,7 +35,9 @@ class Graph(QObject):
     @classmethod
     def from_graphml(cls, filepath) -> Graph:
         logger.info(f"Reading graph {filepath}")
-        graph_obj = cls(nx.read_graphml(filepath))
+        asnr = ASNRGraph(path=filepath)
+        # graph_obj = cls(nx.read_graphml(filepath))
+        graph_obj = cls(asnr.graph)
         return graph_obj
 
     @classmethod
@@ -50,8 +53,6 @@ class Graph(QObject):
         logger.info(f"Reading graph {filepath}")
         with open(filepath, "rb") as f:
             state_dict = pickle.load(f)
-            # graph_dict = pickle.load(f)
-            # state_dict = graph_dict["graph"]
         return cls.from_state_dict(state_dict)
 
     @classmethod

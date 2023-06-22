@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QLabel,
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
-
+from src.loaders.asnr_dataloader import ASNRGraph
 from src.static import PageState, GRAPH_VERSION_FOLDER
 from .graph import GraphCanvas
 
@@ -28,7 +28,8 @@ class GraphEvolution(QWidget):
 
         # Page
         self.main_layout = QVBoxLayout()
-        self.hlayout = QVBoxLayout()
+        self.hlayout = QHBoxLayout()
+        self.content_layout = QVBoxLayout()
         
 
         self.current_graph_id = PageState.version
@@ -41,13 +42,17 @@ class GraphEvolution(QWidget):
         self.graph = GraphCanvas(parent, graph=self.graph_obj, width=5, height=4, dpi=100)
         self.info_tab = QLabel(text=self.text, alignment=Qt.AlignmentFlag.AlignCenter)
         
+         # Add content
+        self.content_layout.addWidget(self.graph, 8)
+        self.content_layout.addWidget(self.info_tab, 2)
+
         self._create_prev_button()
-        self.hlayout.addWidget(self.graph)
+        self.hlayout.addLayout(self.content_layout)
         self._create_next_button()
 
         
         self.main_layout.addLayout(self.hlayout)
-        self.main_layout.addWidget(self.info_tab)
+        # self.main_layout.addWidget(self.info_tab)
         
         self.setLayout(self.main_layout)
 
@@ -63,7 +68,8 @@ class GraphEvolution(QWidget):
                      state_dict = pickle.load(f)
                 linked_list[id] = state_dict
         
-        linked_list["default"] = {"graph": nx.read_graphml(PageState.graph_path), "prev":-1}
+        asnr = ASNRGraph(path=PageState.graph_path)
+        linked_list["default"] = {"graph": asnr.graph, "prev":-1}
         linked_list[self.current_graph_id]["next"] = -1
         
         # updating next ids

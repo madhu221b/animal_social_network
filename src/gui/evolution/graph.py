@@ -27,7 +27,9 @@ class GraphCanvas(FigureCanvasQTAgg):
 
         # self.graph = graph
         # self.degrees = self.get_degrees()
+        self.node_layout = None
         self.refresh(graph)
+        
     
     def get_degrees(self):
         return dict(self.graph.degree())
@@ -61,8 +63,11 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.ax.cla()  # Clears the existing plot
         self.graph = graph
         self.degrees = self.get_degrees()
-        pos = nx.spring_layout(graph, k=math.sqrt(12 / self.graph.order()))
-
+        pos = nx.spring_layout(graph, k=math.sqrt(1/ self.graph.order()), pos=self.node_layout)
+  
+        # if self.node_layout is not None:
+        #     for key, value in pos.items():
+        #         pos[key] = self.node_layout[key] if key in self.node_layout else value
 
         self.plot_instance = InteractiveGraph(graph,
                                             node_color=self.node_colors(),
@@ -73,6 +78,8 @@ class GraphCanvas(FigureCanvasQTAgg):
                                             #   edge_width=self.edge_width,
                                              node_layout=pos,
                                               ax=self.ax)
+        
+        self.node_layout = deepcopy(self.plot_instance.node_positions)
         
 
 

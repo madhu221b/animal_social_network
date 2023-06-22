@@ -23,5 +23,4 @@ class Save(GlobalAction):
         graph_dict = {"prev_version":curr_version, "graph":self.graph.state_dict}
         with open(filepath, 'wb') as f:
             pickle.dump(self.graph.state_dict, f)
-            # pickle.dump(graph_dict, f)
         logger.info(f"Graph saved to {filepath}")
