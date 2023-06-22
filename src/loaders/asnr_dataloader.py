@@ -33,7 +33,7 @@ def clean_nodes(g):
 class ASNRGraph:
     def __init__(self, path=None, graph_obj=None) -> None:
         if graph_obj is None:
-           self.graph = clean_nodes(nx.read_graphml(path))
+            self.graph = clean_nodes(nx.read_graphml(path))
         else:
             self.graph = graph_obj
         self.colors, self.centrality = self._init_colors()
@@ -56,7 +56,7 @@ class ASNRGraph:
         centrality_dict = {
             "betweeness": nx.betweenness_centrality(g),
             "closeness": nx.closeness_centrality(g),
-            # "eigenvector": nx.eigenvector_centrality(g), # NOTE: Some graphs in the dataset don't converge and cause and Error
+            # "eigenvector": nx.eigenvector_centrality(g), # NOTE: Some graphs in the dataset don't converge and cause an error
             "degree": nx.degree_centrality(g),
         }
         return color_dict, centrality_dict

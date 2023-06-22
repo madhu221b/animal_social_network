@@ -1,4 +1,5 @@
 import os
+import glob
 
 # ==================================================
 # Constants
@@ -14,17 +15,30 @@ MAIN_WINDOW_WIDTH = 1000
 DATA_ROOT = "./datasets"
 
 GRAPH_DATA = {
-    "bat": {
-        "path": os.path.join(DATA_ROOT, "vampirebats_carter_mouth_licking_attribute_new.graphml"),
-        "title": "Placeholder for bat title"
-    },
-    "junglefowl": {
-        "path":
-            os.path.join(DATA_ROOT, "junglefowl_mcdonald_sexual_network_group9_attribute.graphml"),
-        "title":
-            "Placeholder for junglefowl title"
+    k.split("/")[-1]
+    .split(".")[0]
+    .replace("_", " "): {
+        "path": k,
+        "title": k.split("/")[-1].split(".")[0].replace("_", " "),
     }
+    for k in glob.glob(os.path.join(DATA_ROOT, "**.graphml"))
 }
+#
+# GRAPH_DATA = {
+#     "bat": {
+#         "path": os.path.join(
+#             DATA_ROOT, "vampirebats_carter_mouth_licking_attribute_new.graphml"
+#         ),
+#         "title": "Placeholder for bat title",
+#     },
+#     "junglefowl": {
+#         "path": os.path.join(
+#             DATA_ROOT, "junglefowl_mcdonald_sexual_network_group9_attribute.graphml"
+#         ),
+#         "title": "Placeholder for junglefowl title",
+#     },
+# }
+
 
 IDS = set(GRAPH_DATA.keys())
 
