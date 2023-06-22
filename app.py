@@ -4,6 +4,7 @@ import numpy as np
 import warnings
 
 from src.utils.common import seed_everything
+from src.static import PageState
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 np.seterr(divide='ignore', invalid='ignore')
@@ -20,13 +21,13 @@ if __name__ == '__main__':
 
     # Set up default window
     app = QtWidgets.QApplication(sys.argv)
-    window = LandingPage()
-    window.show()
+    PageState.landing_page = LandingPage()
+    PageState.landing_page.show()
 
     # Pre-click if in debug mode
     args = parser.parse_args()
     if args.debug:
-        window._simulate_select_first_item()
+        PageState.landing_page._simulate_select_first_item()
         # Add any simulated actions here that speeds up your tests
 
     sys.exit(app.exec())

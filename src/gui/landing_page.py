@@ -46,6 +46,11 @@ class LandingPage(QtWidgets.QWidget):
         # Center the window on the screen
         self._center_window()
 
+    def show(self):
+        # Bring window to the front and keep it there
+        self.setWindowFlags(QtCore.Qt.WindowType.WindowStaysOnTopHint)
+        super().show()
+
     def _center_window(self):
         """Center the window on the screen"""
 
@@ -116,7 +121,7 @@ class LandingPage(QtWidgets.QWidget):
         if hasattr(self, "main_window"):
             # TODO what if we keep all canvas and just show and hide them
             PageState.clear()
-            self.main_window.destroy()
+            self.main_window.close()
 
         # Create new window and hide this one
         PageState.select_id(page_id)

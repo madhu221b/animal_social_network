@@ -9,3 +9,4 @@ from .add_node import AddNodeIcon
 from .redo import RedoIcon
 from .undo import UndoIcon
 from .save import SaveIcon
+from .open import OpenIcon
