@@ -77,6 +77,12 @@ class AddNodeForm(QDialog):
         self.form_group_box.setLayout(layout)
 
     def send(self):
-        node_data = {k: v.currentText() for (k, v) in self.form.items()}
+        node_data = {}
+        for k,v in self.form.items():
+            if isinstance(v, QSpinBox) or isinstance(v, QDoubleSpinBox):
+               node_data[k] = v.value()
+            else:
+                node_data[k] = v.currentText()
+        # node_data = {k: v.currentText() for (k, v) in self.form.items()}
         self.callback(node_data=node_data)
         self.close()
