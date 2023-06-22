@@ -71,7 +71,7 @@ class Graph(QObject):
         return {
             "betweeness": nx.betweenness_centrality(self.graph),
             "closeness": nx.closeness_centrality(self.graph),
-            "eigenvector": nx.eigenvector_centrality(self.graph),
+            # "eigenvector": nx.eigenvector_centrality(self.graph),
             "degree": nx.degree_centrality(self.graph)
         }
 

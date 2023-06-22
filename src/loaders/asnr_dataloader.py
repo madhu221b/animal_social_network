@@ -23,9 +23,13 @@ def name_2_id(g):
 
 def clean_nodes(g):
     remove_arr = []
-    for node, data in g.nodes(data=True):
+    for node, data in g.nodes(data=True):     
         if len(data.keys()) == 0:
             remove_arr.append(node)
+        else:
+            vals = data.values()
+            if any(isinstance(val, str) and len(val.strip()) == 0 for val in vals):
+                remove_arr.append(node)
     [g.remove_node(node) for node in remove_arr]
     return g
 

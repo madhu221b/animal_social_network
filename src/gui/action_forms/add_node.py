@@ -1,4 +1,6 @@
 from PyQt6.QtWidgets import (QComboBox,
+                             QSpinBox,
+                             QDoubleSpinBox,
                              QDialog,
                              QDialogButtonBox,
                              QFormLayout,
@@ -42,6 +44,7 @@ class AddNodeForm(QDialog):
         label2type = {key: type(val) for (key, val) in random_item.items()}
 
         for form_label, val_type in label2type.items():
+            print(str(val_type))
             if "str" in str(val_type):  # it is a dropdown
                 dropdown = QComboBox()
                 list_of_vals = set([data[form_label] for _, data in self.features.items()])
@@ -49,6 +52,24 @@ class AddNodeForm(QDialog):
                 dropdown.setCurrentIndex(0)
                 layout.addRow(QLabel(form_label), dropdown)
                 self.form[form_label] = dropdown
+            elif "int" in str(val_type):
+                spinbox = QSpinBox()
+                vals = [data[form_label] for _, data in self.features.items()]
+                spinbox.setMinimum(min(vals))
+                spinbox.setMaximum(max(vals))
+                spinbox.setSingleStep(1)
+                spinbox.setValue(vals[0])
+                layout.addRow(QLabel(form_label), spinbox)
+                self.form[form_label] = spinbox  
+            elif  "float" in str(val_type):
+                spinbox = QDoubleSpinBox()
+                vals = [data[form_label] for _, data in self.features.items()]
+                spinbox.setMinimum(min(vals))
+                spinbox.setMaximum(max(vals))
+                spinbox.setSingleStep(0.1)
+                spinbox.setValue(vals[0])
+                layout.addRow(QLabel(form_label), spinbox)
+                self.form[form_label] = spinbox
             else:
                 pass  # to do as other data types come
 
