@@ -7,7 +7,7 @@ class Predict(GraphAction):
 
     def __init__(self, *args, nodes=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.nodes = nodes if nodes else self._get_hanging_nodes()
+        self.nodes = nodes if nodes else self._get_hanging_new_nodes()
         self.directed_edges = self._predict_edges()
         self._edges_were = self.graph_gui.graph.selected_directed_edges
         self._nodes_were = self.graph_gui.graph.selected_nodes
@@ -24,11 +24,11 @@ class Predict(GraphAction):
         self.graph_gui.graph.deselect()
         self.graph_gui.graph.select(nodes=self._nodes_were, edges=self._edges_were)
 
-    def _get_hanging_nodes(self):
-        return [(n, v) for (n, v) in self.graph_gui.graph.hanging_nodes.items()]
+    def _get_hanging_new_nodes(self):
+        return self.graph_gui.graph.unpredicted_new_node_names
 
     def _predict_edges(self):
         edges = []
-        for node_name, _ in self.nodes:
+        for node_name in self.nodes:
             edges.extend(get_pred_edges(self.graph_gui.graph.graph, PageState.id, node_name))
         return edges
