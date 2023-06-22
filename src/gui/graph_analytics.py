@@ -1,5 +1,5 @@
-from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget
+from PyQt6 import QtGui, QtWidgets, QtCore
+from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget
 import networkx as nx
 import numpy as np
 from ..utils.analytics_utils import get_correlations_att_edge
@@ -14,6 +14,43 @@ matplotlib.use("QtAgg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+class FullScreenWidget(QDialog):
+    def __init__(self, content_fig, parent):
+        super().__init__(parent)
+        self.parent = parent    
+
+        self.setWindowTitle("Adjacency Matrix")
+        self.setModal(True)
+        self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        
+
+        # palette = self.palette()
+        # palette.setColor(QtGui.QPalette.ColorRole.Base, QtCore.Qt.GlobalColor.tr)
+        # self.setPalette(palette)
+
+        canvas = FigureCanvasQTAgg(content_fig)
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(canvas)
+
+        self.button = QPushButton("Close", self)
+        self.button.clicked.connect(self.exit_fullscreen)
+        self.button.setStyleSheet("font-size: 24px; padding 10px;")
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
+        
+    
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.showMaximized()
+
+    def exit_fullscreen(self):
+        self.showNormal()
+        self.close()
+        self.parent.adj_canvas.draw_idle()
+
+
 class GraphAnalytics(QWidget):
     """
     Graph analytics page, contains metrics and visualizations
@@ -50,9 +87,13 @@ class GraphAnalytics(QWidget):
 
         # Add adjacency matrix plot
         adj_matrix_plot = self.adjacency_matrix()
-        plots_layout.addWidget(adj_matrix_plot)
-
-        # # Add heatmap TODO
+        self.adj_canvas = FigureCanvasQTAgg(adj_matrix_plot)
+        plots_layout.addWidget(self.adj_canvas)
+        
+        fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
+        self.adj_canvas.mpl_connect("button_press_event", lambda event: fullscreen_widget.showMaximized())
+        
+        # # Add heatmap 
         heatmap_plot = self.heatmap()
         plots_layout.addWidget(heatmap_plot)
 
@@ -68,7 +109,26 @@ class GraphAnalytics(QWidget):
         main_layout.addWidget(scroll_area)
 
 
-    
+    def adjacency_matrix(self):
+        fig = Figure(figsize=(8,5), dpi=100)
+        graph = self.parent.graph_page.graph_page.graph.graph
+        bi_adj_matrix = nx.adjacency_matrix(graph, weight=None)
+        # adj_matrix = nx.adjacency_matrix(graph, weight='weight')
+
+        ax = fig.add_subplot(111)
+        ax.set_title('Binary Adjacency Matrix')
+        im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
+        nodes = list(graph.nodes)
+        ax.set_xticks(np.arange(len(nodes)))
+        ax.set_yticks(np.arange(len(nodes)))
+        ax.set_xticklabels(nodes)
+        ax.set_yticklabels(nodes)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
+
+        fig.colorbar(im, ax=ax, label="Edge Existence", cmap='binary', ticks=[0, 1])
+        
+        canvas = FigureCanvasQTAgg(fig)
+        return fig
     
     def heatmap(self):
         graph = self.parent.graph_page.graph_page.graph.graph
@@ -144,37 +204,7 @@ class GraphAnalytics(QWidget):
     def update_ui(self):
         self.setup_ui()
 
-    def adjacency_matrix(self):
-        fig = Figure(figsize=(6,5), dpi=100)
-        graph = self.parent.graph_page.graph_page.graph.graph
-        bi_adj_matrix = nx.adjacency_matrix(graph, weight=None)
-        # adj_matrix = nx.adjacency_matrix(graph, weight='weight')
 
-        ax = fig.add_subplot(111)
-        ax.set_title('Binary Adjacency Matrix')
-        im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
-        nodes = list(graph.nodes)
-        ax.set_xticks(np.arange(len(nodes)))
-        ax.set_yticks(np.arange(len(nodes)))
-        ax.set_xticklabels(nodes)
-        ax.set_yticklabels(nodes)
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
-
-        fig.colorbar(im, ax=ax, label="Edge Existence", cmap='binary', ticks=[0, 1])
-
-        # ax = fig.add_subplot(122)
-        # ax.set_title('Adjacency Matrix')
-        # im = ax.matshow(adj_matrix.todense())
-        # nodes = list(graph.nodes)
-        # ax.set_xticks(np.arange(len(nodes)))
-        # ax.set_yticks(np.arange(len(nodes)))
-        # ax.set_xticklabels(nodes)
-        # ax.set_yticklabels(nodes)
-        # plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
-        # fig.colorbar(im, ax=ax, label="Interaction Count")
-
-
-        return FigureCanvasQTAgg(fig)
     
     def attribute_distribution_cont(self):
         fig = Figure(figsize=(7, 5), dpi=100)
