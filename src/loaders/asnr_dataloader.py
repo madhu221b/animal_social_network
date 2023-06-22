@@ -24,12 +24,15 @@ def name_2_id(g):
 def clean_nodes(g):
     remove_arr = []
     for node, data in g.nodes(data=True):     
-        if len(data.keys()) == 0:
-            remove_arr.append(node)
+        if len(data.keys()) in  [0,1]:
+            remove_arr.append(node) # Remove nodes with no keys or 1 key
         else:
             vals = data.values()
+            print(vals)
             if any(isinstance(val, str) and len(val.strip()) == 0 for val in vals):
-                remove_arr.append(node)
+                remove_arr.append(node) # Remove nodes with empty strings 
+            elif any(isinstance(val, str) and val == "-" for val in vals):
+                remove_arr.append(node) # some strings have useless spl char, "-"
     [g.remove_node(node) for node in remove_arr]
     return g
 
