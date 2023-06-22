@@ -58,7 +58,7 @@ def get_correlations_att_edge(graph, features):
     for k in ivs.keys():
         coeficcients[k] = pearsonr(ivs[k], y)
 
-    return coeficcients
+    return coeficcients #nan results when there is only one group
 
 
 

@@ -53,8 +53,8 @@ class GraphAnalytics(QWidget):
         plots_layout.addWidget(adj_matrix_plot)
 
         # # Add heatmap TODO
-        # heatmap_plot = self.heatmap()
-        # plots_layout.addWidget(heatmap_plot)
+        heatmap_plot = self.heatmap()
+        plots_layout.addWidget(heatmap_plot)
 
         # Add the plots layout to the container layout
         container_layout.addLayout(plots_layout)
@@ -74,6 +74,39 @@ class GraphAnalytics(QWidget):
         graph = self.parent.graph_page.graph_page.graph.graph
         node_features = self.parent.graph_page.graph_page.features
         correlations = get_correlations_att_edge(graph, node_features)
+        fig = Figure(figsize=(7, 5), dpi=100)
+        fig.suptitle('Correlation between attributes and edge existence')
+        ax = fig.add_subplot(111)
+        attributes = list(correlations.keys())
+        # delete nan values
+        for i in reversed(range(len(attributes))):
+            if np.isnan(correlations[attributes[i]][0]):
+                del correlations[attributes[i]]
+                del attributes[i]
+                
+
+        coefficients = [c[0] for c in list(correlations.values())]
+        p_values = [c[1] for c in list(correlations.values())]
+        array = np.array(coefficients).reshape(1, len(correlations))
+        im = ax.imshow(array, cmap='seismic', vmin=-0.5, vmax=0.5)
+
+        #add legend
+        fig.colorbar(im, ax=ax, label="Correlation", cmap='seismic', ticks=[0.5,0,-0.5])
+
+
+        ax.set_xticks(np.arange(len(attributes)), labels=attributes)
+        plt.setp(ax.get_xticklabels(), rotation=80, ha="right", rotation_mode="anchor")
+
+
+        # remove yticks
+        ax.set_yticks([])
+        for i in range(len(attributes)):
+            ax.text(i, -0.25, str(round(coefficients[i], 2)), ha='center', va='center', color='black', fontsize=8)
+            if p_values[i] < 0.05 / len(attributes): # bonferroni correction
+                ax.text(i, 0.25, '*', ha='center', va='center', color='black', fontsize=8)
+
+        return FigureCanvasQTAgg(fig)
+
     
     def graph_analytics_table(self):
         graph = self.parent.graph_page.graph_page.graph.graph
