@@ -36,10 +36,11 @@ class GraphEvolution(QWidget):
         self.animal = PageState.id
         self.linked_list = self.get_linked_list(self.animal)  
         self.graph_obj = self.linked_list[self.current_graph_id]["graph"]
+        self.node_layout = self.linked_list[self.current_graph_id]["node_layout"]
         n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
         self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}"
 
-        self.graph = GraphCanvas(parent, graph=self.graph_obj, width=5, height=4, dpi=100)
+        self.graph = GraphCanvas(parent, graph=self.graph_obj, node_layout=self.node_layout, width=5, height=4, dpi=100)
         self.info_tab = QLabel(text=self.text, alignment=Qt.AlignmentFlag.AlignCenter)
         
          # Add content
@@ -69,7 +70,7 @@ class GraphEvolution(QWidget):
                 linked_list[id] = state_dict
         
         asnr = ASNRGraph(path=PageState.graph_path)
-        linked_list["default"] = {"graph": asnr.graph, "prev":-1}
+        linked_list["default"] = {"graph": asnr.graph, "prev":-1, "node_layout":None}
         linked_list[self.current_graph_id]["next"] = -1
         
         # updating next ids
@@ -104,8 +105,9 @@ class GraphEvolution(QWidget):
         if prev_id != -1:
             self.current_graph_id = prev_id
             self.graph_obj = self.linked_list[self.current_graph_id]["graph"]
+            self.node_layout = self.linked_list[self.current_graph_id]["node_layout"]
             # self.graph = GraphCanvas(self.parent, graph=self.graph_obj, width=5, height=6, dpi=100)
-            self.graph.refresh(self.graph_obj)
+            self.graph.refresh(self.graph_obj, self.node_layout)
             n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
             self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}"
             self.info_tab.setText(self.text)
@@ -116,7 +118,8 @@ class GraphEvolution(QWidget):
         if next_id != -1:
             self.current_graph_id = next_id
             self.graph_obj = self.linked_list[self.current_graph_id]["graph"]
-            self.graph.refresh(self.graph_obj)
+            self.node_layout = self.linked_list[self.current_graph_id]["node_layout"]
+            self.graph.refresh(self.graph_obj, self.node_layout)
            
             n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
             self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}"

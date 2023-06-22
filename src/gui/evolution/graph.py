@@ -19,7 +19,7 @@ class GraphCanvas(FigureCanvasQTAgg):
     Graph page, containing the graph and handling events such as clicks or hovers.
     """
 
-    def __init__(self, parent=None, graph=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, graph=None,node_layout=None, width=5, height=4, dpi=100):
         super(GraphCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
         self.parent = parent
         self.setParent(parent)
@@ -27,8 +27,7 @@ class GraphCanvas(FigureCanvasQTAgg):
 
         # self.graph = graph
         # self.degrees = self.get_degrees()
-        self.node_layout = None
-        self.refresh(graph)
+        self.refresh(graph, node_layout)
         
     
     def get_degrees(self):
@@ -59,11 +58,14 @@ class GraphCanvas(FigureCanvasQTAgg):
         return edge_colors
 
 
-    def refresh(self, graph):
+    def refresh(self, graph, node_layout):
         self.ax.cla()  # Clears the existing plot
         self.graph = graph
         self.degrees = self.get_degrees()
-        pos = nx.spring_layout(graph, k=math.sqrt(1/ self.graph.order()), pos=self.node_layout)
+        if node_layout is None:
+           pos = nx.spring_layout(graph, k=math.sqrt(1/ self.graph.order()))
+        else:
+            pos = node_layout
   
         # if self.node_layout is not None:
         #     for key, value in pos.items():
@@ -79,7 +81,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                                              node_layout=pos,
                                               ax=self.ax)
         
-        self.node_layout = deepcopy(self.plot_instance.node_positions)
+
         
 
 
