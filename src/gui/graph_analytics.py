@@ -23,11 +23,6 @@ class FullScreenWidget(QDialog):
         self.setModal(True)
         self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
-        
-
-        # palette = self.palette()
-        # palette.setColor(QtGui.QPalette.ColorRole.Base, QtCore.Qt.GlobalColor.tr)
-        # self.setPalette(palette)
 
         canvas = FigureCanvasQTAgg(content_fig)
         self.layout = QVBoxLayout()
@@ -39,7 +34,7 @@ class FullScreenWidget(QDialog):
         self.layout.addWidget(self.button)
 
         self.setLayout(self.layout)
-        
+
     
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
@@ -48,7 +43,8 @@ class FullScreenWidget(QDialog):
     def exit_fullscreen(self):
         self.showNormal()
         self.close()
-        self.parent.adj_canvas.draw_idle()
+
+
 
 
 class GraphAnalytics(QWidget):
@@ -69,7 +65,8 @@ class GraphAnalytics(QWidget):
         container_layout = QHBoxLayout(container_widget)
 
         # Create a vertical layout for the plots
-        plots_layout = QVBoxLayout()
+        self.plots_layout = QVBoxLayout()
+        plots_layout = self.plots_layout
         
         node_features = self.parent.graph_page.graph_page.features
         disc_attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
@@ -85,13 +82,15 @@ class GraphAnalytics(QWidget):
             attribute_distribution_cont = self.attribute_distribution_cont()
             plots_layout.addWidget(attribute_distribution_cont)
 
-        # Add adjacency matrix plot
+
         adj_matrix_plot = self.adjacency_matrix()
-        self.adj_canvas = FigureCanvasQTAgg(adj_matrix_plot)
-        plots_layout.addWidget(self.adj_canvas)
-        
         fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
-        self.adj_canvas.mpl_connect("button_press_event", lambda event: fullscreen_widget.showMaximized())
+        
+        # Add adjacency matrix plot
+        
+        # self.adj_canvas = FigureCanvasQTAgg(adj_matrix_plot)
+        # plots_layout.addWidget(self.adj_canvas)
+        # self.adj_canvas.mpl_connect("button_press_event", lambda event: fullscreen_widget.showMaximized())
         
         # # Add heatmap 
         heatmap_plot = self.heatmap()
@@ -100,9 +99,18 @@ class GraphAnalytics(QWidget):
         # Add the plots layout to the container layout
         container_layout.addLayout(plots_layout)
 
+        table_layout = QVBoxLayout()
         # Add graph analytics table
         graph_analytics_table = self.graph_analytics_table()
-        container_layout.addWidget(graph_analytics_table)
+        table_layout.addWidget(graph_analytics_table)
+
+        button = QPushButton("Adjacency Matrix", self)
+        button.clicked.connect(fullscreen_widget.show)
+        button.setStyleSheet("font-size: 24px; padding 10px;")
+        table_layout.addWidget(button)
+
+        container_layout.addLayout(table_layout)
+
 
         scroll_area.setWidget(container_widget)
         main_layout = QVBoxLayout(self)
@@ -166,7 +174,6 @@ class GraphAnalytics(QWidget):
                 ax.text(i, 0.25, '*', ha='center', va='center', color='black', fontsize=8)
 
         return FigureCanvasQTAgg(fig)
-
     
     def graph_analytics_table(self):
         graph = self.parent.graph_page.graph_page.graph.graph
