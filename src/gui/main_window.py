@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.graph_page = GraphPage(self)
         self.faq_page = FAQPage(self)
-        self.welcome_screen = WelcomeScreen(self)
+        PageState.welcome_page = WelcomeScreen(self)
         self.graph_analytics = None
         self.graph_evolution = None
 
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         # Center the window on the screen
         self._center_window()
 
-        self.welcome_screen.show()
+        PageState.welcome_page.show()
 
     def updateTab(self, tabIndex):
         if tabIndex == 1:

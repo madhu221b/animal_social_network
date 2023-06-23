@@ -16,13 +16,10 @@ DATA_ROOT = "./datasets"
 GRAPH_VERSION_FOLDER = "./results/graphs/"
 
 GRAPH_DATA = {
-    k.split("/")[-1]
-    .split(".")[0]
-    .replace("_", " "): {
+    k.split("/")[-1].split(".")[0].replace("_", " "): {
         "path": k,
         "title": k.split("/")[-1].split(".")[0].replace("_", " "),
-    }
-    for k in glob.glob(os.path.join(DATA_ROOT, "**.graphml"))
+    } for k in glob.glob(os.path.join(DATA_ROOT, "**.graphml"))
 }
 #
 # GRAPH_DATA = {
@@ -39,7 +36,6 @@ GRAPH_DATA = {
 #         "title": "Placeholder for junglefowl title",
 #     },
 # }
-
 
 IDS = list(GRAPH_DATA.keys())
 
@@ -63,6 +59,8 @@ class PageState:
     id = None
     path = None
     title = None
+    landing_page = None
+    welcome_page = None
     # TODO move selected_nodes, selected_edges here
 
     @staticmethod
@@ -77,10 +75,10 @@ class PageState:
 
     @staticmethod
     def select_version(version, is_next_version=False):
-        if not is_next_version:        # this call is called when "select" button is clicked for dropdown.
+        if not is_next_version:  # this call is called when "select" button is clicked for dropdown.
             PageState.curr_version = version
             PageState.version = version
-        else:    # this call is called when "save" button is called for retraining 
+        else:  # this call is called when "save" button is called for retraining
             # PageState.curr_version = version
             PageState.version = version
         PageState.version_path = os.path.join(GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl")

@@ -9,7 +9,7 @@ from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
 from .info_page import InfoPage
 from .color_bar import ColorBar
-from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon
+from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon, InfoIcon
 
 
 class GraphPage(QWidget):
@@ -68,7 +68,8 @@ class GraphPage(QWidget):
             "redo": RedoIcon(self),
             "pred": PredEdgesIcon(self),
             "save": SaveIcon(self),
-            "open": OpenIcon(self)
+            "open": OpenIcon(self),
+            "info": InfoIcon(self)
         }
         for action in list(self.icons.values()):
             self.toolbar.addAction(action)

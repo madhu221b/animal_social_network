@@ -34,8 +34,7 @@ class LandingPage(QtWidgets.QWidget):
         self.setWindowTitle(LANDING_PAGE_TITLE)
         self.setGeometry(0, 0, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT)
         self.layout = QtWidgets.QHBoxLayout(
-            self
-        )  # Change to QHBoxLayout to place elements side by side
+            self)  # Change to QHBoxLayout to place elements side by side
 
         # Add dropdown list to the window
         self._create_dropdown_list()
@@ -130,10 +129,12 @@ class LandingPage(QtWidgets.QWidget):
         self.main_window.show()
         self.hide()
 
-    def _simulate_select_first_item(self):
-        """Simulate selecting the first item for development purposes"""
-        self.dropdown_list.setCurrentIndex(0)
-        self._select_button_on_click()
+    def _simulate_select_first_item(self, text):
+        """Simulate selecting a specific item for development purposes"""
+        index = self.dropdown_list.findText(text)
+        if index >= 0:  # make sure the item was found
+            self.dropdown_list.setCurrentIndex(index)
+            self._select_button_on_click()
 
 
 if __name__ == "__main__":
