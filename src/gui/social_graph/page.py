@@ -50,7 +50,7 @@ class GraphPage(QWidget):
 
         main_layout.addWidget(self.top_page)
         main_layout.addLayout(hlayout)
-        main_layout.addWidget(self.color_bar)
+        # main_layout.addWidget(self.color_bar)
 
         self.setLayout(main_layout)
 

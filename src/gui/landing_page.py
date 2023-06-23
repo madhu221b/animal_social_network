@@ -1,7 +1,14 @@
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QScreen
 from .main_window import MainWindow
-from ..static import IDS, LANDING_PAGE_TITLE, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT, PageState, versions
+from ..static import (
+    IDS,
+    LANDING_PAGE_TITLE,
+    LANDING_PAGE_WIDTH,
+    LANDING_PAGE_HEIGHT,
+    PageState,
+    versions,
+)
 
 
 class DropDownListBox(QtWidgets.QComboBox):
@@ -27,7 +34,8 @@ class LandingPage(QtWidgets.QWidget):
         self.setWindowTitle(LANDING_PAGE_TITLE)
         self.setGeometry(0, 0, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT)
         self.layout = QtWidgets.QHBoxLayout(
-            self)  # Change to QHBoxLayout to place elements side by side
+            self
+        )  # Change to QHBoxLayout to place elements side by side
 
         # Add dropdown list to the window
         self._create_dropdown_list()
@@ -57,7 +65,7 @@ class LandingPage(QtWidgets.QWidget):
         dropdown_list_version = DropDownListBox(self)
 
         # Define all choices the users can choose from
-        dropdown_list.addItems(IDS)
+        dropdown_list.addItems(sorted(IDS))
         dropdown_list.setCurrentIndex(0)  # Select the first item by default
 
         # Add widget to the layout
@@ -117,7 +125,7 @@ class LandingPage(QtWidgets.QWidget):
 
         # Create new window and hide this one
         PageState.select_id(page_id)
-        PageState.select_version(page_version)
+        PageState.select_version(page_version, is_next_version=False)
         self.main_window = MainWindow()
         self.main_window.show()
         self.hide()
@@ -128,9 +136,9 @@ class LandingPage(QtWidgets.QWidget):
         self._select_button_on_click()
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     dropdown_window = LandingPage()
     dropdown_window.show()

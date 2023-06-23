@@ -23,9 +23,16 @@ def name_2_id(g):
 
 def clean_nodes(g):
     remove_arr = []
-    for node, data in g.nodes(data=True):
-        if len(data.keys()) == 0:
-            remove_arr.append(node)
+    for node, data in g.nodes(data=True):     
+        if len(data.keys()) in  [0,1]:
+            remove_arr.append(node) # Remove nodes with no keys or 1 key
+        else:
+            vals = data.values()
+            print(vals)
+            if any(isinstance(val, str) and len(val.strip()) == 0 for val in vals):
+                remove_arr.append(node) # Remove nodes with empty strings 
+            elif any(isinstance(val, str) and val == "-" for val in vals):
+                remove_arr.append(node) # some strings have useless spl char, "-"
     [g.remove_node(node) for node in remove_arr]
     return g
 
@@ -33,7 +40,7 @@ def clean_nodes(g):
 class ASNRGraph:
     def __init__(self, path=None, graph_obj=None) -> None:
         if graph_obj is None:
-           self.graph = clean_nodes(nx.read_graphml(path))
+            self.graph = clean_nodes(nx.read_graphml(path))
         else:
             self.graph = graph_obj
         self.colors, self.centrality = self._init_colors()
@@ -56,7 +63,7 @@ class ASNRGraph:
         centrality_dict = {
             "betweeness": nx.betweenness_centrality(g),
             "closeness": nx.closeness_centrality(g),
-            # "eigenvector": nx.eigenvector_centrality(g), # NOTE: Some graphs in the dataset don't converge and cause and Error
+            # "eigenvector": nx.eigenvector_centrality(g), # NOTE: Some graphs in the dataset don't converge and cause an error
             "degree": nx.degree_centrality(g),
         }
         return color_dict, centrality_dict

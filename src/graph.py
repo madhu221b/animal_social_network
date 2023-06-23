@@ -7,6 +7,7 @@ import networkx as nx
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from .static import PageState
+from src.loaders.asnr_dataloader import ASNRGraph
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('graph')
@@ -34,7 +35,9 @@ class Graph(QObject):
     @classmethod
     def from_graphml(cls, filepath) -> Graph:
         logger.info(f"Reading graph {filepath}")
-        graph_obj = cls(nx.read_graphml(filepath))
+        asnr = ASNRGraph(path=filepath)
+        # graph_obj = cls(nx.read_graphml(filepath))
+        graph_obj = cls(asnr.graph)
         return graph_obj
 
     @classmethod
@@ -68,7 +71,7 @@ class Graph(QObject):
         return {
             "betweeness": nx.betweenness_centrality(self.graph),
             "closeness": nx.closeness_centrality(self.graph),
-            "eigenvector": nx.eigenvector_centrality(self.graph),
+            # "eigenvector": nx.eigenvector_centrality(self.graph),
             "degree": nx.degree_centrality(self.graph)
         }
 
@@ -149,7 +152,7 @@ class Graph(QObject):
 
     @property
     def state_dict(self):
-        return {"graph": self.graph, "node_layout": self.node_layout}
+        return {"graph": self.graph, "node_layout": self.node_layout, "prev":PageState.curr_version}
 
     # =====================================================
     # Add / remove nodes

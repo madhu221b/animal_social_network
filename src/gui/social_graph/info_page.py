@@ -14,6 +14,7 @@ class InfoPage(QWidget):
         self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}, Type of interaction: "
         self.info_tab = QLabel(parent=self, text=self.text, 
             alignment=Qt.AlignmentFlag.AlignCenter)
+        # self.info_tab.resize(200, 20)
         self.layout.addWidget(self.info_tab)
     
         self.layout.addStretch(1)

@@ -22,7 +22,7 @@ sys.path.append(a)
 import scipy.sparse as sp
 
 
-from src.utils.gae_utils import mask_test_edges, preprocess_graph, training_dict
+from src.utils.gae_utils import mask_test_edges, preprocess_graph
 from src.models.gae import Encoder, Decoder, GraphAutoEncoder
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -111,7 +111,6 @@ def train_model(animal, features, edgelist, adj):
         save_dir,
         n_epochs,
     )
-
 
 
 if __name__ == "__main__":
