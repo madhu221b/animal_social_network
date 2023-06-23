@@ -58,9 +58,6 @@ class GraphAnalytics(QWidget):
         self.setup_ui()
 
     def setup_ui(self):
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-
         container_widget = QWidget()
         container_layout = QHBoxLayout(container_widget)
 
@@ -78,9 +75,15 @@ class GraphAnalytics(QWidget):
             plots_layout.addWidget(attribute_distribution_plot)
 
         # Add attribute distribution plot continuous variables
+        # Note, I made some attempts at adding the scroll bar, but it didn't work out
         if len(cont_attribute_labels) > 0:
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
             attribute_distribution_cont = self.attribute_distribution_cont()
-            plots_layout.addWidget(attribute_distribution_cont)
+            attribute_distribution_cont.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+            scroll.setWidget(attribute_distribution_cont)
+            scroll.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+            plots_layout.addWidget(scroll)
 
 
         adj_matrix_plot = self.adjacency_matrix()
@@ -115,9 +118,8 @@ class GraphAnalytics(QWidget):
         container_layout.addLayout(table_layout)
 
 
-        scroll_area.setWidget(container_widget)
         main_layout = QVBoxLayout(self)
-        main_layout.addWidget(scroll_area)
+        main_layout.addWidget(container_widget)
 
 
     def adjacency_matrix(self):
@@ -141,7 +143,7 @@ class GraphAnalytics(QWidget):
         cbar = fig.colorbar(im, ax=ax, cmap='binary', ticks=[0, 1], shrink=0.5)
         cbar.set_ticklabels(['No Edge', 'Edge'])
         
-        canvas = FigureCanvasQTAgg(fig)
+        # canvas = FigureCanvasQTAgg(fig)
         return fig
     
     def heatmap(self):
@@ -228,10 +230,10 @@ class GraphAnalytics(QWidget):
         n = len(attribute_labels)
         fig.suptitle('Attribute Distribution (cont)')
 
-        m = np.gcd(n, 12)
-        k = int(n / m)
+        C = 5
+        k = int(np.ceil(n / C))
         for i in range(n):
-            ax = fig.add_subplot(m, k, i+1)
+            ax = fig.add_subplot(n, 1, i+1) # Need to make scrollable
             attribute = attribute_labels[i]
             attribute_values = [features[attribute] for features in node_features.values() if attribute in features.keys()]
             ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5)
