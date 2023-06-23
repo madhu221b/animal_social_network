@@ -5,7 +5,7 @@ from src.actions.global_actions import Load
 
 class OpenIcon(IconAction):
 
-    NAME = 'Load graph'
+    DESC = 'Click to open another graph.'
     FILENAME = 'open.png'
 
     def __init__(self, *args, **kwargs):

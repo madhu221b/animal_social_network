@@ -10,7 +10,7 @@ logger = logging.getLogger('AddEdgeIcon')
 
 class AddEdgeIcon(IconAction):
 
-    NAME = 'Add edge'
+    DESC = 'Click to add a new edge. Select two nodes before or after this event.'
     FILENAME = 'add_edge.png'
 
     def onclick(self):

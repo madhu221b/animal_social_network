@@ -9,10 +9,12 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
 from src.loaders.asnr_dataloader import ASNRGraph
-from src.static import PageState, GRAPH_VERSION_FOLDER
+from src.static import PageState, GRAPH_VERSION_FOLDER, versions
 from .graph import GraphCanvas
 
 matplotlib.use("Qt5Agg")
+
+
 class GraphEvolution(QWidget):
     """
     This is the page that belongs to the "graph" tab. It consists of three sub-pages:
@@ -24,26 +26,29 @@ class GraphEvolution(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        
 
         # Page
         self.main_layout = QVBoxLayout()
         self.hlayout = QHBoxLayout()
         self.content_layout = QVBoxLayout()
-        
 
         self.current_graph_id = PageState.version
         self.animal = PageState.id
-        self.linked_list = self.get_linked_list(self.animal)  
+        self.linked_list = self.get_linked_list(self.animal)
         self.graph_obj = self.linked_list[self.current_graph_id]["graph"]
         self.node_layout = self.linked_list[self.current_graph_id]["node_layout"]
         n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
         self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}"
 
-        self.graph = GraphCanvas(parent, graph=self.graph_obj, node_layout=self.node_layout, width=5, height=4, dpi=100)
+        self.graph = GraphCanvas(parent,
+                                 graph=self.graph_obj,
+                                 node_layout=self.node_layout,
+                                 width=5,
+                                 height=4,
+                                 dpi=100)
         self.info_tab = QLabel(text=self.text, alignment=Qt.AlignmentFlag.AlignCenter)
-        
-         # Add content
+
+        # Add content
         self.content_layout.addWidget(self.graph, 8)
         self.content_layout.addWidget(self.info_tab, 2)
 
@@ -51,11 +56,14 @@ class GraphEvolution(QWidget):
         self.hlayout.addLayout(self.content_layout)
         self._create_next_button()
 
-        
         self.main_layout.addLayout(self.hlayout)
         # self.main_layout.addWidget(self.info_tab)
-        
+
         self.setLayout(self.main_layout)
+
+    @staticmethod
+    def should_be_visible():
+        return len(versions[PageState.id]) > 1
 
     def get_linked_list(self, animal):
         linked_list = dict()
@@ -63,27 +71,28 @@ class GraphEvolution(QWidget):
         for file_name in os.listdir(animal_folder):
             result = re.compile("(v)\d+(.)").search(file_name)
             if result:
-                id = result.group(0).replace(".","")
+                id = result.group(0).replace(".", "")
                 file_path = os.path.join(animal_folder, file_name)
                 with open(file_path, "rb") as f:
-                     state_dict = pickle.load(f)
+                    state_dict = pickle.load(f)
                 linked_list[id] = state_dict
-        
+
         asnr = ASNRGraph(path=PageState.graph_path)
-        linked_list["default"] = {"graph": asnr.graph, "prev":-1, "node_layout":None}
+        linked_list["default"] = {"graph": asnr.graph, "prev": -1, "node_layout": None}
         linked_list[self.current_graph_id]["next"] = -1
-        
+
         # updating next ids
         curr_id = self.current_graph_id
-        while True:     
+        while True:
             prev_id = linked_list[curr_id]["prev"]
-            if prev_id == -1: break # reached the end
-        
+            if prev_id == -1:
+                break  # reached the end
+
             linked_list[prev_id]["next"] = curr_id
             curr_id = prev_id
-   
+
         return linked_list
-    
+
     def _create_next_button(self):
         """Create a next button to this window"""
         next_button = QPushButton("Next", self)
@@ -111,7 +120,6 @@ class GraphEvolution(QWidget):
             n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
             self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}"
             self.info_tab.setText(self.text)
-      
 
     def _next_button_on_click(self):
         next_id = self.linked_list[self.current_graph_id]["next"]
@@ -120,9 +128,7 @@ class GraphEvolution(QWidget):
             self.graph_obj = self.linked_list[self.current_graph_id]["graph"]
             self.node_layout = self.linked_list[self.current_graph_id]["node_layout"]
             self.graph.refresh(self.graph_obj, self.node_layout)
-           
+
             n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
             self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges}"
             self.info_tab.setText(self.text)
-   
-

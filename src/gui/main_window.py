@@ -5,6 +5,8 @@ from PyQt6.QtGui import QGuiApplication
 
 from src.gui.graph_analytics import GraphAnalytics
 from .social_graph import GraphPage
+from .faq import FAQPage
+from .welcome_window import WelcomeScreen
 from .evolution import GraphEvolution
 from ..static import MAIN_WINDOW_HEIGHT, MAIN_WINDOW_WIDTH, PageState
 
@@ -26,12 +28,17 @@ class MainWindow(QMainWindow):
         # Add pages
         self.tabs = QTabWidget()
         self.graph_page = GraphPage(self)
+        self.faq_page = FAQPage(self)
+        self.welcome_screen = WelcomeScreen(self)
         self.graph_analytics = None
         self.graph_evolution = None
 
         self.tabs.addTab(self.graph_page, "Social Graph")
         self.tabs.addTab(QWidget(), "Graph Analytics")
-        self.tabs.addTab(QWidget(), "Evolution of the Network")
+        self.tabs.addTab(self.faq_page, "FAQ")
+
+        if GraphEvolution.should_be_visible():
+            self.tabs.addTab(QWidget(), "Evolution of the Network")
 
         self.tabs.tabBarClicked.connect(self.updateTab)
         self.layout.addWidget(self.tabs)
@@ -39,17 +46,19 @@ class MainWindow(QMainWindow):
         # Center the window on the screen
         self._center_window()
 
+        self.welcome_screen.show()
+
     def updateTab(self, tabIndex):
         if tabIndex == 1:
             self.updateGraphTab()
-        elif tabIndex == 2:
+        elif tabIndex == 2 and GraphEvolution.should_be_visible():
             self.updateGraphEvolveTab()
-    
+
     def updateGraphTab(self):
         self.tabs.removeTab(1)
         self.graph_analytics = GraphAnalytics(self)
-        self.tabs.insertTab(1, self.graph_analytics, "Graph Analytics") # <--- add tab
-    
+        self.tabs.insertTab(1, self.graph_analytics, "Graph Analytics")  # <--- add tab
+
     def updateGraphEvolveTab(self):
         self.tabs.removeTab(2)
         self.graph_evolution = GraphEvolution(self)

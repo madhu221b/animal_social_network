@@ -4,7 +4,7 @@ from src.actions.stack import ActionStack
 
 
 class UndoIcon(IconAction):
-    NAME = 'Undo'
+    DESC = 'Click to undo the last action performed on graph.'
     FILENAME = 'undo.png'
 
     def __init__(self, *args, **kwargs):
