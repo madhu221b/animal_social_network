@@ -4,6 +4,8 @@ from collections import Counter
 import networkx as nx
 import pandas as pd
 import numpy as np
+import holoviews as hv
+from holoviews import opts, dim
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -28,6 +30,10 @@ class GraphAnalytics(QWidget):
         self.node_features = self.parent.graph_page.graph_page.features
         self.features_df = pd.DataFrame(self.node_features).T
         self.features_df.index.name = 'node'
+        self.graph = self.parent.graph_page.graph_page.graph
+        self.edges_df = pd.DataFrame(self.graph.directed_edges, columns=['source', 'target'])
+        self.graph_df = pd.merge(self.edges_df, self.features_df, left_on='source', right_on='node', how='left')
+        self.graph_df = pd.merge(self.graph_df, self.features_df, left_on='target', right_on='node', how='left')
 
         self.setup_ui()
 
@@ -102,5 +108,39 @@ class GraphAnalytics(QWidget):
 
     def chord_diagram(self):
         fig = Figure(figsize=(3,3), dpi=100)
+
+        chord_nodes = pd.DataFrame(columns=['name', 'group'])
+
+        attribute_names = self.features_df.columns
+        attribute_values = {}
+        for column in self.features_df.columns:
+            values = list(set(self.features_df[column].unique()))
+            attribute_values[column] = values
+            for value in values:
+                chord_nodes.loc[len(chord_nodes)] = {'name': value, 'group': column}
+
+        column_names = [str(column) + '_' + str(value) for column, values in attribute_values.items() for value in values]
+        df = pd.DataFrame(0, index=column_names, columns=column_names)
+
+        chord_df = pd.DataFrame(columns=['source', 'target', 'value'])
+        for _, row in self.edges_df.iterrows():
+            for att in attribute_names:
+                source_value = self.features_df.loc[row['source']][att]
+                target_value = self.features_df.loc[row['target']][att]
+                df[att + '_' + str(source_value)][att + '_' + str(target_value)] += 1                
+                if (chord_df[['source', 'target']] == [source_value, target_value]).all(axis=1).any():
+                    condition = (chord_df['source'] == source_value) & (chord_df['target'] == target_value)
+                    chord_df.loc[condition, 'value'] += 1
+                else:
+                    chord_df.loc[len(chord_df)] = {'source': source_value, 'target': target_value, 'value':1}
+
+        hv.extension('matplotlib')
+        opts.defaults(opts.Chord(cmap='Pastel1', edge_cmap='Pastel1', edge_color=dim('source').str(), node_color='index', labels='name'))
+
+        chord = hv.Chord(chord_df)
+        fig = hv.render(chord)
+
+        # ax = fig.add_subplot(111)
+        # ax.imshow(df.values)
 
         return FigureCanvasQTAgg(fig)
