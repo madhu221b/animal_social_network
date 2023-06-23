@@ -34,7 +34,7 @@ def get_pred_edges(graph, animal, new_name):
     features, edgelist, adj, node_dict, _ = ASNRGraph(graph_obj=graph).preprocess()
     n_nodes, feat_dim = features.shape
     adj_norm = preprocess_graph(adj)
-    model = load_model(path_to_model, feat_dim)
+    model = load_model(path_to_model.replace(" ", "_"), feat_dim)
     model.eval()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
