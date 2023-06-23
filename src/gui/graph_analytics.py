@@ -8,7 +8,7 @@ from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
 
-shades = plt.get_cmap('Pastel1')
+shades = plt.get_cmap('tab20')
 
 matplotlib.use("QtAgg")
 
@@ -93,8 +93,11 @@ class GraphAnalytics(QWidget):
         # self.adj_canvas.mpl_connect("button_press_event", lambda event: fullscreen_widget.showMaximized())
         
         # # Add heatmap 
-        heatmap_plot = self.heatmap()
-        plots_layout.addWidget(heatmap_plot)
+        try:
+            heatmap_plot = self.heatmap()
+            plots_layout.addWidget(heatmap_plot)
+        except:
+            pass
 
         # Add the plots layout to the container layout
         container_layout.addLayout(plots_layout)
@@ -124,7 +127,8 @@ class GraphAnalytics(QWidget):
         # adj_matrix = nx.adjacency_matrix(graph, weight='weight')
 
         ax = fig.add_subplot(111)
-        ax.set_title('Binary Adjacency Matrix')
+        fig.suptitle('Adjacency Matrix', x=0.55)
+        fig.tight_layout(pad=3.0)
         im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
@@ -133,7 +137,9 @@ class GraphAnalytics(QWidget):
         ax.set_yticklabels(nodes)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
 
-        fig.colorbar(im, ax=ax, label="Edge Existence", cmap='binary', ticks=[0, 1])
+        ax.legend()
+        cbar = fig.colorbar(im, ax=ax, cmap='binary', ticks=[0, 1], shrink=0.5)
+        cbar.set_ticklabels(['No Edge', 'Edge'])
         
         canvas = FigureCanvasQTAgg(fig)
         return fig
@@ -144,6 +150,9 @@ class GraphAnalytics(QWidget):
         correlations = get_correlations_att_edge(graph, node_features)
         fig = Figure(figsize=(7, 5), dpi=100)
         fig.suptitle('Correlation between attributes and edge existence')
+        fig.text(0.5, 0.04, 
+                 "Pearson\'s two-tailed correlation coefficients between the existence of an edge between nodes, and similarity between the two nodes in various attributes. * indicates p<0.05 with Bonferroni correction.", 
+                 ha='center', fontsize=8, wrap=True)
         ax = fig.add_subplot(111)
         attributes = list(correlations.keys())
         # delete nan values
@@ -159,7 +168,9 @@ class GraphAnalytics(QWidget):
         im = ax.imshow(array, cmap='seismic', vmin=-0.5, vmax=0.5)
 
         #add legend
-        fig.colorbar(im, ax=ax, label="Correlation", cmap='seismic', ticks=[0.5,0,-0.5])
+        fig.colorbar(im, ax=ax, label="Correlation", cmap='seismic', 
+                     ticks=[0.5,0,-0.5], shrink=0.5
+                     )
 
 
         ax.set_xticks(np.arange(len(attributes)), labels=attributes)
@@ -205,9 +216,6 @@ class GraphAnalytics(QWidget):
 
         return table
 
-
-
-    
     def update_ui(self):
         self.setup_ui()
 
@@ -235,7 +243,7 @@ class GraphAnalytics(QWidget):
         return FigureCanvasQTAgg(fig)
 
     def attribute_distribution_plot(self):
-        fig = Figure(figsize=(7, 5), dpi=100)
+        fig = Figure(figsize=(6, 5), dpi=100)
         node_features = self.parent.graph_page.graph_page.features
         attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
@@ -254,6 +262,7 @@ class GraphAnalytics(QWidget):
             for i in range(len(values)):
                 bar = ax.barh(attribute, count[i], left=sum(count[:i]), label=values[i], color=shades(i))
                 bars.extend(bar)
+                ax.text(sum(count[:i]) + count[i]/2, attribute, str(count[i]), ha='center', va='center', color="white",alpha=0.5, fontsize=8, fontweight='bold')
             ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
             # for bar in bars:
@@ -265,8 +274,10 @@ class GraphAnalytics(QWidget):
             for bar in bars:
                 if bar.contains(event)[0]:
                     ax = bar.axes
-                    ax.legend(bbox_to_anchor=(0.8, 0.7), loc='best')
-                    fig.canvas.draw_idle()
+                    l = ax.legend(bbox_to_anchor=(0.8, 0.7), loc='best')
+                    # set zorder
+                    l.set_zorder(200)
+                    # fig.canvas.draw_idle()
                     ax_save = ax
                     break
 
@@ -275,7 +286,8 @@ class GraphAnalytics(QWidget):
                 ax = bar.axes
                 if ax != ax_save:
                     ax.legend().remove()
-                    fig.canvas.draw_idle()
+            
+            fig.canvas.draw_idle()
             
 
         fig.canvas.mpl_connect("button_press_event", onclick)
