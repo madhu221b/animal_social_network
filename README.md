@@ -5,6 +5,7 @@ conda activate mma
 
 pip install pyqt5
 pip install netgraph
+pip install mycolorpy
 
 conda clean --all
 ```

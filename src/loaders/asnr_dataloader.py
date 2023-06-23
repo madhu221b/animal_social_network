@@ -28,7 +28,6 @@ def clean_nodes(g):
             remove_arr.append(node) # Remove nodes with no keys or 1 key
         else:
             vals = data.values()
-            print(vals)
             if any(isinstance(val, str) and len(val.strip()) == 0 for val in vals):
                 remove_arr.append(node) # Remove nodes with empty strings 
             elif any(isinstance(val, str) and val == "-" for val in vals):
