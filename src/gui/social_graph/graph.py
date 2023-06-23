@@ -107,8 +107,8 @@ class GraphCanvas(FigureCanvasQTAgg):
     def refresh(self):
         self.ax.cla()  # Clears the existing plot
         pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()))
-        import numpy as np
-        if np.isnan(list(pos.values())[0][0]):
+
+        if math.isnan(list(pos.values())[0][0]):
             pos = nx.circular_layout(self.graph.graph)
 
         if self.graph.node_layout is not None:
