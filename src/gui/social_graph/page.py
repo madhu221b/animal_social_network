@@ -40,7 +40,8 @@ class GraphPage(QWidget):
         self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
 
         # Add content
-        content_layout.addWidget(self.graph_page, 8)
+        content_layout.addWidget(self.top_page, 1)
+        content_layout.addWidget(self.graph_page, 7)
         content_layout.addWidget(self.color_bar, 2)
 
         # Sub-pages allocation on main page
@@ -48,9 +49,7 @@ class GraphPage(QWidget):
         hlayout.addLayout(content_layout)
         hlayout.addWidget(self.right_page)
 
-        main_layout.addWidget(self.top_page)
         main_layout.addLayout(hlayout)
-        # main_layout.addWidget(self.color_bar)
 
         self.setLayout(main_layout)
 
