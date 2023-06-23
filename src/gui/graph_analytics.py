@@ -1,21 +1,50 @@
-from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout
-from collections import Counter
+from PyQt6 import QtGui, QtWidgets, QtCore
+from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget
 import networkx as nx
-import pandas as pd
 import numpy as np
-import holoviews as hv
-from holoviews import opts, dim
+from ..utils.analytics_utils import get_correlations_att_edge
 
+from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
 
 shades = plt.get_cmap('Pastel1')
 
-matplotlib.use("Qt5Agg")
+matplotlib.use("QtAgg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+class FullScreenWidget(QDialog):
+    def __init__(self, content_fig, parent):
+        super().__init__(parent)
+        self.parent = parent    
+
+        self.setWindowTitle("Adjacency Matrix")
+        self.setModal(True)
+        self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        canvas = FigureCanvasQTAgg(content_fig)
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(canvas)
+
+        self.button = QPushButton("Close", self)
+        self.button.clicked.connect(self.exit_fullscreen)
+        self.button.setStyleSheet("font-size: 24px; padding 10px;")
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
+
+    
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.showMaximized()
+
+    def exit_fullscreen(self):
+        self.showNormal()
+        self.close()
+
+
 
 
 class GraphAnalytics(QWidget):
@@ -26,74 +55,77 @@ class GraphAnalytics(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-
-        self.node_features = self.parent.graph_page.graph_page.features
-        self.features_df = pd.DataFrame(self.node_features).T
-        self.features_df.index.name = 'node'
-        self.graph = self.parent.graph_page.graph_page.graph
-        self.edges_df = pd.DataFrame(self.graph.directed_edges, columns=['source', 'target'])
-        self.graph_df = pd.merge(self.edges_df, self.features_df, left_on='source', right_on='node', how='left')
-        self.graph_df = pd.merge(self.graph_df, self.features_df, left_on='target', right_on='node', how='left')
-
         self.setup_ui()
 
-        
     def setup_ui(self):
-        main_layout = QGridLayout(self)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
 
-        # Add attribute distribution plot
-        attribute_distribution_plot = self.attribute_distribution_plot()
-        main_layout.addWidget(attribute_distribution_plot, 0, 0, 1, 2)
+        container_widget = QWidget()
+        container_layout = QHBoxLayout(container_widget)
 
-        # Add adjacency matrix plot
-        adj_matrix_plot = self.adjacency_matrix()
-        main_layout.addWidget(adj_matrix_plot, 1, 0)
-
-        # # Add chord diagram
-        chord_diagram = self.chord_diagram()
-        main_layout.addWidget(chord_diagram, 1, 1)
-
-
-    def attribute_distribution_plot(self):
-        plt.rcParams.update({'font.size': 8})
-        fig = Figure(figsize=(5, 4), dpi=100)
-        fig.suptitle('Attribute Distribution')
-
-        attribute_values = self.features_df.to_dict(orient='list')
-        num_attributes = len(attribute_values)
-        num_rows = num_attributes // 3 + num_attributes % 3 
-        num_cols = 3 
-        fig.subplots_adjust(hspace=5, wspace=0.3, left=0.08, right=0.98, top=0.93, bottom=0.15)
-
-        for i, (attribute, values) in enumerate(attribute_values.items()):
-            value_counts = Counter(values)
-            values = list(value_counts.keys())
-            count = list(value_counts.values())
-
-            ax = fig.add_subplot(num_rows, num_cols, i+1)
-            ax.barh(attribute, count[0], label=values[0], color=shades(0))
-            for j in range(1, len(values)):
-                ax.barh(attribute, count[j], left=sum(count[:j]), label=values[j], color=shades(j))
-
-            ax.set_xlim(0, sum(count))
-            ax.set_xticks(range(0, sum(count) + 1, 2))
-            ax.set_xticklabels(range(0, sum(count) + 1, 2), fontsize=5)
-
-            if len(values) > 8:
-                ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1.5), ncol=5, fontsize=4)
-            else:
-                ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1.5), ncol=4, fontsize=5)
+        # Create a vertical layout for the plots
+        self.plots_layout = QVBoxLayout()
+        plots_layout = self.plots_layout
         
-        return FigureCanvasQTAgg(fig)
-    
+        node_features = self.parent.graph_page.graph_page.features
+        disc_attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
+        cont_attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==float and int(v)!=v], key=lambda x: x.lower())
+
+        # Add discrete attribute distribution plot
+        if len(disc_attribute_labels) > 0:
+            attribute_distribution_plot = self.attribute_distribution_plot()
+            plots_layout.addWidget(attribute_distribution_plot)
+
+        # Add attribute distribution plot continuous variables
+        if len(cont_attribute_labels) > 0:
+            attribute_distribution_cont = self.attribute_distribution_cont()
+            plots_layout.addWidget(attribute_distribution_cont)
+
+
+        adj_matrix_plot = self.adjacency_matrix()
+        fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
+        
+        # Add adjacency matrix plot
+        
+        # self.adj_canvas = FigureCanvasQTAgg(adj_matrix_plot)
+        # plots_layout.addWidget(self.adj_canvas)
+        # self.adj_canvas.mpl_connect("button_press_event", lambda event: fullscreen_widget.showMaximized())
+        
+        # # Add heatmap 
+        heatmap_plot = self.heatmap()
+        plots_layout.addWidget(heatmap_plot)
+
+        # Add the plots layout to the container layout
+        container_layout.addLayout(plots_layout)
+
+        table_layout = QVBoxLayout()
+        # Add graph analytics table
+        graph_analytics_table = self.graph_analytics_table()
+        table_layout.addWidget(graph_analytics_table)
+
+        button = QPushButton("Adjacency Matrix", self)
+        button.clicked.connect(fullscreen_widget.show)
+        button.setStyleSheet("font-size: 24px; padding 10px;")
+        table_layout.addWidget(button)
+
+        container_layout.addLayout(table_layout)
+
+
+        scroll_area.setWidget(container_widget)
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(scroll_area)
+
 
     def adjacency_matrix(self):
-        fig = Figure(figsize=(3,3), dpi=100)
+        fig = Figure(figsize=(8,5), dpi=100)
         graph = self.parent.graph_page.graph_page.graph.graph
-        adj_matrix = nx.adjacency_matrix(graph)
+        bi_adj_matrix = nx.adjacency_matrix(graph, weight=None)
+        # adj_matrix = nx.adjacency_matrix(graph, weight='weight')
+
         ax = fig.add_subplot(111)
-        ax.set_title('Adjacency Matrix')
-        im = ax.matshow(adj_matrix.todense())
+        ax.set_title('Binary Adjacency Matrix')
+        im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
         ax.set_yticks(np.arange(len(nodes)))
@@ -101,46 +133,151 @@ class GraphAnalytics(QWidget):
         ax.set_yticklabels(nodes)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
 
-        fig.colorbar(im, ax=ax, label="Interaction Count")
+        fig.colorbar(im, ax=ax, label="Edge Existence", cmap='binary', ticks=[0, 1])
+        
+        canvas = FigureCanvasQTAgg(fig)
+        return fig
+    
+    def heatmap(self):
+        graph = self.parent.graph_page.graph_page.graph.graph
+        node_features = self.parent.graph_page.graph_page.features
+        correlations = get_correlations_att_edge(graph, node_features)
+        fig = Figure(figsize=(7, 5), dpi=100)
+        fig.suptitle('Correlation between attributes and edge existence')
+        ax = fig.add_subplot(111)
+        attributes = list(correlations.keys())
+        # delete nan values
+        for i in reversed(range(len(attributes))):
+            if np.isnan(correlations[attributes[i]][0]):
+                del correlations[attributes[i]]
+                del attributes[i]
+                
+
+        coefficients = [c[0] for c in list(correlations.values())]
+        p_values = [c[1] for c in list(correlations.values())]
+        array = np.array(coefficients).reshape(1, len(correlations))
+        im = ax.imshow(array, cmap='seismic', vmin=-0.5, vmax=0.5)
+
+        #add legend
+        fig.colorbar(im, ax=ax, label="Correlation", cmap='seismic', ticks=[0.5,0,-0.5])
+
+
+        ax.set_xticks(np.arange(len(attributes)), labels=attributes)
+        plt.setp(ax.get_xticklabels(), rotation=80, ha="right", rotation_mode="anchor")
+
+
+        # remove yticks
+        ax.set_yticks([])
+        for i in range(len(attributes)):
+            ax.text(i, -0.25, str(round(coefficients[i], 2)), ha='center', va='center', color='black', fontsize=8)
+            if p_values[i] < 0.05 / len(attributes): # bonferroni correction
+                ax.text(i, 0.25, '*', ha='center', va='center', color='black', fontsize=8)
 
         return FigureCanvasQTAgg(fig)
     
+    def graph_analytics_table(self):
+        graph = self.parent.graph_page.graph_page.graph.graph
+        n = graph.number_of_nodes()
+        graph_metrics = {
+            'Number of Nodes': graph.number_of_nodes(),
+            'Number of Edges': graph.number_of_edges(),
+            'Density': round(nx.density(graph), 3),
+            'Diameter': nx.diameter(graph),
+            'Average Degree': round(sum([d for _, d in graph.degree()]) / n,3),
+            'Average Clustering': round(nx.average_clustering(graph), 3),
+            'Average Shortest Path': round(nx.average_shortest_path_length(graph), 3),
+            'Average Betweenness Centrality': round(sum([b for _, b in nx.betweenness_centrality(graph).items()]) / n,3),
+            'Average Closeness Centrality': round(sum([c for _, c in nx.closeness_centrality(graph).items()]) / n,3),
+            'Average Eigenvector Centrality': round(sum([e for _, e in nx.eigenvector_centrality(graph).items()]) / n,3),
+            'Average PageRank': round(sum([p for _, p in nx.pagerank(graph).items()]) / n,3),
+            'Average Degree Centrality': round(sum([d for _, d in nx.degree_centrality(graph).items()]) / n,3)
+         }
+        table = QTableWidget()
+        table.setRowCount(len(graph_metrics))
+        table.setColumnCount(2)
+        table.setHorizontalHeaderLabels(['Metric', 'Value'])
+        # table.setVerticalHeaderLabels(graph_metrics.keys())
+        for i, (metric, value) in enumerate(graph_metrics.items()):
+            table.setItem(i, 0, QtWidgets.QTableWidgetItem(metric))
+            table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(value)))
+        table.resizeColumnsToContents()
+        table.resizeRowsToContents()
 
-    def chord_diagram(self):
-        fig = Figure(figsize=(3,3), dpi=100)
+        return table
 
-        chord_nodes = pd.DataFrame(columns=['name', 'group'])
 
-        attribute_names = self.features_df.columns
-        attribute_values = {}
-        for column in self.features_df.columns:
-            values = list(set(self.features_df[column].unique()))
-            attribute_values[column] = values
-            for value in values:
-                chord_nodes.loc[len(chord_nodes)] = {'name': value, 'group': column}
 
-        column_names = [str(column) + '_' + str(value) for column, values in attribute_values.items() for value in values]
-        df = pd.DataFrame(0, index=column_names, columns=column_names)
+    
+    def update_ui(self):
+        self.setup_ui()
 
-        chord_df = pd.DataFrame(columns=['source', 'target', 'value'])
-        for _, row in self.edges_df.iterrows():
-            for att in attribute_names:
-                source_value = self.features_df.loc[row['source']][att]
-                target_value = self.features_df.loc[row['target']][att]
-                df[att + '_' + str(source_value)][att + '_' + str(target_value)] += 1                
-                if (chord_df[['source', 'target']] == [source_value, target_value]).all(axis=1).any():
-                    condition = (chord_df['source'] == source_value) & (chord_df['target'] == target_value)
-                    chord_df.loc[condition, 'value'] += 1
-                else:
-                    chord_df.loc[len(chord_df)] = {'source': source_value, 'target': target_value, 'value':1}
 
-        hv.extension('matplotlib')
-        opts.defaults(opts.Chord(cmap='Pastel1', edge_cmap='Pastel1', edge_color=dim('source').str(), node_color='index', labels='name'))
+    
+    def attribute_distribution_cont(self):
+        fig = Figure(figsize=(7, 5), dpi=100)
+        node_features = self.parent.graph_page.graph_page.features
+        attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==float and int(v)!=v], key=lambda x: x.lower())
+        n = len(attribute_labels)
+        fig.suptitle('Attribute Distribution (cont)')
 
-        chord = hv.Chord(chord_df)
-        fig = hv.render(chord)
+        m = np.gcd(n, 12)
+        k = int(n / m)
+        for i in range(n):
+            ax = fig.add_subplot(m, k, i+1)
+            attribute = attribute_labels[i]
+            attribute_values = [features[attribute] for features in node_features.values() if attribute in features.keys()]
+            ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5)
+            ax.tick_params(axis='y', labelsize=5)
+            ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+            ax.set_title(attribute, fontsize=6)
 
-        # ax = fig.add_subplot(111)
-        # ax.imshow(df.values)
+        fig.tight_layout(pad=3.0)        
+        return FigureCanvasQTAgg(fig)
+
+    def attribute_distribution_plot(self):
+        fig = Figure(figsize=(7, 5), dpi=100)
+        node_features = self.parent.graph_page.graph_page.features
+        attribute_labels = sorted([k for k, v in list(node_features.values())[0].items() if type(v)==str or int(v)==v], key=lambda x: x.lower())
+        # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
+        n = len(attribute_labels)
+        fig.suptitle('Attribute Distribution')
+        fig.tight_layout(pad=3.0)
+        bars = []
+        for i in range(n):
+            ax = fig.add_subplot(n, 1, i+1)
+            attribute = attribute_labels[i]
+            attribute_values = [features[attribute] for features in node_features.values() if attribute in features.keys()]
+            element_counts = Counter(attribute_values)
+            values = list(element_counts.keys())
+            count = list(element_counts.values())
+ 
+            for i in range(len(values)):
+                bar = ax.barh(attribute, count[i], left=sum(count[:i]), label=values[i], color=shades(i))
+                bars.extend(bar)
+            ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+
+            # for bar in bars:
+            #     bar.set_picker(True)
+            
+        
+        def onclick(event):
+            ax_save = None
+            for bar in bars:
+                if bar.contains(event)[0]:
+                    ax = bar.axes
+                    ax.legend(bbox_to_anchor=(0.8, 0.7), loc='best')
+                    fig.canvas.draw_idle()
+                    ax_save = ax
+                    break
+
+            # This seems like a round-about way, but is necessary since mulitple bars are part of the same axes
+            for bar in bars:
+                ax = bar.axes
+                if ax != ax_save:
+                    ax.legend().remove()
+                    fig.canvas.draw_idle()
+            
+
+        fig.canvas.mpl_connect("button_press_event", onclick)
 
         return FigureCanvasQTAgg(fig)
