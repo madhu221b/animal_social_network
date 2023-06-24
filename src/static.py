@@ -46,6 +46,7 @@ for path in paths:
         "metadata": metadata,
     }
 
+print(metadata)
 GRAPH_DATA = dict(GRAPH_DATA)
 
 # Generated version table
@@ -77,11 +78,13 @@ class PageState:
         PageState.id = None
         PageState.category = None
 
+
     @staticmethod
     def select_id(category, id):
         PageState.id = id
         PageState.category = category
         PageState.graph_path = PageState.title = GRAPH_DATA[category][id]["path"]
+        PageState.metadata = GRAPH_DATA[category][id]["metadata"]
 
     @staticmethod
     def select_version(version, is_next_version=False):
