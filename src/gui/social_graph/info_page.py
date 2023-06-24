@@ -100,10 +100,12 @@ class InfoMessageBox(QDialog):
         self.headers = ["Definition of interaction", "Note", "**Citation**"]
         for header in self.headers:
             self.h = QHBoxLayout()
-            self.label = QLabel(f"{header}: ")
+            header_text = header.replace("**", "")
+            self.label = QLabel(f"{header_text}: ")
             self.label.setStyleSheet("font-weight: bold")
             self.b = QPlainTextEdit(self)
-            self.b.insertPlainText(f"{PageState.metadata[header]}")
+            text = PageState.metadata[header].replace("<br>","").replace("</br>","")
+            self.b.insertPlainText(f"{text}")
             self.b.setReadOnly(True)
             self.h.addWidget(self.label)
             self.h.addWidget(self.b)

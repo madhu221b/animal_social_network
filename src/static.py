@@ -88,9 +88,8 @@ class PageState:
 
     @staticmethod
     def select_version(version, is_next_version=False):
-        if (
-            not is_next_version
-        ):  # this call is called when "select" button is clicked for dropdown.
+        if is_next_version is False:
+            # this call is called when "select" button is clicked for dropdown.
             PageState.curr_version = version
             PageState.version = version
         else:  # this call is called when "save" button is called for retraining
