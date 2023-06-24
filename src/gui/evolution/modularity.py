@@ -33,7 +33,7 @@ class Modularity(QWidget):
     
     def get_bar(self, communities):
         fig, ax  = plt.subplots()
-        fig.suptitle('No. of Communities VS Modularity')
+        # fig.suptitle('No. of Communities VS Modularity')
      
 
         x_vals, y_vals = [], []
@@ -45,11 +45,11 @@ class Modularity(QWidget):
         self.max_id = np.argmax(y_vals)
         self.max_modularity = round(np.max(y_vals),6)
         ax.bar(x_vals, y_vals)
-        ax.tick_params(axis='y', labelsize=5)
+        ax.tick_params(axis='y', labelsize=4)
         ax.tick_params(axis='x')
         ax.set_xlabel("No. of Communities")
         ax.set_ylabel("Modularity Score")
-        # ax.set_title("Modularity ax", fontsize=6)
+        ax.set_title("No. of Communities VS Modularity", fontsize=6)
 
         fig.tight_layout(pad=3.0)        
         return FigureCanvasQTAgg(fig)

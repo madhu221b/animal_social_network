@@ -42,7 +42,7 @@ class GraphEvolution(QWidget):
         self.node_layout = self.linked_list[self.current_graph_id]["node_layout"]
         n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
         avg_coeff = round(nx.average_clustering(G=self.graph_obj),6)
-        self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
+        self.text = f"Version: {self.current_graph_id} \n Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
 
         self.graph = GraphCanvas(parent, graph=self.graph_obj, node_layout=self.node_layout, width=5, height=4, dpi=100)
         self.info_tab = QLabel(text=self.text, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -132,7 +132,7 @@ class GraphEvolution(QWidget):
             self.graph.refresh(self.graph_obj, self.node_layout)
             n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
             avg_coeff = round(nx.average_clustering(G=self.graph_obj),6)
-            self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
+            self.text = f"Version: {self.current_graph_id} \n Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
 
             self.info_tab.setText(self.text)
       
@@ -147,7 +147,7 @@ class GraphEvolution(QWidget):
            
             n_nodes, n_edges = self.graph_obj.number_of_nodes(), self.graph_obj.number_of_edges()
             avg_coeff = round(nx.average_clustering(G=self.graph_obj),6)
-            self.text = f"Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
+            self.text = f"Version: {self.current_graph_id} \n Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
 
             self.info_tab.setText(self.text)
    
