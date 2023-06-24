@@ -2,7 +2,6 @@ import os
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtCore import pyqtSignal
 
 from src.gui.graph_analytics import GraphAnalytics
 from .social_graph import GraphPage
@@ -14,7 +13,6 @@ class MainWindow(QMainWindow):
     """
     This is the main window, with tabs and 1 canvas (dashboard/page) for each tab.
     """
-
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -28,26 +26,34 @@ class MainWindow(QMainWindow):
         # Add pages
         self.tabs = QTabWidget()
         self.graph_page = GraphPage(self)
-   
+        self.graph_analytics = None
+        self.graph_evolution = None
+
         self.tabs.addTab(self.graph_page, "Social Graph")
         self.tabs.addTab(QWidget(), "Graph Analytics")
-      
+        self.tabs.addTab(QWidget(), "Evolution of the Network")
+
         self.tabs.tabBarClicked.connect(self.updateTab)
         self.layout.addWidget(self.tabs)
 
         # Center the window on the screen
         self._center_window()
-    
+
     def updateTab(self, tabIndex):
-        pass
         if tabIndex == 1:
             self.updateGraphTab()
+        elif tabIndex == 2:
+            self.updateGraphEvolveTab()
     
     def updateGraphTab(self):
         self.tabs.removeTab(1)
         self.graph_analytics = GraphAnalytics(self)
-        self.tabs.addTab(self.graph_analytics, "Graph Analytics") # <--- add tab
-
+        self.tabs.insertTab(1, self.graph_analytics, "Graph Analytics") # <--- add tab
+    
+    def updateGraphEvolveTab(self):
+        self.tabs.removeTab(2)
+        self.graph_evolution = GraphEvolution(self)
+        self.tabs.insertTab(2, self.graph_evolution, "Evolution of the Network")
 
     def _center_window(self):
         """Center the window on the screen"""
