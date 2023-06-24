@@ -16,11 +16,10 @@ python src/dashboard/main.py
 ```
 
 ## Downloading the data
-Download [this](https://drive.google.com/file/d/1HSvRDI7EV1w1UDJNo65v7-AYT9HLaOm9/view?usp=sharing) file and run the following commands to clone the ASNR repo and move the data into the `datasets/` folder. 
+Download [this](https://drive.google.com/file/d/1HSvRDI7EV1w1UDJNo65v7-AYT9HLaOm9/view?usp=sharing) file, place it in the `./datasets` directory and clone the ASNR repo with the following command: 
 
 ```bash
 git clone https://github.com/bansallab/asnr.git
-python scripts/move_asnr.py
 ```
 
 ## Training Graph-VAE Model 
