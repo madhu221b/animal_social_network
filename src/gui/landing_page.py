@@ -2,12 +2,12 @@ from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QScreen
 from .main_window import MainWindow
 from ..static import (
-    IDS,
+    GRAPH_DATA,
     LANDING_PAGE_TITLE,
     LANDING_PAGE_WIDTH,
     LANDING_PAGE_HEIGHT,
     PageState,
-    versions,
+    VERSIONS,
 )
 
 
@@ -61,32 +61,46 @@ class LandingPage(QtWidgets.QWidget):
 
     def _create_dropdown_list(self):
         """Create a clickable dropdown list to this window"""
+
+        dropdown_category = DropDownListBox(self)
         dropdown_list = DropDownListBox(self)
         dropdown_list_version = DropDownListBox(self)
 
         # Define all choices the users can choose from
-        dropdown_list.addItems(sorted(IDS))
-        dropdown_list.setCurrentIndex(0)  # Select the first item by default
+        dropdown_category.addItems(sorted(GRAPH_DATA.keys()))
+        dropdown_category.setCurrentIndex(0)  # Select the first item by default
 
         # Add widget to the layout
+        self.layout.addWidget(dropdown_category)
         self.layout.addWidget(dropdown_list)
         self.layout.addWidget(dropdown_list_version)
+        self.dropdown_category = dropdown_category
         self.dropdown_list = dropdown_list
         self.dropdown_list_version = dropdown_list_version
 
         # Signal slot connection
+        dropdown_category.currentIndexChanged.connect(self._update_listing)
         dropdown_list.currentIndexChanged.connect(self._update_version_dropdown)
-
         # Trigger the update manually for the first time
+        self._update_listing(0)
         self._update_version_dropdown(0)
 
-    def _update_version_dropdown(self, index):
+    def _update_listing(self, index):
         """Update the version dropdown based on the selected item in the first dropdown"""
+        selected_category = self.dropdown_category.itemText(index)
+        self.dropdown_list.clear()
+        self.dropdown_list.addItems(sorted(GRAPH_DATA[selected_category].keys()))
+
+    def _update_version_dropdown(self, index):
+        """Update the version dropdown based on the selected item in the second dropdown"""
+        if len(self.dropdown_list) == 0:
+            return
+
         selected_animal = self.dropdown_list.itemText(index)
         self.dropdown_list_version.clear()
-        self.dropdown_list_version.addItems(versions[selected_animal])
+        self.dropdown_list_version.addItems(VERSIONS[selected_animal])
 
-        if not len(versions[selected_animal]) == 1:
+        if not len(VERSIONS[selected_animal]) == 1:
             self.dropdown_list_version.setEnabled(True)
         else:
             self.dropdown_list_version.setDisabled(True)
@@ -114,6 +128,7 @@ class LandingPage(QtWidgets.QWidget):
         """
 
         # Select item and version
+        category = self.dropdown_category.currentText()
         page_id = self.dropdown_list.currentText()
         page_version = self.dropdown_list_version.currentText()
 
@@ -124,7 +139,7 @@ class LandingPage(QtWidgets.QWidget):
             self.main_window.close()
 
         # Create new window and hide this one
-        PageState.select_id(page_id)
+        PageState.select_id(category, page_id)
         PageState.select_version(page_version, is_next_version=False)
         self.main_window = MainWindow()
         self.main_window.show()

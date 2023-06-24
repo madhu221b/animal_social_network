@@ -5,7 +5,7 @@ def move_files(file_paths, destination_folder):
     for file_path in file_paths:
         file_path = file_path.strip()
         try:
-            shutil.move(file_path, destination_folder)
+            shutil.copy(file_path, destination_folder)
             print(f"Moved {file_path} to {destination_folder}")
         except FileNotFoundError:
             print(f"File {file_path} not found.")
@@ -22,7 +22,7 @@ def read_file_paths(file_path):
 
 if __name__ == "__main__":
     # Update paths
-    input_file = "5+n_4+f_graphs.txt"
+    input_file = "out/final_datasets.txt"
     destination_folder = "./datasets/"
 
     file_paths = read_file_paths(input_file)
