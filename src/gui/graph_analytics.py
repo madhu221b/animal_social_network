@@ -83,7 +83,7 @@ class GraphAnalytics(QWidget):
         # Add discrete attribute distribution plot
         if len(disc_attribute_labels) > 0:
             attribute_distribution_plot = self.attribute_distribution_plot()
-            attribute_distribution_plot.setFixedHeight(500)
+            attribute_distribution_plot.setFixedHeight(40*len(disc_attribute_labels))
             plots_layout.addWidget(attribute_distribution_plot)
 
         # Add attribute distribution plot continuous variables
@@ -93,7 +93,7 @@ class GraphAnalytics(QWidget):
             attribute_distribution_cont = self.attribute_distribution_cont()
             attribute_distribution_cont.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                                       QtWidgets.QSizePolicy.Policy.Expanding)
-            attribute_distribution_cont.setFixedHeight(500)
+            attribute_distribution_cont.setFixedHeight(100*len(cont_attribute_labels))
             plots_layout.addWidget(attribute_distribution_cont)
 
         adj_matrix_plot = self.adjacency_matrix()
@@ -267,12 +267,12 @@ class GraphAnalytics(QWidget):
         ],
                                   key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle('Attribute Distribution (cont)')
-
-        C = 5
-        k = int(np.ceil(n / C))
+        fig.suptitle('Attribute Distribution (continuous variables)')
+        fig.tight_layout(pad=0.5)
+        c = 2
+        k = int(np.ceil(n / c))
         for i in range(n):
-            ax = fig.add_subplot(n, 1, i + 1)  # Need to make scrollable
+            ax = fig.add_subplot(k, c, i + 1)  # Need to make scrollable
             attribute = attribute_labels[i]
             attribute_values = [
                 features[attribute]
@@ -284,7 +284,7 @@ class GraphAnalytics(QWidget):
             ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
             ax.set_title(attribute, fontsize=6)
 
-        fig.tight_layout(pad=3.0)
+        # fig.tight_layout(pad=3.0)
         return FigureCanvasQTAgg(fig)
 
     def attribute_distribution_plot(self):
