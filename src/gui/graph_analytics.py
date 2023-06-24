@@ -8,7 +8,7 @@ from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
 
-shades = plt.get_cmap('tab20')
+shades = plt.get_cmap('Set3')
 
 matplotlib.use("QtAgg")
 
@@ -201,13 +201,13 @@ class GraphAnalytics(QWidget):
         # remove yticks
         ax.set_yticks([])
         for i in range(len(attributes)):
-            ax.text(i,
-                    -0.25,
-                    str(round(coefficients[i], 2)),
-                    ha='center',
-                    va='center',
-                    color='black',
-                    fontsize=8)
+            # ax.text(i,
+            #         -0.25,
+            #         str(round(coefficients[i], 2)),
+            #         ha='center',
+            #         va='center',
+            #         color='black',
+            #         fontsize=8)
             if p_values[i] < 0.05 / len(attributes):  # bonferroni correction
                 ax.text(i, 0.25, '*', ha='center', va='center', color='black', fontsize=8)
 
@@ -267,7 +267,8 @@ class GraphAnalytics(QWidget):
         ],
                                   key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle('Attribute Distribution (continuous variables)')
+        fig.suptitle('Node Attribute Distribution (continuous variables)')
+        fig.text(0.5,0.5, s="test")
         fig.tight_layout(pad=0.5)
         c = 2
         k = int(np.ceil(n / c))
@@ -296,7 +297,7 @@ class GraphAnalytics(QWidget):
                                   key=lambda x: x.lower())
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle('Attribute Distribution')
+        fig.suptitle("Node Attribute Distribution")
         fig.tight_layout(pad=3.0)
         bars = []
         for i in range(n):
