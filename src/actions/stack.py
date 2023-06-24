@@ -5,7 +5,7 @@ from .action import GraphAction
 from .graph_actions import *
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('graph')
+logger = logging.getLogger('stack')
 
 
 class _ActionStack(QObject):
@@ -43,14 +43,30 @@ class _ActionStack(QObject):
         ActionStack.done_stack_changed.emit(len(ActionStack.done_stack))
         ActionStack.undone_stack_changed.emit(len(ActionStack.undone_stack))
 
+    @staticmethod
+    def reset(trigger=True):
+        ActionStack.done_stack = []
+        ActionStack.undone_stack = []
+        ActionStack.trigger_events()
+
 
 ActionStack = _ActionStack()
 
 
 def perform_action_on_graph(graph, action_class):
 
-    def _perform_action(**kwargs):
-        action = action_class(graph, **kwargs)
+    def _perform_action(*args, **kwargs):
+        action = action_class(graph, *args, **kwargs)
         ActionStack.add(action)
+
+    return _perform_action
+
+
+def perform_global_action(action_class):
+
+    def _perform_action(*args, **kwargs):
+        action = action_class(*args, **kwargs)
+        action.do()
+        # Note: this is a global action, not added to the stack
 
     return _perform_action

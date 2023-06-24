@@ -6,6 +6,7 @@ from PyQt6.QtCore import pyqtSignal
 
 from src.gui.graph_analytics import GraphAnalytics
 from .social_graph import GraphPage
+from .evolution import GraphEvolution
 from ..static import MAIN_WINDOW_HEIGHT, MAIN_WINDOW_WIDTH, PageState
 
 

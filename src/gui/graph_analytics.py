@@ -1,8 +1,13 @@
 from PyQt6 import QtGui, QtWidgets, QtCore
-from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget
+from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget, QLineEdit
 import networkx as nx
 import numpy as np
 from ..utils.analytics_utils import get_correlations_att_edge
+import pandas as pd
+import holoviews as hv
+from holoviews import opts, dim
+
+hv.extension('matplotlib')
 
 from collections import Counter
 import matplotlib
@@ -80,6 +85,7 @@ class GraphAnalytics(QWidget):
         ],
                                        key=lambda x: x.lower())
 
+
         # Add discrete attribute distribution plot
         if len(disc_attribute_labels) > 0:
             attribute_distribution_plot = self.attribute_distribution_plot()
@@ -118,6 +124,19 @@ class GraphAnalytics(QWidget):
         plots_widget.setLayout(plots_layout)
         scroll.setWidget(plots_widget)
         container_layout.addWidget(scroll)
+
+        # Add chord diagram
+        line_edit = QLineEdit()
+        chord_button = QPushButton("Update Chord Diagram")
+        chord_button.setEnabled(False)
+        line_edit.textChanged.connect(lambda text: chord_button.setEnabled(bool(text)))
+        chord_button.clicked.connect(lambda: self.update_chord_diagram(int(line_edit.text()), plots_layout))
+        plots_layout.addWidget(line_edit)
+        plots_layout.addWidget(chord_button)
+
+        self.chord_diagram = self.chord_diagram(disc_attribute_labels, node_features, graph)
+        plots_layout.addWidget(self.chord_diagram)
+        
 
         # Add the plots layout to the container layout
         # container_layout.addLayout(plots_layout)
@@ -356,3 +375,70 @@ class GraphAnalytics(QWidget):
         fig.canvas.mpl_connect("button_press_event", onclick)
 
         return FigureCanvasQTAgg(fig)
+    
+
+    def chord_diagram(self, attribute_names, node_features, graph):
+        fig = Figure(figsize=(3,3), dpi=100)
+
+        features_df = pd.DataFrame(node_features).T
+        features_df.index.name = 'node'
+        edges_df = pd.DataFrame(graph.directed_edges, columns=['source', 'target'])
+
+        att_dict = {}
+        chord_nodes_list = []
+        i = 0
+        for att in attribute_names:
+            unique_values = list(features_df[att].unique())
+            unique_values = [value for value in unique_values if value != ' ']
+            att_dict[att] = {att+'_'+str(value): i + idx for idx, value in enumerate(unique_values)}
+            i += len(unique_values)
+
+        node_dict = {}
+        for att, values in att_dict.items():
+            node_dict.update(values)
+            for val, idx in values.items():
+                if val == 'nan':
+                    continue
+                chord_nodes_list.append({'index': idx, 'name': val, 'group': att})
+
+        self.chord_nodes = pd.DataFrame(chord_nodes_list)
+        self.chord_nodes = self.chord_nodes.sort_values(by='group')
+
+        combinations = []
+        for _, row in edges_df.iterrows():
+            sources = features_df.loc[row['source'], attribute_names].dropna()
+            targets = features_df.loc[row['target'], attribute_names].dropna()
+            sources_list = [att+'_'+str(val) for att, val in sources.items() if val != ' ']
+            targets_list = [att+'_'+str(val) for att, val in targets.items() if val != ' ']
+            combinations.extend({'source': node_dict[source], 'target': node_dict[target]} for source in sources_list for target in targets_list)
+
+        chord_df = pd.DataFrame(combinations, columns=['source', 'target'])
+        chord_df = chord_df.groupby(['source', 'target']).size().reset_index(name='value')
+
+        self.sorted_df = chord_df.sort_values('value', ascending=False)
+        top_edges = self.sorted_df.nlargest(20, 'value')
+        selected_nodes = self.chord_nodes.loc[self.chord_nodes['index'].isin(top_edges['source'].tolist() + top_edges['target'].tolist())]
+        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
+
+        chord = hv.Chord((top_edges, nodes))
+        chord.opts(opts.Chord(cmap='Category20', edge_cmap='Category20', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
+                              node_linewidth=0.2, node_size=5))
+        fig = hv.render(chord)
+
+        return FigureCanvasQTAgg(fig)
+    
+
+
+    def update_chord_diagram(self, top_n, plots_layout):
+        plots_layout.removeWidget(self.chord_diagram)
+
+        top_edges = self.sorted_df.nlargest(top_n, 'value')
+        selected_nodes = self.chord_nodes.loc[self.chord_nodes['index'].isin(top_edges['source'].tolist() + top_edges['target'].tolist())]
+        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
+
+        chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
+        chord.opts(opts.Chord(cmap='Category20', edge_cmap='Category20', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
+                              node_linewidth=0.2, node_size=5))
+        fig = hv.render(chord)
+        self.chord_diagram = FigureCanvasQTAgg(fig)
+        plots_layout.addWidget(self.chord_diagram)

@@ -17,7 +17,7 @@ class Action:
         self.done = True
 
 
-class NavigationAction(Action):
+class GlobalAction(Action):
     """
     These are the actions like 'save graph' or 'exit graph'
     """

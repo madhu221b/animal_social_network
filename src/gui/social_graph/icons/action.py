@@ -1,6 +1,5 @@
 import os
-from PyQt6.QtGui import QAction
-from PyQt6.QtGui import QIcon, QPixmap, QImage, qGray
+from PyQt6.QtGui import QAction, QIcon, QPixmap, QImage, qGray
 
 
 class IconAction(QAction):
@@ -13,8 +12,11 @@ class IconAction(QAction):
         super().__init__(parent)
         self.parent = parent
         self.img = QPixmap(os.path.join(self.ROOT, self.FILENAME))
+        self.gray_img = QPixmap(os.path.join(self.ROOT, self.FILENAME).replace(".png", "_gray.png"))
         self.icon = QIcon()
-        self.icon.addPixmap(self.img, mode=QIcon.Mode.Normal, state=QIcon.State.On)        
+        self.icon.addPixmap(self.img, mode=QIcon.Mode.Normal, state=QIcon.State.On)
+        self.disabled_icon = QIcon()
+        self.disabled_icon.addPixmap(self.gray_img, mode=QIcon.Mode.Disabled, state=QIcon.State.Off)
         self.setIcon(self.icon)
         self.setToolTip(self.NAME)
         self.triggered.connect(self.onclick)
@@ -35,10 +37,11 @@ class IconAction(QAction):
             self.disable()
 
     def enable(self):
-        self.icon.addPixmap(self.img, mode=QIcon.Mode.Normal, state=QIcon.State.On)
+        self.setIcon(self.icon)
         self.enabled = True
+        self.setEnabled(True)
 
     def disable(self):
-        grayed = self.icon.pixmap(self.img.size(), QIcon.Mode.Disabled, QIcon.State.On)
-        self.icon.addPixmap(grayed, mode=QIcon.Mode.Normal, state=QIcon.State.Off)
+        self.setIcon(self.disabled_icon)
         self.enabled = False
+        self.setEnabled(False)
