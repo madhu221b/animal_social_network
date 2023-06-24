@@ -6,6 +6,7 @@ from ..utils.analytics_utils import get_correlations_att_edge
 import pandas as pd
 import holoviews as hv
 from holoviews import opts, dim
+from collections import defaultdict
 
 hv.extension('matplotlib')
 
@@ -13,7 +14,7 @@ from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
 
-shades = plt.get_cmap('Set3')
+shades = plt.get_cmap('cet_glasbey_light')
 
 matplotlib.use("QtAgg")
 
@@ -62,6 +63,14 @@ class GraphAnalytics(QWidget):
         self.parent = parent
         self.setup_ui()
 
+    def is_number(self, s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
+
     def setup_ui(self):
         container_widget = QWidget()
         container_layout = QHBoxLayout(container_widget)
@@ -76,41 +85,45 @@ class GraphAnalytics(QWidget):
 
         graph = self.parent.graph_page.graph_page.graph
         node_features = self.parent.graph_page.graph_page.features
-        disc_attribute_labels = sorted([
-            k for k, v in list(node_features.values())[0].items() if type(v) == str or int(v) == v
-        ],
-                                       key=lambda x: x.lower())
-        cont_attribute_labels = sorted([
-            k for k,
-            v in list(node_features.values())[0].items() if type(v) == float and int(v) != v
-        ],
-                                       key=lambda x: x.lower())
+        nodes = list(graph.node_layout.keys())
+        labels = [k for k,v in list(node_features.values())[0].items()]
+        for l in labels:
+            if self.is_number(node_features[nodes[0]][l]) and isinstance(node_features[nodes[0]][l], str):
+                for n in nodes:
+                    node_features[n][l] = float(node_features[n][l])
+            else:
+                continue
 
+        self.disc_attribute_labels = []
+        index = defaultdict(list)
+        for itemdict in list(node_features.values()):
+            for k, v in itemdict.items():
+                index[k].append(v)
+        
+        for k, v in index.items():
+            if all(isinstance(x, str) or int(x)==x for x in v):
+                self.disc_attribute_labels.append(k)
+
+        
+        self.cont_attribute_labels = list(set(labels) - set(self.disc_attribute_labels))
 
         # Add discrete attribute distribution plot
-        if len(disc_attribute_labels) > 0:
+        if len(self.disc_attribute_labels) > 0:
             attribute_distribution_plot = self.attribute_distribution_plot()
-            attribute_distribution_plot.setFixedHeight(40*len(disc_attribute_labels))
+            attribute_distribution_plot.setFixedHeight(40*len(self.disc_attribute_labels)+200)
             plots_layout.addWidget(attribute_distribution_plot)
 
         # Add attribute distribution plot continuous variables
-        # Note, I made some attempts at adding the scroll bar, but it didn't work out
-        if len(cont_attribute_labels) > 0:
+        if len(self.cont_attribute_labels) > 0:
 
             attribute_distribution_cont = self.attribute_distribution_cont()
             attribute_distribution_cont.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                                       QtWidgets.QSizePolicy.Policy.Expanding)
-            attribute_distribution_cont.setFixedHeight(100*len(cont_attribute_labels))
+            attribute_distribution_cont.setFixedHeight(100*len(self.cont_attribute_labels))
             plots_layout.addWidget(attribute_distribution_cont)
 
         adj_matrix_plot = self.adjacency_matrix()
         fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
-
-        # Add adjacency matrix plot
-
-        # self.adj_canvas = FigureCanvasQTAgg(adj_matrix_plot)
-        # plots_layout.addWidget(self.adj_canvas)
-        # self.adj_canvas.mpl_connect("button_press_event", lambda event: fullscreen_widget.showMaximized())
 
         # # Add heatmap
         try:
@@ -129,7 +142,7 @@ class GraphAnalytics(QWidget):
         plots_layout.addWidget(line_edit)
         plots_layout.addWidget(chord_button)
 
-        self.chord_diagram = self.chord_diagram(disc_attribute_labels, node_features, graph)
+        self.chord_diagram = self.chord_diagram(self.disc_attribute_labels, node_features, graph)
         self.chord_diagram.setFixedHeight(500)
         plots_layout.addWidget(self.chord_diagram)
 
@@ -192,7 +205,7 @@ class GraphAnalytics(QWidget):
         fig.suptitle('Correlation between attributes and edge existence')
         fig.text(
             0.5,
-            0.04,
+            0.8,
             "Pearson\'s two-tailed correlation coefficients between the existence of an edge between nodes, and similarity between the two nodes in various attributes. * indicates p<0.05 with Bonferroni correction.",
             ha='center',
             fontsize=8,
@@ -209,6 +222,7 @@ class GraphAnalytics(QWidget):
         p_values = [c[1] for c in list(correlations.values())]
         array = np.array(coefficients).reshape(1, len(correlations))
         im = ax.imshow(array, cmap='seismic', vmin=-0.5, vmax=0.5)
+        fig.tight_layout(pad=3.0)
 
         #add legend
         fig.colorbar(im,
@@ -219,7 +233,7 @@ class GraphAnalytics(QWidget):
                      shrink=0.5)
 
         ax.set_xticks(np.arange(len(attributes)), labels=attributes)
-        plt.setp(ax.get_xticklabels(), rotation=80, ha="right", rotation_mode="anchor")
+        plt.setp(ax.get_xticklabels(), rotation=80, ha="right", rotation_mode="anchor", fontsize=8)
 
         # remove yticks
         ax.set_yticks([])
@@ -284,8 +298,6 @@ class GraphAnalytics(QWidget):
 
         return table
 
-    def update_ui(self):
-        self.setup_ui()
 
     def attribute_distribution_cont(self):
         fig = Figure(figsize=(7, 5), dpi=100)
@@ -297,7 +309,7 @@ class GraphAnalytics(QWidget):
                                   key=lambda x: x.lower())
         n = len(attribute_labels)
         fig.suptitle('Node Attribute Distribution (continuous variables)')
-        fig.text(0.5,0.5, s="test")
+        # fig.text(0.5,0.5, s="test")
         fig.tight_layout(pad=0.5)
         c = 2
         k = int(np.ceil(n / c))
@@ -320,15 +332,21 @@ class GraphAnalytics(QWidget):
     def attribute_distribution_plot(self):
         fig = Figure(figsize=(6, 5), dpi=100)
         node_features = self.parent.graph_page.graph_page.features
-        attribute_labels = sorted([
-            k for k, v in list(node_features.values())[0].items() if type(v) == str or int(v) == v
-        ],
-                                  key=lambda x: x.lower())
+        attribute_labels = self.disc_attribute_labels
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
         n = len(attribute_labels)
         fig.suptitle("Node Attribute Distribution")
         fig.tight_layout(pad=3.0)
         bars = []
+
+        # sort by number of unique values
+        attribute_labels = sorted(attribute_labels,
+                                    key=lambda x: len(set([
+                                        features[x]
+                                        for features in node_features.values()
+                                        if x in features.keys()
+                                    ])),
+                                    reverse=True)
         for i in range(n):
             ax = fig.add_subplot(n, 1, i + 1)
             attribute = attribute_labels[i]
@@ -337,6 +355,8 @@ class GraphAnalytics(QWidget):
                 for features in node_features.values()
                 if attribute in features.keys()
             ]
+
+
             element_counts = Counter(attribute_values)
             values = list(element_counts.keys())
             count = list(element_counts.values())
@@ -367,10 +387,12 @@ class GraphAnalytics(QWidget):
             for bar in bars:
                 if bar.contains(event)[0]:
                     ax = bar.axes
-                    l = ax.legend(bbox_to_anchor=(0.8, 0.7), loc='best')
-                    # set zorder
-                    l.set_zorder(200)
-                    # fig.canvas.draw_idle()
+                    ax.set_zorder(200)
+                    # amount of bars
+                    n = len(ax.patches)
+                    l = ax.legend(bbox_to_anchor=(0.5,1.0), loc='upper center', ncol=min(4, np.ceil(n/4)), fontsize=8)
+
+
                     ax_save = ax
                     break
 
@@ -379,6 +401,8 @@ class GraphAnalytics(QWidget):
                 ax = bar.axes
                 if ax != ax_save:
                     ax.legend().remove()
+                    ax.set_zorder(0)
+
 
             fig.canvas.draw_idle()
 
