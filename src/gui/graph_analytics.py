@@ -239,6 +239,12 @@ class GraphAnalytics(QWidget):
     def graph_analytics_table(self):
         graph = self.parent.graph_page.graph_page.graph.graph
         n = graph.number_of_nodes()
+        try:
+            diam = nx.diameter(graph)
+            avg_sp = round(nx.average_shortest_path_length(graph), 3)
+        except:
+            diam = 'N/A' # graph disconnected
+            avg_sp = 'N/A'
         graph_metrics = {
             'Number of Nodes':
                 graph.number_of_nodes(),
@@ -247,13 +253,13 @@ class GraphAnalytics(QWidget):
             'Density':
                 round(nx.density(graph), 3),
             'Diameter':
-                nx.diameter(graph),
+                diam,
             'Average Degree':
                 round(sum([d for _, d in graph.degree()]) / n, 3),
             'Average Clustering':
                 round(nx.average_clustering(graph), 3),
             'Average Shortest Path':
-                round(nx.average_shortest_path_length(graph), 3),
+                avg_sp,
             'Average Betweenness Centrality':
                 round(sum([b for _, b in nx.betweenness_centrality(graph).items()]) / n, 3),
             'Average Closeness Centrality':
