@@ -74,6 +74,7 @@ class GraphAnalytics(QWidget):
         scroll.setWidgetResizable(True)
         scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
+        graph = self.parent.graph_page.graph_page.graph
         node_features = self.parent.graph_page.graph_page.features
         disc_attribute_labels = sorted([
             k for k, v in list(node_features.values())[0].items() if type(v) == str or int(v) == v
@@ -119,12 +120,6 @@ class GraphAnalytics(QWidget):
         except:
             pass
 
-        plots_layout.addStretch()
-        plots_widget = QWidget()
-        plots_widget.setLayout(plots_layout)
-        scroll.setWidget(plots_widget)
-        container_layout.addWidget(scroll)
-
         # Add chord diagram
         line_edit = QLineEdit()
         chord_button = QPushButton("Update Chord Diagram")
@@ -135,8 +130,17 @@ class GraphAnalytics(QWidget):
         plots_layout.addWidget(chord_button)
 
         self.chord_diagram = self.chord_diagram(disc_attribute_labels, node_features, graph)
+        self.chord_diagram.setFixedHeight(500)
         plots_layout.addWidget(self.chord_diagram)
+
         
+        plots_layout.addStretch()
+        plots_widget = QWidget()
+        plots_widget.setLayout(plots_layout)
+        scroll.setWidget(plots_widget)
+        container_layout.addWidget(scroll)
+
+
 
         # Add the plots layout to the container layout
         # container_layout.addLayout(plots_layout)
@@ -421,7 +425,7 @@ class GraphAnalytics(QWidget):
         nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
         chord = hv.Chord((top_edges, nodes))
-        chord.opts(opts.Chord(cmap='Category20', edge_cmap='Category20', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
+        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
                               node_linewidth=0.2, node_size=5))
         fig = hv.render(chord)
 
@@ -437,8 +441,9 @@ class GraphAnalytics(QWidget):
         nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
         chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
-        chord.opts(opts.Chord(cmap='Category20', edge_cmap='Category20', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
+        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
                               node_linewidth=0.2, node_size=5))
         fig = hv.render(chord)
         self.chord_diagram = FigureCanvasQTAgg(fig)
+        self.chord_diagram.setFixedHeight(500)
         plots_layout.addWidget(self.chord_diagram)
