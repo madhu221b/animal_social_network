@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QHeaderView, QPushButton, QDialogButtonBox, QDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QHeaderView, QPushButton, QDialogButtonBox, QDialog, QPlainTextEdit, QHBoxLayout
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 
@@ -75,40 +75,39 @@ class InfoPage(QWidget):
 
 
 class InfoMessageBox(QDialog):
-    def __init__(self):
+    def __init__(self, width=600, height=300):
         super().__init__()
         self.setSizeGripEnabled (True)   
 
         self.setWindowTitle ('More Network Attributes')
-        self.addTableWidget()
+        
+        self.setFixedWidth(width)
+        self.setFixedHeight(height)
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
         button_box.rejected.connect(self.reject)
         
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.table)
-        main_layout.addWidget(button_box)
-        self.setLayout(main_layout)
+        self.main_layout = QVBoxLayout()
+        self.addTextWidget()
+        self.main_layout.addWidget(button_box)
+
+        self.main_layout.setContentsMargins(5, 5, 5, 5)
+        self.setLayout(self.main_layout)
 
        
 
     #Create TableWidget 
-    def addTableWidget (self) :  
+    def addTextWidget (self) :  
         self.headers = ["Definition of interaction", "Note", "**Citation**"]
-        self.table = QTableWidget()
-        self.table.setColumnCount(2)
-        self.table.horizontalHeader().hide()
-        self.table.verticalHeader().hide()
-        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-
-        for header_item in self.headers:
-            row = self.table.rowCount()
-            self.table.insertRow(row)
-            item = QTableWidgetItem(header_item)
-            item.setFont(QFont('Arial', pointSize=10, weight=QFont.Weight.Bold))
-            self.table.setItem(row, 0, item)
-            self.table.setItem(row, 1, QTableWidgetItem(PageState.metadata[header_item]))
+        for header in self.headers:
+            self.h = QHBoxLayout()
+            self.label = QLabel(f"{header}: ")
+            self.label.setStyleSheet("font-weight: bold")
+            self.b = QPlainTextEdit(self)
+            self.b.insertPlainText(f"{PageState.metadata[header]}")
+            self.b.setReadOnly(True)
+            self.h.addWidget(self.label)
+            self.h.addWidget(self.b)
+            self.main_layout.addLayout(self.h)
 
 
     # #Allow resizing of QMessageBox

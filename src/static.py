@@ -46,7 +46,7 @@ for path in paths:
         "metadata": metadata,
     }
 
-print(metadata)
+
 GRAPH_DATA = dict(GRAPH_DATA)
 
 # Generated version table
