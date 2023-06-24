@@ -6,6 +6,7 @@ conda activate mma
 pip install pyqt5
 pip install netgraph
 pip install mycolorpy
+pip install holoviews
 
 conda clean --all
 ```
