@@ -32,7 +32,7 @@ MAIN_WINDOW_WIDTH = 1000
 
 GRAPH_VERSION_FOLDER = "./results/graphs/"
 
-with open("out/final_datasets.txt") as f:
+with open("datasets/final_datasets.txt") as f:
     paths = [x.strip() for x in f.readlines()]
 
 GRAPH_DATA = defaultdict(dict)
