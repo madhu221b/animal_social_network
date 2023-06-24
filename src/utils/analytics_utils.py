@@ -53,6 +53,8 @@ def get_correlations_att_edge(graph, features):
         else:
             y.append(0)
             
+    if len(set(y)) == 1:
+        raise ValueError("All edges are either present or not present. Cannot compute correlation.")
     
     coeficcients = {}
     for k in ivs.keys():
