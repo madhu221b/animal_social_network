@@ -1,18 +1,15 @@
 import os
-import re
 import pickle
 import networkx as nx
 import pickle
 import matplotlib
 
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QLabel, QPushButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtCore import Qt
 
-from src.loaders.asnr_dataloader import ASNRGraph
-from src.static import PageState, GRAPH_VERSION_FOLDER, VERSIONS
+from src.static import PageState, GRAPH_VERSION_FOLDER
 from src.graph import Graph
-# from .graph import GraphCanvas
 from src.gui.social_graph.graph import GraphCanvas
 from .modularity import Modularity
 
