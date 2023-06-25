@@ -20,17 +20,11 @@ matplotlib.use("Qt5Agg")
 
 
 class GraphEvolution(QWidget):
-    """
-    This is the page that belongs to the "graph" tab. It consists of three sub-pages:
-     - Left page: shows information about the object which is hovered by the mouse
-     - Graph page: shows the graph of animals
-     - Right page: shows information about the selected object (the one last clicked on)
-    """
 
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        self.evolution_id = self.evolutions.index(PageState.version)
+        self.evolution_id = self.evolutions.index(PageState.version)  # Current evolution index
 
         # Background utilities
         self.graph_gui = GraphCanvas(parent)
@@ -50,9 +44,9 @@ class GraphEvolution(QWidget):
 
     def build_layout(self):
         # All layouts
-        self.main_layout = QVBoxLayout()  # Main layout
-        self.hlayout = QHBoxLayout()  # Horizontal layout, from left to right
-        self.content_layout = QVBoxLayout()  #
+        self.main_layout = QVBoxLayout()
+        self.hlayout = QHBoxLayout()
+        self.content_layout = QVBoxLayout()
         self.hlayout_below = QHBoxLayout()
         self.content_layout_below = QVBoxLayout()
 
@@ -99,10 +93,12 @@ class GraphEvolution(QWidget):
 
     @property
     def n_evolutions(self):
+        """Number of evolutions"""
         return len(self.evolutions)
 
     @property
     def evolutions(self):
+        """List of evolutions"""
         evolutions = VERSIONS[PageState.id]
         evolutions.sort()
         return evolutions
@@ -126,12 +122,14 @@ class GraphEvolution(QWidget):
     # ===============================================
 
     def refresh(self):
+        """Refresh the page, the graph, the tabls, the buttons"""
         self._refresh_graph()
         self.info_tab.setText(self.str_statistics)
         self.info_tab2.setText(self.str_modularity)
         self._update_button_states()
 
     def _refresh_graph(self):
+        """Refresh the graph"""
         version = self.evolutions[self.evolution_id]
         animal_folder = os.path.join(GRAPH_VERSION_FOLDER, PageState.id)
 
@@ -151,6 +149,7 @@ class GraphEvolution(QWidget):
         self.graph_gui_small.refresh()
 
     def _update_button_states(self):
+        """Refresh the button states"""
         if hasattr(self, 'prev_button') and hasattr(self, 'next_button'):
             self.prev_button.setEnabled(self.evolution_id != 0)
             self.next_button.setEnabled(self.evolution_id != self.n_evolutions - 1)
@@ -160,9 +159,11 @@ class GraphEvolution(QWidget):
     # ===============================================
 
     def _prev_button_on_click(self):
+        """Jump back to previous evolution"""
         self.evolution_id = max(0, self.evolution_id - 1)
         self.refresh()
 
     def _next_button_on_click(self):
+        """JUmp to next evolution"""
         self.evolution_id = min(self.n_evolutions - 1, self.evolution_id + 1)
         self.refresh()
