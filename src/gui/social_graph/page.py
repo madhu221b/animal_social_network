@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QPushButton
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 import matplotlib
@@ -10,6 +10,7 @@ from .side_bar import NodeInfoPage
 from .info_page import InfoPage
 from .color_bar import ColorBar
 from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon
+from .matrix import FullScreenWidget, adjacency_matrix
 
 
 class GraphPage(QWidget):
@@ -38,12 +39,18 @@ class GraphPage(QWidget):
         self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.top_page = InfoPage(self.graph_page.graph.graph)
         self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
+        self.adj_matrix = FullScreenWidget(adjacency_matrix(self.graph_page.graph.graph), self)
+        self.button = QPushButton("Adjacency Matrix") 
+
+        # button functionality
+        self.button.clicked.connect(self.adj_matrix.show)
+        self.button.setStyleSheet("font-size: 24px; padding 10px;")
 
         # Add content
-        
         content_layout.addWidget(self.graph_page, 7)
         content_layout.addWidget(self.color_bar, 2)
         content_layout.addWidget(self.top_page, 1)
+        content_layout.addWidget(self.button, 1)
 
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)

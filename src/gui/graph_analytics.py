@@ -87,6 +87,7 @@ class GraphAnalytics(QWidget):
 
         graph = self.parent.graph_page.graph_page.graph
         node_features = self.parent.graph_page.graph_page.features
+        self.N = graph.graph.number_of_nodes()
         nodes = list(graph.node_layout.keys())
         labels = [k for k,v in list(node_features.values())[0].items()]
         for l in labels:
@@ -125,8 +126,7 @@ class GraphAnalytics(QWidget):
             attribute_distribution_cont.setFixedHeight(190*int(np.ceil(len(self.cont_attribute_labels)/2))+100)
             plots_layout.addWidget(attribute_distribution_cont)
 
-        adj_matrix_plot = self.adjacency_matrix()
-        fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
+     
 
         # # Add heatmap
         try:
@@ -166,10 +166,12 @@ class GraphAnalytics(QWidget):
         graph_analytics_table = self.graph_analytics_table()
         table_layout.addWidget(graph_analytics_table)
 
-        button = QPushButton("Adjacency Matrix", self)
-        button.clicked.connect(fullscreen_widget.show)
-        button.setStyleSheet("font-size: 24px; padding 10px;")
-        table_layout.addWidget(button)
+        # adj_matrix_plot = self.adjacency_matrix()
+        # fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
+        # button = QPushButton("Adjacency Matrix", self)
+        # button.clicked.connect(fullscreen_widget.show)
+        # button.setStyleSheet("font-size: 24px; padding 10px;")
+        # table_layout.addWidget(button)
 
         container_layout.addLayout(table_layout)
 
@@ -343,7 +345,7 @@ class GraphAnalytics(QWidget):
         attribute_labels = self.disc_attribute_labels
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle("Node Attribute Distribution")
+        fig.suptitle(f"Node Attribute Distribution (N={self.N})")
         fig.tight_layout(pad=1.0)
         bars = []
 
