@@ -6,7 +6,7 @@ import pickle
 import matplotlib
 
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QLabel, QPushButton
-from PyQt6.QtGui import QAction, QIcon
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtCore import Qt
 
 from src.loaders.asnr_dataloader import ASNRGraph
@@ -29,11 +29,19 @@ class GraphEvolution(QWidget):
         # Background utilities
         self.graph_gui = GraphCanvas(parent)
         self.graph_gui_small = GraphCanvas(parent)
+        self.modularity = Modularity(self.graph_gui.graph.graph)
+        self.graph_gui_small.node_colors = self.modularity.node_colors
         self.info_tab = QLabel(text="Placeholder", alignment=Qt.AlignmentFlag.AlignCenter)
-        self.info_tab2 = QLabel(text="Placeholder", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.info_tab2 = QLabel(text=f"Community Visualization of {self.modularity.subcommunity_n} " + \
+                                     f"communities with modularity of {self.modularity.max_modularity}",
+                                alignment=Qt.AlignmentFlag.AlignCenter)
+        self.main_label = QLabel(
+            f"Community Visualization for Current Version: {PageState.version}",
+            alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Load current graph information and replacing the placeholder
         self.refresh()
+        self.graph_gui_small.refresh()
 
         # Building up graphical interface on generated information
         self.build_layout()
@@ -65,6 +73,8 @@ class GraphEvolution(QWidget):
 
         # Upper and bottom page added together
         self.main_layout.addLayout(self.hlayout)
+        self.main_label.setFont(QFont('Arial', 15))
+        self.main_layout.addWidget(self.main_label)
         self.main_layout.addLayout(self.hlayout_below)
         self.setLayout(self.main_layout)
 
@@ -123,11 +133,6 @@ class GraphEvolution(QWidget):
         return f"Version: {version} \n Number of nodes: {n_nodes}, " +\
                f"Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
 
-    @property
-    def str_modularity(self):
-        return f"Community Visualization of {self.modularity.subcommunity_n} " + \
-               f"communities with modularity of {self.modularity.max_modularity}"
-
     # ===============================================
     # Refresh on this page
     # ===============================================
@@ -136,7 +141,6 @@ class GraphEvolution(QWidget):
         """Refresh the page, the graph, the tabls, the buttons"""
         self._refresh_graph()
         self.info_tab.setText(self.str_statistics)
-        self.info_tab2.setText(self.str_modularity)
         self._update_button_states()
 
     def _refresh_graph(self):
@@ -148,16 +152,11 @@ class GraphEvolution(QWidget):
         if version != 'default' and os.path.exists(animal_folder) and os.listdir(animal_folder):
             file_path = os.path.join(GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl")
             self.graph_gui.graph = Graph.from_pkl(filepath=file_path)
-            self.graph_gui_small.graph = Graph.from_pkl(filepath=file_path)
         elif version == 'default':
             self.graph_gui.graph = Graph.from_graphml(PageState.graph_path)
-            self.graph_gui_small.graph = Graph.from_graphml(PageState.graph_path)
         else:
             raise NameError(f"Version {version} does not exist")
-        self.modularity = Modularity(self.graph_gui.graph.graph)
-        self.graph_gui_small.node_colors = self.modularity.node_colors
         self.graph_gui.refresh()
-        self.graph_gui_small.refresh()
 
     def _update_button_states(self):
         """Refresh the button states"""
