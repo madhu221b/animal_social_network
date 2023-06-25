@@ -93,8 +93,9 @@ class PageState:
         PageState.version_path = os.path.join(GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl")
         if os.path.isfile(PageState.version_path):
             with open(PageState.version_path, "rb") as f:
-                PageState.prev_version = pickle.load(f)['prev_version']
-                PageState.prev_path = pickle.load(f)['prev_path']
+                data = pickle.load(f)
+                PageState.prev_version = data['prev_version']
+                PageState.prev_path = data['prev_path']
         else:
             PageState.prev_version = None
             PageState.prev_path = None

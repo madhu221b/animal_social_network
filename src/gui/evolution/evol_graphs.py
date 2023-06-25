@@ -106,7 +106,8 @@ class GraphEvolution(QWidget):
         while True:
             current_file = os.path.join(animal_folder, versions[-1] + ".pkl")
             with open(current_file, "rb") as f:
-                prev_version = pickle.load(f)['prev_version']
+                data = pickle.load(f)
+                prev_version = data['prev_version']
             versions.append(prev_version)
             if prev_version == 'default':
                 break

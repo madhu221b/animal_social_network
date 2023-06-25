@@ -31,6 +31,7 @@ class Retrain(GlobalAction):
         version_id = f"v{len(os.listdir(graph_folder))}"
         VERSIONS[PageState.id].append(version_id)
         PageState.step_version(version_id)
+        PageState.landing_page.update_version_dropdown()
 
         # Refresh on page
         self.graph_gui.graph.reset()

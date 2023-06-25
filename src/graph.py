@@ -155,8 +155,8 @@ class Graph(QObject):
         return {
             "graph": self.graph,
             "node_layout": self.node_layout,
-            "prev": PageState.prev_version,
-            "prev_path": PageState.prev_version_path
+            "prev_version": PageState.prev_version,
+            "prev_path": PageState.prev_path
         }
 
     # =====================================================

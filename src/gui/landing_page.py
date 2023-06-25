@@ -78,23 +78,25 @@ class LandingPage(QtWidgets.QWidget):
         self.dropdown_list_version = dropdown_list_version
 
         # Signal slot connection
-        dropdown_category.currentIndexChanged.connect(self._update_listing)
-        dropdown_list.currentIndexChanged.connect(self._update_version_dropdown)
+        dropdown_category.currentIndexChanged.connect(self.update_listing)
+        dropdown_list.currentIndexChanged.connect(self.update_version_dropdown)
         # Trigger the update manually for the first time
-        self._update_listing(0)
-        self._update_version_dropdown(0)
+        self.update_listing(0)
+        self.update_version_dropdown(0)
 
-    def _update_listing(self, index):
+    def update_listing(self, index):
         """Update the version dropdown based on the selected item in the first dropdown"""
         selected_category = self.dropdown_category.itemText(index)
         self.dropdown_list.clear()
         self.dropdown_list.addItems(sorted(GRAPH_DATA[selected_category].keys()))
 
-    def _update_version_dropdown(self, index):
+    def update_version_dropdown(self, index=None):
         """Update the version dropdown based on the selected item in the second dropdown"""
         if len(self.dropdown_list) == 0:
             return
 
+        if index is None:
+            index = self.dropdown_list.currentIndex()
         selected_animal = self.dropdown_list.itemText(index)
         self.dropdown_list_version.clear()
         self.dropdown_list_version.addItems(VERSIONS[selected_animal])
