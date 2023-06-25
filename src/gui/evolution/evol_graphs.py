@@ -5,7 +5,7 @@ import networkx as nx
 import matplotlib
 
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QLabel, QPushButton
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QFont
 from PyQt6.QtCore import Qt
 
 from src.loaders.asnr_dataloader import ASNRGraph
@@ -65,15 +65,19 @@ class GraphEvolution(QWidget):
         self.hlayout_below.addWidget(self.modularity.bar)
 
         # Add content
-        self.text_2 = f"Community Visualization of {self.modularity.subcommunity_n} communities with modularity of {self.modularity.max_modularity}"
+        self.text_2 = f"Communities formed: {self.modularity.subcommunity_n} with Modularity: {self.modularity.max_modularity}"
         self.info_tab_2 = QLabel(text=self.text_2, alignment=Qt.AlignmentFlag.AlignCenter)
         self.content_layout_below.addWidget(self.info_tab_2, 2)
         self.content_layout_below.addWidget(self.graph_2, 8)
 
         # self.hlayout_below.addWidget(self.graph_2)
         self.hlayout_below.addLayout(self.content_layout_below)
-
+        
+        
         self.main_layout.addLayout(self.hlayout)
+        self.main_label = QLabel(f"Community Visualization for Current Version: {self.current_graph_id}", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.main_label.setFont(QFont('Arial', 15))
+        self.main_layout.addWidget(self.main_label)
         self.main_layout.addLayout(self.hlayout_below)
         
         self.setLayout(self.main_layout)
