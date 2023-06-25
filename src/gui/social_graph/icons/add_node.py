@@ -6,7 +6,7 @@ from src.actions.graph_actions import AddNode
 
 class AddNodeIcon(IconAction):
 
-    NAME = 'Add node'
+    DESC = 'Click to add a new node.'
     FILENAME = 'add_node.png'
 
     def onclick(self):

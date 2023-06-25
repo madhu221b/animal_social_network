@@ -10,3 +10,4 @@ from .redo import RedoIcon
 from .undo import UndoIcon
 from .save import SaveIcon
 from .open import OpenIcon
+from .info import InfoIcon

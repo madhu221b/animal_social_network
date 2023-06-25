@@ -9,7 +9,7 @@ from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
 from .info_page import InfoPage
 from .color_bar import ColorBar
-from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon
+from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon, InfoIcon
 from .matrix import FullScreenWidget, adjacency_matrix
 
 
@@ -40,7 +40,7 @@ class GraphPage(QWidget):
         self.top_page = InfoPage(self.graph_page.graph.graph)
         self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
         self.adj_matrix = FullScreenWidget(adjacency_matrix(self.graph_page.graph.graph), self)
-        self.button = QPushButton("Adjacency Matrix") 
+        self.button = QPushButton("Adjacency Matrix")
 
         # button functionality
         self.button.clicked.connect(self.adj_matrix.showMaximized)
@@ -75,7 +75,8 @@ class GraphPage(QWidget):
             "redo": RedoIcon(self),
             "pred": PredEdgesIcon(self),
             "save": SaveIcon(self),
-            "open": OpenIcon(self)
+            "open": OpenIcon(self),
+            "info": InfoIcon(self)
         }
         for action in list(self.icons.values()):
             self.toolbar.addAction(action)

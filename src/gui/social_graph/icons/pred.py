@@ -5,7 +5,7 @@ from src.actions.graph_actions import Predict
 
 class PredEdgesIcon(IconAction):
 
-    NAME = 'Predict edges'
+    DESC = 'Click to predict new nodes that have no edges yet.'
     FILENAME = 'play.png'
 
     def __init__(self, *args, **kwargs):

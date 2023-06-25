@@ -1,12 +1,12 @@
 from src.gui.social_graph.icons.action import IconAction
 from src.actions.stack import perform_global_action
-from src.actions.global_actions import Load
+from src.actions.global_actions import Info
 
 
-class OpenIcon(IconAction):
+class InfoIcon(IconAction):
 
-    DESC = 'Click to open another graph.'
-    FILENAME = 'open.png'
+    DESC = 'Click to re-open the tutorial.'
+    FILENAME = 'info.png'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -14,4 +14,4 @@ class OpenIcon(IconAction):
 
     def onclick(self):
         if self.enabled:
-            perform_global_action(Load)()
+            perform_global_action(Info)()

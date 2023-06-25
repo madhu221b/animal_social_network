@@ -23,7 +23,7 @@ def mask_test_edges(adj):
     all_edge_idx = list(range(edges.shape[0]))
     np.random.shuffle(all_edge_idx)
     val_edge_idx = all_edge_idx[:num_val]
-    test_edge_idx = all_edge_idx[num_val : (num_val + num_test)]
+    test_edge_idx = all_edge_idx[num_val:(num_val + num_test)]
     test_edges = edges[test_edge_idx]
     val_edges = edges[val_edge_idx]
     train_edges = np.delete(edges, np.hstack([test_edge_idx, val_edge_idx]), axis=0)
@@ -71,9 +71,7 @@ def mask_test_edges(adj):
     data = np.ones(train_edges.shape[0])
 
     # Re-build adj matrix
-    adj_train = sp.csr_matrix(
-        (data, (train_edges[:, 0], train_edges[:, 1])), shape=adj.shape
-    )
+    adj_train = sp.csr_matrix((data, (train_edges[:, 0], train_edges[:, 1])), shape=adj.shape)
     adj_train = adj_train + adj_train.T
 
     # NOTE: these edge lists only contain single direction of edge!
@@ -101,9 +99,7 @@ def preprocess_graph(adj):
     adj_ = adj + sp.eye(adj.shape[0])
     rowsum = np.array(adj_.sum(1))
     degree_mat_inv_sqrt = sp.diags(np.power(rowsum, -0.5).flatten())
-    adj_normalized = (
-        adj_.dot(degree_mat_inv_sqrt).transpose().dot(degree_mat_inv_sqrt).tocoo()
-    )
+    adj_normalized = (adj_.dot(degree_mat_inv_sqrt).transpose().dot(degree_mat_inv_sqrt).tocoo())
     # return sparse_to_tuple(adj_normalized)
     return sparse_mx_to_torch_sparse_tensor(adj_normalized)
 
@@ -111,15 +107,14 @@ def preprocess_graph(adj):
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     """Convert a scipy sparse matrix to a torch sparse tensor."""
     sparse_mx = sparse_mx.tocoo().astype(np.float32)
-    indices = torch.from_numpy(
-        np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64)
-    )
+    indices = torch.from_numpy(np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
     values = torch.from_numpy(sparse_mx.data)
     shape = torch.Size(sparse_mx.shape)
     return torch.sparse.FloatTensor(indices, values, shape)
 
 
 def get_roc_score(emb, adj_orig, edges_pos, edges_neg):
+
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
 

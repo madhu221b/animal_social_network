@@ -5,7 +5,7 @@ from src.actions.stack import ActionStack
 
 
 class SaveIcon(IconAction):
-    NAME = 'Save'
+    DESC = 'Click to save the current graph to disk.'
     FILENAME = 'save.png'
 
     def __init__(self, *args, **kwargs):

@@ -152,7 +152,12 @@ class Graph(QObject):
 
     @property
     def state_dict(self):
-        return {"graph": self.graph, "node_layout": self.node_layout, "prev":PageState.curr_version}
+        return {
+            "graph": self.graph,
+            "node_layout": self.node_layout,
+            "prev_version": PageState.prev_version,
+            "prev_path": PageState.prev_path
+        }
 
     # =====================================================
     # Add / remove nodes
