@@ -162,3 +162,5 @@ class GraphEvolution(QWidget):
             self.text = f"Version: {self.current_graph_id} \n Number of nodes: {n_nodes}, Number of edges: {n_edges} \n Average Clustering Coeffecient: {avg_coeff}"
 
             self.info_tab.setText(self.text)
+
+            self.info_tab.setText(self.text)
