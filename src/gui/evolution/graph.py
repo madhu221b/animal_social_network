@@ -19,12 +19,12 @@ class GraphCanvas(FigureCanvasQTAgg):
     Graph page, containing the graph and handling events such as clicks or hovers.
     """
 
-    def __init__(self, parent=None, graph=None,node_layout=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, graph=None,node_layout=None, node_colors=None, width=5, height=4, dpi=100):
         super(GraphCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
         self.parent = parent
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
-
+        self.nodecolors_2 = node_colors
         # self.graph = graph
         # self.degrees = self.get_degrees()
         self.refresh(graph, node_layout)
@@ -70,9 +70,13 @@ class GraphCanvas(FigureCanvasQTAgg):
         # if self.node_layout is not None:
         #     for key, value in pos.items():
         #         pos[key] = self.node_layout[key] if key in self.node_layout else value
-
+        node_color = None
+        if self.nodecolors_2:
+            node_color = self.nodecolors_2
+        else:
+            node_color = self.node_colors()
         self.plot_instance = InteractiveGraph(graph,
-                                            node_color=self.node_colors(),
+                                            node_color=node_color,
                                              edge_color=self.edge_colors(),
                                             #   node_edge_width=self.node_width,
                                             #   node_shape=self.node_shapes,
