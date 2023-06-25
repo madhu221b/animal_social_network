@@ -43,7 +43,7 @@ class GraphPage(QWidget):
         self.button = QPushButton("Adjacency Matrix") 
 
         # button functionality
-        self.button.clicked.connect(self.adj_matrix.show)
+        self.button.clicked.connect(self.adj_matrix.showMaximized)
         self.button.setStyleSheet("font-size: 24px; padding 10px;")
 
         # Add content

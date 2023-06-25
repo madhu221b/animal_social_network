@@ -11,6 +11,7 @@ matplotlib.use("QtAgg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from matplotlib import colorbar
 
 class FullScreenWidget(QDialog):
 
@@ -44,23 +45,30 @@ class FullScreenWidget(QDialog):
 
 
 def adjacency_matrix(graph):
-        fig = Figure(figsize=(6, 5), dpi=100)
+        fig = Figure(figsize=(20, 15), dpi=100)
         bi_adj_matrix = nx.adjacency_matrix(graph, weight=None)
 
         ax = fig.add_subplot(111)
-        fig.suptitle('Adjacency Matrix', x=0.55)
-        fig.tight_layout(pad=3.0)
+        # fig.suptitle('Adjacency Matrix', x=0.55)
+        fig.tight_layout(pad=4.0)
+        fig.subplots_adjust(top=0.95)
+
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["white", "black"])
         im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
         ax.set_yticks(np.arange(len(nodes)))
-        ax.set_xticklabels(nodes)
-        ax.set_yticklabels(nodes)
+        ax.set_xticklabels(nodes, fontsize=7)
+        ax.set_yticklabels(nodes, fontsize=7)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
 
         ax.legend()
-        cbar = fig.colorbar(im, ax=ax, cmap='binary', ticks=[0, 1], shrink=0.5)
-        cbar.set_ticklabels(['No Edge', 'Edge'])
+        # create a second axes for the colorbar
+        bounds = [0, 1, 2]
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+        ax2 = fig.add_axes([0.85, 0.1, 0.03, 0.8])
+        cb = matplotlib.colorbar.ColorbarBase(ax2, cmap=cmap, norm=norm,
+        spacing='proportional', ticks=[0.5,1.5], boundaries=bounds, format='%1i')
+        cb.set_ticklabels(['No Edge', 'Edge'])
 
-        # canvas = FigureCanvasQTAgg(fig)
         return fig
