@@ -14,15 +14,14 @@ logger = logging.getLogger("retrain.action")
 
 
 class Retrain(GlobalAction):
+
     def __init__(self, graph_gui, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.graph_gui = graph_gui
 
     def do(self):
         # Retraining graph
-        features, edgelist, adj, _, _ = ASNRGraph(
-            graph_obj=self.graph_gui.graph.graph
-        ).preprocess()
+        features, edgelist, adj, _, _ = ASNRGraph(graph_obj=self.graph_gui.graph.graph).preprocess()
         train_model(PageState.id, features, edgelist, adj)
         logger.info("Graph retrained")
 
@@ -31,8 +30,7 @@ class Retrain(GlobalAction):
         os.makedirs(graph_folder, exist_ok=True)
         version_id = f"v{len(os.listdir(graph_folder))}"
         VERSIONS[PageState.id].append(version_id)
-        PageState.select_version(version_id, is_next_version=True)
-        print("previous version: ", PageState.curr_version)
+        PageState.step_version(version_id)
 
         # Refresh on page
         self.graph_gui.graph.reset()

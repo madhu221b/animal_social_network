@@ -2,7 +2,7 @@ import os
 import re
 import pickle
 import networkx as nx
-import math
+import pickle
 import matplotlib
 
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QLabel, QPushButton
@@ -99,9 +99,19 @@ class GraphEvolution(QWidget):
     @property
     def evolutions(self):
         """List of evolutions"""
-        evolutions = VERSIONS[PageState.id]
-        evolutions.sort()
-        return evolutions
+        if PageState.version == 'default':
+            return ['default']
+        animal_folder = os.path.join(GRAPH_VERSION_FOLDER, PageState.id)
+        versions = [PageState.version]
+        while True:
+            current_file = os.path.join(animal_folder, versions[-1] + ".pkl")
+            with open(current_file, "rb") as f:
+                prev_version = pickle.load(f)['prev_version']
+            versions.append(prev_version)
+            if prev_version == 'default':
+                break
+        versions.reverse()
+        return versions
 
     @property
     def str_statistics(self):
