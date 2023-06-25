@@ -35,11 +35,9 @@ class MainWindow(QMainWindow):
 
         self.tabs.addTab(self.graph_page, "Social Graph")
         self.tabs.addTab(QWidget(), "Graph Analytics")
-        
 
-        # if GraphEvolution.should_be_visible():
         self.tabs.addTab(QWidget(), "Evolution of the Network")
-        
+
         self.tabs.addTab(QWidget(), "FAQ")
         self.tabs.tabBarClicked.connect(self.updateTab)
         self.layout.addWidget(self.tabs)
@@ -52,7 +50,7 @@ class MainWindow(QMainWindow):
     def updateTab(self, tabIndex):
         if tabIndex == 1:
             self.updateGraphTab()
-        elif tabIndex == 2 and GraphEvolution.should_be_visible():
+        elif tabIndex == 2:
             self.updateGraphEvolveTab()
         elif tabIndex == 3:
             self.openFAQTab()
@@ -66,7 +64,7 @@ class MainWindow(QMainWindow):
         self.tabs.removeTab(2)
         self.graph_evolution = GraphEvolution(self)
         self.tabs.insertTab(2, self.graph_evolution, "Evolution of the Network")
-    
+
     def openFAQTab(self):
         self.tabs.removeTab(3)
         self.faq_page = FAQPage(self)

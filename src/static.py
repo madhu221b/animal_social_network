@@ -87,12 +87,6 @@ class PageState:
         PageState.metadata = GRAPH_DATA[category][id]["metadata"]
 
     @staticmethod
-    def select_version(version, is_next_version=False):
-        if is_next_version is False:
-            # this call is called when "select" button is clicked for dropdown.
-            PageState.curr_version = version
-            PageState.version = version
-        else:  # this call is called when "save" button is called for retraining
-            # PageState.curr_version = version
-            PageState.version = version
+    def select_version(version):
+        PageState.version = version
         PageState.version_path = os.path.join(GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl")
