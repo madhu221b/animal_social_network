@@ -29,19 +29,35 @@ class FullScreenWidget(QDialog):
         super().__init__(parent)
         self.parent = parent
 
-        self.setWindowTitle("Adjacency Matrix")
+        self.setWindowTitle("Chord Diagram")
         self.setModal(True)
         self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        canvas = FigureCanvasQTAgg(content_fig)
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(canvas)
+        line_edit = QLineEdit()
+        chord_button = QPushButton("Generate Chord Diagram")
+        chord_button.setEnabled(False)
+        line_edit.textChanged.connect(lambda text: chord_button.setEnabled(bool(text)))
+        chord_button.clicked.connect(lambda: self.update_chord_diagram(int(line_edit.text()), canvas_layout))
 
-        self.button = QPushButton("Close", self)
-        self.button.clicked.connect(self.exit_fullscreen)
-        self.button.setStyleSheet("font-size: 24px; padding 10px;")
-        self.layout.addWidget(self.button)
+        input_widget = QWidget()
+        input_layout = QHBoxLayout(input_widget)
+        input_layout.addWidget(line_edit)
+        input_layout.addWidget(chord_button)
+
+        canvas_widget = QWidget()
+        canvas_layout = QVBoxLayout(canvas_widget)
+        self.canvas = FigureCanvasQTAgg(content_fig)
+        canvas_layout.addWidget(self.canvas)
+
+        close_button = QPushButton("Close", self)
+        close_button.clicked.connect(self.exit_fullscreen)
+        close_button.setStyleSheet("font-size: 24px; padding 10px;")
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(input_widget)
+        self.layout.addWidget(canvas_widget)
+        self.layout.addWidget(close_button)
 
         self.setLayout(self.layout)
 
@@ -52,6 +68,23 @@ class FullScreenWidget(QDialog):
     def exit_fullscreen(self):
         self.showNormal()
         self.close()
+
+    def update_chord_diagram(self, top_n, canvas_layout):
+        canvas_layout.removeWidget(self.canvas)
+        self.canvas.close()
+
+        top_edges = self.parent.sorted_df.nlargest(top_n, 'value')
+        selected_nodes = self.parent.chord_nodes.loc[self.parent.chord_nodes['index'].isin(top_edges['source'].tolist() + top_edges['target'].tolist())]
+        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
+
+        chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
+        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(),
+                              node_linewidth=0.2, node_size=0))
+        fig = hv.render(chord)
+        self.canvas = FigureCanvasQTAgg(fig)
+        self.canvas.setFixedHeight(400)
+
+        canvas_layout.addWidget(self.canvas)
 
 
 class GraphAnalytics(QWidget):
@@ -136,20 +169,7 @@ class GraphAnalytics(QWidget):
         except:
             pass
 
-        # Add chord diagram
-        line_edit = QLineEdit()
-        chord_button = QPushButton("Update Chord Diagram")
-        chord_button.setEnabled(False)
-        line_edit.textChanged.connect(lambda text: chord_button.setEnabled(bool(text)))
-        chord_button.clicked.connect(lambda: self.update_chord_diagram(int(line_edit.text()), plots_layout))
-        plots_layout.addWidget(line_edit)
-        plots_layout.addWidget(chord_button)
 
-        self.chord_diagram = self.chord_diagram(self.disc_attribute_labels, node_features, graph)
-        self.chord_diagram.setFixedHeight(500)
-        plots_layout.addWidget(self.chord_diagram)
-
-        
         plots_layout.addStretch()
         plots_widget = QWidget()
         plots_widget.setLayout(plots_layout)
@@ -166,12 +186,14 @@ class GraphAnalytics(QWidget):
         graph_analytics_table = self.graph_analytics_table()
         table_layout.addWidget(graph_analytics_table)
 
-        # adj_matrix_plot = self.adjacency_matrix()
-        # fullscreen_widget = FullScreenWidget(adj_matrix_plot, self)
-        # button = QPushButton("Adjacency Matrix", self)
-        # button.clicked.connect(fullscreen_widget.show)
-        # button.setStyleSheet("font-size: 24px; padding 10px;")
-        # table_layout.addWidget(button)
+        # Add chord diagram
+        chord_diagram_fig = self.chord_diagram(self.disc_attribute_labels, node_features, graph)
+        self.chord_diagram_canvas = FigureCanvasQTAgg(chord_diagram_fig)
+        fullscreen_widget = FullScreenWidget(chord_diagram_fig, self)
+        button = QPushButton("Chord Diagram", self)
+        button.clicked.connect(fullscreen_widget.show)
+        button.setStyleSheet("font-size: 24px; padding 10px;")
+        table_layout.addWidget(button)
 
         container_layout.addLayout(table_layout)
 
@@ -472,24 +494,7 @@ class GraphAnalytics(QWidget):
 
         chord = hv.Chord((top_edges, nodes))
         chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
-                              node_linewidth=0.2, node_size=5))
+                              node_linewidth=0.2, node_size=0))
         fig = hv.render(chord)
 
-        return FigureCanvasQTAgg(fig)
-    
-
-
-    def update_chord_diagram(self, top_n, plots_layout):
-        plots_layout.removeWidget(self.chord_diagram)
-
-        top_edges = self.sorted_df.nlargest(top_n, 'value')
-        selected_nodes = self.chord_nodes.loc[self.chord_nodes['index'].isin(top_edges['source'].tolist() + top_edges['target'].tolist())]
-        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
-
-        chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
-        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
-                              node_linewidth=0.2, node_size=5))
-        fig = hv.render(chord)
-        self.chord_diagram = FigureCanvasQTAgg(fig)
-        self.chord_diagram.setFixedHeight(500)
-        plots_layout.addWidget(self.chord_diagram)
+        return fig
