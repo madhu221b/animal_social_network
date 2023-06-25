@@ -35,11 +35,12 @@ class MainWindow(QMainWindow):
 
         self.tabs.addTab(self.graph_page, "Social Graph")
         self.tabs.addTab(QWidget(), "Graph Analytics")
-        self.tabs.addTab(self.faq_page, "FAQ")
+        
 
-        if GraphEvolution.should_be_visible():
-            self.tabs.addTab(QWidget(), "Evolution of the Network")
-
+        # if GraphEvolution.should_be_visible():
+        self.tabs.addTab(QWidget(), "Evolution of the Network")
+        
+        self.tabs.addTab(QWidget(), "FAQ")
         self.tabs.tabBarClicked.connect(self.updateTab)
         self.layout.addWidget(self.tabs)
 
@@ -53,6 +54,8 @@ class MainWindow(QMainWindow):
             self.updateGraphTab()
         elif tabIndex == 2 and GraphEvolution.should_be_visible():
             self.updateGraphEvolveTab()
+        elif tabIndex == 3:
+            self.openFAQTab()
 
     def updateGraphTab(self):
         self.tabs.removeTab(1)
@@ -63,6 +66,11 @@ class MainWindow(QMainWindow):
         self.tabs.removeTab(2)
         self.graph_evolution = GraphEvolution(self)
         self.tabs.insertTab(2, self.graph_evolution, "Evolution of the Network")
+    
+    def openFAQTab(self):
+        self.tabs.removeTab(3)
+        self.faq_page = FAQPage(self)
+        self.tabs.insertTab(3, self.faq_page, "FAQ")
 
     def _center_window(self):
         """Center the window on the screen"""
