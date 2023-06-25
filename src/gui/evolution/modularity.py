@@ -38,7 +38,7 @@ class Modularity(QWidget):
         fig, ax  = plt.subplots()
         fig.subplots_adjust(top=0.4, left=0.2)
 
-        fig.suptitle('Modularity for Different No. of Communities', fontsize=5)
+        fig.suptitle('Modularity for Different No. of Communities', fontsize=6)
        
         rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
 
