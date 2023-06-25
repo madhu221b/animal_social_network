@@ -25,7 +25,8 @@ class AddNodeForm(QDialog):
 
         self.create_form_group_box()
 
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |
+                                      QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self.send)
         button_box.rejected.connect(self.reject)
 
@@ -60,8 +61,8 @@ class AddNodeForm(QDialog):
                 spinbox.setSingleStep(1)
                 spinbox.setValue(vals[0])
                 self.form_layout.addRow(QLabel(form_label), spinbox)
-                self.form[form_label] = spinbox  
-            elif  "float" in str(val_type):
+                self.form[form_label] = spinbox
+            elif "float" in str(val_type):
                 spinbox = QDoubleSpinBox()
                 vals = [data[form_label] for _, data in self.features.items()]
                 spinbox.setMinimum(min(vals))
@@ -82,9 +83,9 @@ class AddNodeForm(QDialog):
 
     def send(self):
         node_data = {}
-        for k,v in self.form.items():
+        for k, v in self.form.items():
             if isinstance(v, QSpinBox) or isinstance(v, QDoubleSpinBox):
-               node_data[k] = v.value()
+                node_data[k] = v.value()
             else:
                 node_data[k] = v.currentText()
         # node_data = {k: v.currentText() for (k, v) in self.form.items()}

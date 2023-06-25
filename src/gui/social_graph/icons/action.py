@@ -51,3 +51,6 @@ class IconAction(QAction):
         self.setIcon(self.disabled_icon)
         self.enabled = False
         self.setEnabled(False)
+
+    def set_enabled_or_not(self):
+        raise NotImplementedError

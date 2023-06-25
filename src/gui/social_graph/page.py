@@ -81,6 +81,16 @@ class GraphPage(QWidget):
         for action in list(self.icons.values()):
             self.toolbar.addAction(action)
 
+    def disable_social_graph_menu(self):
+        for icon in self.icons.values():
+            icon.disable()
+        self.icons["info"].enable()
+        self.icons["open"].enable()
+
+    def enable_social_graph_menu(self):
+        for icon in self.icons.values():
+            icon.set_enabled_or_not()
+
     def refresh(self):
         self.graph_page.refresh()
         self.top_page.refresh(self.graph_page.graph.graph)

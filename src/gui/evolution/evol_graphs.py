@@ -29,13 +29,8 @@ class GraphEvolution(QWidget):
         self.modularity = Modularity(self.graph_gui.graph.graph)
         self.graph_gui_small.node_colors = self.modularity.node_colors
         self.info_tab = QLabel(text="Placeholder", alignment=Qt.AlignmentFlag.AlignCenter)
-<<<<<<< HEAD
-        self.info_tab2 = QLabel(text=f"Community Visualization of {self.modularity.subcommunity_n} " + \
-                                     f"communities with modularity of {self.modularity.max_modularity}",
-=======
         self.info_tab2 = QLabel(text=f"No of Communities: {self.modularity.subcommunity_n} " + \
                                      f"with Modularity: {self.modularity.max_modularity}",
->>>>>>> dev
                                 alignment=Qt.AlignmentFlag.AlignCenter)
         self.main_label = QLabel(
             f"Community Visualization for Current Version: {PageState.version}",

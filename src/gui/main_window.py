@@ -28,7 +28,6 @@ class MainWindow(QMainWindow):
         # Add pages
         self.tabs = QTabWidget()
         self.graph_page = GraphPage(self)
-        self.faq_page = FAQPage(self)
         PageState.welcome_page = WelcomeScreen(self)
         self.graph_analytics = None
         self.graph_evolution = None
@@ -54,6 +53,11 @@ class MainWindow(QMainWindow):
             self.updateGraphEvolveTab()
         elif tabIndex == 3:
             self.openFAQTab()
+
+        if tabIndex == 0:
+            self.graph_page.enable_social_graph_menu()
+        else:
+            self.graph_page.disable_social_graph_menu()
 
     def updateGraphTab(self):
         self.tabs.removeTab(1)
