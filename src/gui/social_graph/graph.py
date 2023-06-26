@@ -179,6 +179,7 @@ class GraphCanvas(FigureCanvasQTAgg):
             node_name, _, is_hovering, was_dragged = self.get_closest_node(event.xdata, event.ydata)
             if is_hovering and not was_dragged:
                 # Click
+                self.parent.graph_page.right_page.show()
                 self.parent.graph_page.right_page.update(node_name, self.features, self.metrics)
                 self.parent.graph_page.graph_page.graph.toggle_status_of_node(node_name)
                 self.parent.graph_page.refresh()

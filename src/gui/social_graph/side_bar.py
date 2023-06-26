@@ -7,7 +7,7 @@ from src.utils.common import swap_dict_keys
 
 class NodeInfoPage(QWidget):
 
-    def __init__(self, features, metrics):
+    def __init__(self, features, metrics, title="Features"):
         super(NodeInfoPage, self).__init__()
 
         self.LEFT_WIDTH = 200
@@ -22,7 +22,7 @@ class NodeInfoPage(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.feature_title_label = QLabel("Features")
+        self.feature_title_label = QLabel(title)
         self.feature_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         self.layout.addWidget(self.feature_title_label)
         
