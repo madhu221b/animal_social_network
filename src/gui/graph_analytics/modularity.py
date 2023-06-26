@@ -54,7 +54,7 @@ class Modularity(QWidget):
         self.max_id = np.argmax(y_vals)
         self.max_modularity = round(np.max(y_vals),6)
         bar = ax.bar(x_vals, y_vals, color=cmap1(rescale(y_vals)))
-        ax.set_title("Modularity measures the density of connections within a community.", fontsize=6)
+        ax.set_title("Modularity measures the density of connections within a community relative to the density of connections between communities.", fontsize=6)
         ax.tick_params(axis='y', labelsize=6)
         ax.tick_params(axis='x', labelsize=6)
         ax.set_xlabel("No. of Communities",fontsize=6)

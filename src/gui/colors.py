@@ -15,10 +15,10 @@ def bandfilter_colormap(cmap, filter1=0.4, filter2=0.6, n=100):
         cmap(filter))
     return new_cmap
 
-# cmap = plt.get_cmap("terrain")
-# cmap1 = truncate_colormap(cmap, 0., 0.7)
-# cmap1_str = "terrain"
+cmap = plt.get_cmap("terrain")
+cmap1 = truncate_colormap(cmap, 0., 0.7)
+cmap1_str = "terrain"
 
-cmap1 = bandfilter_colormap(plt.get_cmap("Spectral"))
-cmap1_str = "Spectral"
+# cmap1 = bandfilter_colormap(plt.get_cmap("Spectral"))
+# cmap1_str = "Spectral"
 

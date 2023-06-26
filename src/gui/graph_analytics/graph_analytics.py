@@ -129,7 +129,7 @@ class GraphAnalytics(QWidget):
         self.attribute_distribution_plot = self.attribute_distribution_plot()
         self.attribute_distribution_cont = self.attribute_distribution_cont()
         self.modularity = Modularity(self.graph.graph)
-        self.info_tab2 = QLabel(text=f"No of Communities: {self.modularity.subcommunity_n} " + \
+        self.info_tab2 = QLabel(text=f"Ideal No of Communities: {self.modularity.subcommunity_n} " + \
                                      f"with Modularity: {self.modularity.max_modularity}",
                                     alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
         self.graph_gui_small = GraphCanvas(self.parent)
@@ -189,6 +189,7 @@ class GraphAnalytics(QWidget):
         
         self.graph_gui_small.setMinimumHeight(400)
         self.graph_gui_small.node_colors = self.modularity.node_colors
+        self.graph_gui_small.refresh()
         plots_layout.addWidget(self.graph_gui_small)
     
 
