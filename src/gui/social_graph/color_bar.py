@@ -20,13 +20,24 @@ class ColorBar(FigureCanvasQTAgg):
         super().__init__(Figure(figsize=(width, height), dpi=dpi))
         self.parent = parent
         self.setParent(parent)
-
-        # Numbers are: left-margin, bottom-margin, width, height
+        self.graph = graph
         self.ax = self.figure.add_axes([0.05, 0.5, 0.9, 0.1])
+        self.min_degree = None
+        self.max_degree = None
+        self.refresh()
 
-        degree = [val for (node, val) in graph.degree()]
-        norm = mpl.colors.Normalize(vmin=min(degree), vmax=max(degree))
+    def refresh(self):
+        print(self.graph.min_degree, self.graph.max_degree)
+        if self.min_degree != self.graph.min_degree or self.max_degree != self.graph.max_degree:
+            self.min_degree = self.graph.min_degree
+            self.max_degree = self.graph.max_degree
+            self.update_figure()
+
+    def update_figure(self):
+        self.ax.clear()
+        norm = mpl.colors.Normalize(vmin=self.min_degree, vmax=self.max_degree)
         self.figure.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap1),
                              cax=self.ax,
                              orientation='horizontal',
                              label='Degree')
+        self.draw()
