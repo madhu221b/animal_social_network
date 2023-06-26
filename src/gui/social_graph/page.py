@@ -36,7 +36,7 @@ class GraphPage(QWidget):
         # Sub-pages definition
         self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
-        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
+        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics, title="Selected Node", globalmetrics=False)
         self.top_page = InfoPage(self.graph_page.graph.graph)
         self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
         self.adj_matrix = FullScreenWidget(self.graph_page.graph, self)
@@ -51,11 +51,15 @@ class GraphPage(QWidget):
         content_layout.addWidget(self.color_bar, 2)
         content_layout.addWidget(self.top_page, 1)
         content_layout.addWidget(self.button, 1)
+        
+        # Set margins
+        content_layout.setSpacing(0)
 
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)
         hlayout.addLayout(content_layout)
         hlayout.addWidget(self.right_page)
+        self.right_page.hide()
 
         main_layout.addLayout(hlayout)
 

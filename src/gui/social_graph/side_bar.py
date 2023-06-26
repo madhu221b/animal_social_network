@@ -7,7 +7,7 @@ from src.utils.common import swap_dict_keys
 
 class NodeInfoPage(QWidget):
 
-    def __init__(self, features, metrics):
+    def __init__(self, features, metrics, title="Features", globalmetrics=True):
         super(NodeInfoPage, self).__init__()
 
         self.LEFT_WIDTH = 200
@@ -22,7 +22,7 @@ class NodeInfoPage(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.feature_title_label = QLabel("Features")
+        self.feature_title_label = QLabel(title)
         self.feature_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         self.layout.addWidget(self.feature_title_label)
 
@@ -32,12 +32,13 @@ class NodeInfoPage(QWidget):
         self.feature_table = self._create_table(self.features, self.LEFT_WIDTH, self.FEATURES)
         self.layout.addWidget(self.feature_table)
 
-        self.metric_title_label = QLabel("Metrics")
-        self.metric_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
-        self.layout.addWidget(self.metric_title_label)
+        if globalmetrics:
+            self.metric_title_label = QLabel("Metrics")
+            self.metric_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
+            self.layout.addWidget(self.metric_title_label)
 
-        self.metric_table = self._create_table(metrics, self.RIGHT_WIDTH, self.METRICS)
-        self.layout.addWidget(self.metric_table)
+            self.metric_table = self._create_table(metrics, self.RIGHT_WIDTH, self.METRICS)
+            self.layout.addWidget(self.metric_table)
 
         self.layout.addStretch(1)
 
