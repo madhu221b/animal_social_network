@@ -25,20 +25,20 @@ class GraphEvolution(QWidget):
 
         # Background utilities
         self.graph_gui = GraphCanvas(parent)
-        self.graph_gui_small = GraphCanvas(parent)
-        self.modularity = Modularity(self.graph_gui.graph.graph)
-        self.graph_gui_small.node_colors = self.modularity.node_colors
+        # self.graph_gui_small = GraphCanvas(parent)
+        # self.modularity = Modularity(self.graph_gui.graph.graph)
+        # self.graph_gui_small.node_colors = self.modularity.node_colors
         self.info_tab = QLabel(text="Placeholder", alignment=Qt.AlignmentFlag.AlignCenter)
-        self.info_tab2 = QLabel(text=f"No of Communities: {self.modularity.subcommunity_n} " + \
-                                     f"with Modularity: {self.modularity.max_modularity}",
-                                alignment=Qt.AlignmentFlag.AlignCenter)
-        self.main_label = QLabel(
-            f"Community Visualization for Current Version: {PageState.version}",
-            alignment=Qt.AlignmentFlag.AlignCenter)
+        # self.info_tab2 = QLabel(text=f"No of Communities: {self.modularity.subcommunity_n} " + \
+        #                              f"with Modularity: {self.modularity.max_modularity}",
+        #                         alignment=Qt.AlignmentFlag.AlignCenter)
+        # self.main_label = QLabel(
+        #     f"Community Visualization for Current Version: {PageState.version}",
+        #     alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Load current graph information and replacing the placeholder
         self.refresh()
-        self.graph_gui_small.refresh()
+        # self.graph_gui_small.refresh()
 
         # Building up graphical interface on generated information
         self.build_layout()
@@ -63,16 +63,16 @@ class GraphEvolution(QWidget):
         self._create_next_button()
 
         # Bottom page: Modularity + info tab + lower graph
-        self.hlayout_below.addWidget(self.modularity.bar)
-        self.content_layout_below.addWidget(self.info_tab2, 2)
-        self.content_layout_below.addWidget(self.graph_gui_small, 8)
-        self.hlayout_below.addLayout(self.content_layout_below)
+        # self.hlayout_below.addWidget(self.modularity.bar)
+        # self.content_layout_below.addWidget(self.info_tab2, 2)
+        # self.content_layout_below.addWidget(self.graph_gui_small, 8)
+        # self.hlayout_below.addLayout(self.content_layout_below)
 
         # Upper and bottom page added together
         self.main_layout.addLayout(self.hlayout)
-        self.main_label.setFont(QFont('Arial', 15))
-        self.main_layout.addWidget(self.main_label)
-        self.main_layout.addLayout(self.hlayout_below)
+        # self.main_label.setFont(QFont('Arial', 15))
+        # self.main_layout.addWidget(self.main_label)
+        # self.main_layout.addLayout(self.hlayout_below)
         self.setLayout(self.main_layout)
 
         # Disable buttons if first or last evolution indexed
@@ -136,8 +136,8 @@ class GraphEvolution(QWidget):
 
     def refresh(self):
         """Refresh the page, the graph, the tabls, the buttons"""
-        self._refresh_graph()
-        self.info_tab.setText(self.str_statistics)
+        # self._refresh_graph()
+        # self.info_tab.setText(self.str_statistics)
         self._update_button_states()
 
     def _refresh_graph(self):
