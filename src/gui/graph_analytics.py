@@ -1,5 +1,5 @@
 from PyQt6 import QtGui, QtWidgets, QtCore
-from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget, QLineEdit
+from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget, QLineEdit, QSizePolicy
 import networkx as nx
 import numpy as np
 from ..utils.analytics_utils import get_correlations_att_edge
@@ -78,8 +78,7 @@ class FullScreenWidget(QDialog):
         nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
         chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
-        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(),
-                              node_linewidth=0.2, node_size=0))
+        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
         fig = hv.render(chord)
         self.canvas = FigureCanvasQTAgg(fig)
         self.canvas.setFixedHeight(400)
@@ -181,7 +180,8 @@ class GraphAnalytics(QWidget):
         # Add the plots layout to the container layout
         # container_layout.addLayout(plots_layout)
 
-        table_layout = QVBoxLayout()
+        table_widget = QWidget()
+        table_layout = QVBoxLayout(table_widget)
         # Add graph analytics table
         graph_analytics_table = self.graph_analytics_table()
         table_layout.addWidget(graph_analytics_table)
@@ -194,8 +194,9 @@ class GraphAnalytics(QWidget):
         button.clicked.connect(fullscreen_widget.show)
         button.setStyleSheet("font-size: 24px; padding 10px;")
         table_layout.addWidget(button)
-
-        container_layout.addLayout(table_layout)
+        table_widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        container_layout.addWidget(table_widget)
+        
 
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(container_widget)
@@ -462,7 +463,7 @@ class GraphAnalytics(QWidget):
         for att in attribute_names:
             unique_values = list(features_df[att].unique())
             unique_values = [value for value in unique_values if value != ' ']
-            att_dict[att] = {att+'_'+str(value): i + idx for idx, value in enumerate(unique_values)}
+            att_dict[att] = {att+': '+str(value): i + idx for idx, value in enumerate(unique_values)}
             i += len(unique_values)
 
         node_dict = {}
@@ -480,8 +481,8 @@ class GraphAnalytics(QWidget):
         for _, row in edges_df.iterrows():
             sources = features_df.loc[row['source'], attribute_names].dropna()
             targets = features_df.loc[row['target'], attribute_names].dropna()
-            sources_list = [att+'_'+str(val) for att, val in sources.items() if val != ' ']
-            targets_list = [att+'_'+str(val) for att, val in targets.items() if val != ' ']
+            sources_list = [att+': '+str(val) for att, val in sources.items() if val != ' ']
+            targets_list = [att+': '+str(val) for att, val in targets.items() if val != ' ']
             combinations.extend({'source': node_dict[source], 'target': node_dict[target]} for source in sources_list for target in targets_list)
 
         chord_df = pd.DataFrame(combinations, columns=['source', 'target'])
@@ -493,8 +494,7 @@ class GraphAnalytics(QWidget):
         nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
         chord = hv.Chord((top_edges, nodes))
-        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), 
-                              node_linewidth=0.2, node_size=0))
+        chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
         fig = hv.render(chord)
 
         return fig
