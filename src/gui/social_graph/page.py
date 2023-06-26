@@ -36,7 +36,7 @@ class GraphPage(QWidget):
         # Sub-pages definition
         self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
-        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics, title="Selected Node", globalmetrics=False)
+        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics, title="Selected Node")
         self.top_page = InfoPage(self.graph_page.graph.graph)
         self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
         self.adj_matrix = FullScreenWidget(self.graph_page.graph, self)
