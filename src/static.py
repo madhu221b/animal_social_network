@@ -1,5 +1,6 @@
 import os
 import glob
+import pickle
 from collections import defaultdict
 
 import sys
@@ -46,7 +47,6 @@ for path in paths:
         "metadata": metadata,
     }
 
-
 GRAPH_DATA = dict(GRAPH_DATA)
 
 # Generated version table
@@ -71,13 +71,14 @@ class PageState:
     category = None
     path = None
     title = None
+    landing_page = None
+    welcome_page = None
     # TODO move selected_nodes, selected_edges here
 
     @staticmethod
     def clear():
         PageState.id = None
         PageState.category = None
-
 
     @staticmethod
     def select_id(category, id):
@@ -87,14 +88,23 @@ class PageState:
         PageState.metadata = GRAPH_DATA[category][id]["metadata"]
 
     @staticmethod
-    def select_version(version, is_next_version=False):
-        if is_next_version is False:
-            # this call is called when "select" button is clicked for dropdown.
-            PageState.curr_version = version
-            PageState.version = version
-        else:  # this call is called when "save" button is called for retraining
-            # PageState.curr_version = version
-            PageState.version = version
-        PageState.version_path = os.path.join(
-            GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl"
-        )
+    def select_version(version):
+        PageState.version = version
+        PageState.version_path = os.path.join(GRAPH_VERSION_FOLDER, PageState.id, version + ".pkl")
+        if os.path.isfile(PageState.version_path):
+            with open(PageState.version_path, "rb") as f:
+                data = pickle.load(f)
+                PageState.prev_version = data['prev_version']
+                PageState.prev_path = data['prev_path']
+        else:
+            PageState.prev_version = None
+            PageState.prev_path = None
+
+    @staticmethod
+    def step_version(new_version):
+        PageState.prev_version = PageState.version
+        PageState.prev_path = PageState.version_path
+        PageState.version = new_version
+        PageState.version_path = os.path.join(GRAPH_VERSION_FOLDER,
+                                              PageState.id,
+                                              new_version + ".pkl")

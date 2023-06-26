@@ -17,6 +17,7 @@ class Graph(QObject):
 
     node_selection_changed = pyqtSignal(list, name="node_change")
     edge_selection_changed = pyqtSignal(list, name="edge_change")
+    graph_updated = pyqtSignal(name="graph_updated")
 
     # =====================================================
     # Initialisers
@@ -139,12 +140,14 @@ class Graph(QObject):
     def hanging_nodes(self):
         degrees = self.degrees
         nodes = self.nodes
-        return {nodes[node_name] for node_name in self.fresh_nodes if degrees[node_name] == 0}
+        return {
+            node_name: nodes[node_name] for node_name in self.fresh_nodes if degrees[node_name] == 0
+        }
 
     @property
     def predictable(self):
         # Can we run predict() on this graph
-        return self.min_degree == 0
+        return len(self.hanging_nodes) > 0
 
     @property
     def selected_undirected_edges(self):
@@ -152,7 +155,12 @@ class Graph(QObject):
 
     @property
     def state_dict(self):
-        return {"graph": self.graph, "node_layout": self.node_layout, "prev":PageState.curr_version}
+        return {
+            "graph": self.graph,
+            "node_layout": self.node_layout,
+            "prev_version": PageState.prev_version,
+            "prev_path": PageState.prev_path
+        }
 
     # =====================================================
     # Add / remove nodes
@@ -166,12 +174,14 @@ class Graph(QObject):
         self.selected_nodes = self._selected_nodes + [name for name, _ in nodes]
         self.fresh_nodes.extend([name for name, _ in nodes])
         logger.info(f"New nodes. Selected nodes are {self.selected_nodes}")
+        self.graph_updated.emit()
 
     def add_edges(self, edges):
         self.graph.add_edges_from(edges)
         # Note: append would not work here, because we need to trigger .setter
         self.selected_directed_edges = self._selected_directed_edges + list(edges)
         logger.info(f"New edges. Selected edges are {self.selected_directed_edges}")
+        self.graph_updated.emit()
 
     def add_node(self, node):
         self.add_nodes([node])
@@ -187,6 +197,7 @@ class Graph(QObject):
         self.fresh_nodes = [n for n in self.fresh_nodes if n not in nodes]
         new_selection = [x for x in self.selected_nodes if x not in nodes]
         self.selected_nodes = new_selection
+        self.graph_updated.emit()
 
     def remove_edges(self, edges=None):
         if edges is None or edges[0] is None:
@@ -194,6 +205,7 @@ class Graph(QObject):
         self.graph.remove_edges_from(self.selected_directed_edges)
         new_selection = [x for x in self.selected_directed_edges if x not in edges]
         self.selected_directed_edges = new_selection
+        self.graph_updated.emit()
 
     def remove_node(self, node=None):
         self.remove_nodes([node])

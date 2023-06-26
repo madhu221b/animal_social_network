@@ -9,8 +9,8 @@ from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
 from .info_page import InfoPage
 from .color_bar import ColorBar
-from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon
-from .matrix import FullScreenWidget, adjacency_matrix
+from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon, InfoIcon
+from .matrix import FullScreenWidget
 
 
 class GraphPage(QWidget):
@@ -36,11 +36,11 @@ class GraphPage(QWidget):
         # Sub-pages definition
         self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
-        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
+        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics, title="Selected Node")
         self.top_page = InfoPage(self.graph_page.graph.graph)
         self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
-        self.adj_matrix = FullScreenWidget(adjacency_matrix(self.graph_page.graph.graph), self)
-        self.button = QPushButton("Adjacency Matrix") 
+        self.adj_matrix = FullScreenWidget(self.graph_page.graph, self)
+        self.button = QPushButton("Adjacency Matrix")
 
         # button functionality
         self.button.clicked.connect(self.adj_matrix.showMaximized)
@@ -51,11 +51,15 @@ class GraphPage(QWidget):
         content_layout.addWidget(self.color_bar, 2)
         content_layout.addWidget(self.top_page, 1)
         content_layout.addWidget(self.button, 1)
+        
+        # Set margins
+        content_layout.setSpacing(0)
 
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)
         hlayout.addLayout(content_layout)
         hlayout.addWidget(self.right_page)
+        self.right_page.hide()
 
         main_layout.addLayout(hlayout)
 
@@ -75,10 +79,21 @@ class GraphPage(QWidget):
             "redo": RedoIcon(self),
             "pred": PredEdgesIcon(self),
             "save": SaveIcon(self),
-            "open": OpenIcon(self)
+            "open": OpenIcon(self),
+            "info": InfoIcon(self)
         }
         for action in list(self.icons.values()):
             self.toolbar.addAction(action)
+
+    def disable_social_graph_menu(self):
+        for icon in self.icons.values():
+            icon.disable()
+        self.icons["info"].enable()
+        self.icons["open"].enable()
+
+    def enable_social_graph_menu(self):
+        for icon in self.icons.values():
+            icon.set_enabled_or_not()
 
     def refresh(self):
         self.graph_page.refresh()

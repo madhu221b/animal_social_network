@@ -6,7 +6,7 @@ from src.actions.graph_actions import AddNode
 
 class AddNodeIcon(IconAction):
 
-    NAME = 'Add node'
+    DESC = 'Click to add a new node.'
     FILENAME = 'add_node.png'
 
     def onclick(self):
@@ -19,3 +19,6 @@ class AddNodeIcon(IconAction):
         if hasattr(self.parent, "node_form"):
             self.parent.node_form.close()
             del self.parent.node_form
+
+    def set_enabled_or_not(self):
+        self.enable()

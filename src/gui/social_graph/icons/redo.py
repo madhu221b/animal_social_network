@@ -4,7 +4,7 @@ from src.actions.stack import ActionStack
 
 
 class RedoIcon(IconAction):
-    NAME = 'Redo'
+    DESC = 'Click to redo last undone action.'
     FILENAME = 'redo.png'
 
     def __init__(self, *args, **kwargs):

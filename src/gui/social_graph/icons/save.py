@@ -2,10 +2,11 @@ from src.gui.social_graph.icons.action import IconAction
 from src.actions.stack import perform_global_action
 from src.actions.global_actions import Retrain, Save
 from src.actions.stack import ActionStack
+from src.gui.action_forms.notification import notify_user
 
 
 class SaveIcon(IconAction):
-    NAME = 'Save'
+    DESC = 'Click to save the current graph to disk.'
     FILENAME = 'save.png'
 
     def __init__(self, *args, **kwargs):
@@ -21,5 +22,12 @@ class SaveIcon(IconAction):
 
     def onclick(self):
         if self.enabled:
-            perform_global_action(Retrain)(graph_gui=self.parent.graph_page)
-            perform_global_action(Save)(graph=self.parent.graph_page.graph)
+            success = perform_global_action(Retrain)(graph_gui=self.parent.graph_page)
+            if success:
+                perform_global_action(Save)(graph=self.parent.graph_page.graph)
+                notify_user("Training was successful!", success=True)
+            else:
+                notify_user(
+                "Training was unsuccessful! <br />" + \
+                "It's likely you don't have many nodes to train with.",
+                success=False)

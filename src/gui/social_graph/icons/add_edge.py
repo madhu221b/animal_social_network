@@ -10,7 +10,7 @@ logger = logging.getLogger('AddEdgeIcon')
 
 class AddEdgeIcon(IconAction):
 
-    NAME = 'Add edge'
+    DESC = 'Click to add a new edge. Select two nodes before or after this event.'
     FILENAME = 'add_edge.png'
 
     def onclick(self):
@@ -46,3 +46,9 @@ class AddEdgeIcon(IconAction):
         perform_action_on_graph(self.parent.graph_page, AddEdge)(edge=edge)
         self.parent.graph_page.graph.deselect()
         self.parent.graph_page.graph.select(edges=[edge])
+
+    def set_enabled_or_not(self):
+        if len(self.parent.graph_page.graph.selected_nodes) <= 2:
+            self.enable()
+        else:
+            self.desable()

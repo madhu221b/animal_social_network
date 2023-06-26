@@ -14,6 +14,7 @@ from src.gui.landing_page import LandingPage
 
 parser = argparse.ArgumentParser(description='Simple settings.')
 parser.add_argument('--debug', action='store_true')
+parser.add_argument('--page', type=str, nargs='+', default=[])
 
 if __name__ == '__main__':
 
@@ -26,8 +27,7 @@ if __name__ == '__main__':
 
     # Pre-click if in debug mode
     args = parser.parse_args()
-    if args.debug:
-        PageState.landing_page._simulate_select_first_item()
-        # Add any simulated actions here that speeds up your tests
+    if len(args.page):
+        PageState.landing_page._simulate_select_first_item(" ".join(args.page))
 
     sys.exit(app.exec())

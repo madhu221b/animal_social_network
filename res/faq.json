@@ -1,0 +1,14 @@
+[
+    {
+        "Q": "What does the graph represent?",
+        "A": "The graph represents a network of animals. Each node represents an animal, and each edge represents a relationship between two animals."
+    },
+    {
+        "Q": "What information is displayed on the left column?",
+        "A": "The left column displays information about the object (node or edge) that the mouse is currently hovering over. You can use this to compare animals with the actively selected one on the right column."
+    },
+    {
+        "Q": "What information is displayed on the right column?",
+        "A": "The right column displays information about the object (node or edge) that was last clicked on."
+    }
+]

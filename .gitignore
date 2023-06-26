@@ -1,6 +1,10 @@
 results/
 .DS_Store
 .vscode
+asnr/
+out/
+datasets/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -164,8 +168,3 @@ cython_debug/
 #.idea/
 .python-version
 pyrightconfig.json
-
-asnr/
-out/
-results/
-datasets/

@@ -43,14 +43,21 @@ class GraphCanvas(FigureCanvasQTAgg):
 
     @property
     def node_colors(self):
-        norm = matplotlib.colors.Normalize(vmin=self.graph.min_degree,
-                                           vmax=self.graph.max_degree,
-                                           clip=True)
-        mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap=SHADES)
-        colors = {}
-        for node, degree in self.graph.degrees.items():
-            colors[node] = mapper.to_rgba(degree)
-        return colors
+        if not hasattr(self, '_node_colors'):
+            norm = matplotlib.colors.Normalize(vmin=self.graph.min_degree,
+                                               vmax=self.graph.max_degree,
+                                               clip=True)
+            mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap=SHADES)
+            colors = {}
+            for node, degree in self.graph.degrees.items():
+                colors[node] = mapper.to_rgba(degree)
+            return colors
+        else:
+            return self._node_colors
+
+    @node_colors.setter
+    def node_colors(self, value):
+        self._node_colors = value
 
     @property
     def node_sizes(self):
@@ -106,7 +113,7 @@ class GraphCanvas(FigureCanvasQTAgg):
 
     def refresh(self):
         self.ax.cla()  # Clears the existing plot
-        pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()))
+        pos = nx.spring_layout(self.graph.graph, k=math.sqrt(1 / self.graph.graph.order()), seed=42)
 
         if self.graph.node_layout is not None:
             for key, value in pos.items():
@@ -179,6 +186,8 @@ class GraphCanvas(FigureCanvasQTAgg):
             node_name, _, is_hovering, was_dragged = self.get_closest_node(event.xdata, event.ydata)
             if is_hovering and not was_dragged:
                 # Click
+                self.graph.deselect()
+                self.parent.graph_page.right_page.show()
                 self.parent.graph_page.right_page.update(node_name, self.features, self.metrics)
                 self.parent.graph_page.graph_page.graph.toggle_status_of_node(node_name)
                 self.parent.graph_page.refresh()
@@ -189,6 +198,7 @@ class GraphCanvas(FigureCanvasQTAgg):
                 self.parent.graph_page.refresh()
         else:
             self.graph.deselect()
+            self.parent.graph_page.right_page.hide()
             self.parent.graph_page.refresh()
 
     def on_hover(self, event):
