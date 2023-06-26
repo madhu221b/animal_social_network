@@ -76,7 +76,7 @@ class GraphPage(QWidget):
         hlayout.addWidget(self.scrollable_left_page)
         hlayout.addLayout(content_layout)
         hlayout.addWidget(self.scrollable_right_page)
-        self.right_page.hide()
+        self.scrollable_right_page.hide()
 
         main_layout.addLayout(hlayout)
 
@@ -117,3 +117,6 @@ class GraphPage(QWidget):
         self.top_page.refresh(self.graph_page.graph.graph)
         self.icons["pred"].refresh(self.graph_page.graph.predictable)
         self.color_bar.refresh()
+
+        if self.right_page.must_be_visible:
+            self.scrollable_right_page.show()
