@@ -130,7 +130,7 @@ if __name__ == "__main__":
     for path in lines:
         path = path.replace("\n", "")       
         features, edgelist, adj, _, _ = ASNRGraph(path=path).preprocess()
-        animal = path.split("/")[-1].split(".")[0]
+        animal = path.split("/")[-2] #.split(".")[0]
         train_model(animal, features, edgelist, adj)
         print("Animal trained for: ", animal)
    
