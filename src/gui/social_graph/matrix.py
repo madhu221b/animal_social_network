@@ -31,6 +31,7 @@ class FullScreenWidget(QDialog):
         self.button = QPushButton("Close", self)
         self.button.clicked.connect(self.exit_fullscreen)
         self.button.setStyleSheet("font-size: 24px; padding 10px;")
+        self.layout.addWidget(self.button)
 
         self.update_figure()
 
