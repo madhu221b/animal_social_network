@@ -120,7 +120,7 @@ class GraphAnalytics(QWidget):
         node_features = self.parent.graph_page.graph_page.features
         self.N = graph.graph.number_of_nodes()
         nodes = list(graph.node_layout.keys())
-        labels = [k for k, v in list(node_features.values())[0].items()]
+        labels = [k for k, _ in list(node_features.values())[0].items()]
         for l in labels:
             features = [node_features[n][l] for n in nodes]
             if all(self.is_number(f) for f in features) and all(
@@ -180,6 +180,11 @@ class GraphAnalytics(QWidget):
         # Add graph analytics table
         graph_analytics_table = self.graph_analytics_table()
         table_layout.addWidget(graph_analytics_table)
+        # increase width of table by 10% 
+                
+        table_widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        container_layout.addWidget(table_widget)
+        
 
         # Add chord diagram
         chord_diagram_fig = self.chord_diagram(self.disc_attribute_labels, node_features, graph)
@@ -189,9 +194,7 @@ class GraphAnalytics(QWidget):
         button.clicked.connect(fullscreen_widget.show)
         button.setStyleSheet("font-size: 24px; padding 10px;")
         table_layout.addWidget(button)
-        table_widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
-        container_layout.addWidget(table_widget)
-        
+
 
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(container_widget)
@@ -317,6 +320,7 @@ class GraphAnalytics(QWidget):
         table.setRowCount(len(graph_metrics))
         table.setColumnCount(2)
         table.setHorizontalHeaderLabels(['Metric', 'Value'])
+        table.verticalHeader().setVisible(False)
         # table.setVerticalHeaderLabels(graph_metrics.keys())
         for i, (metric, value) in enumerate(graph_metrics.items()):
             table.setItem(i, 0, QtWidgets.QTableWidgetItem(metric))
