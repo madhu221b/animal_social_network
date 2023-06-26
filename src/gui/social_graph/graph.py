@@ -14,8 +14,8 @@ from src.utils.graph_utils import read_graph, get_edited_graph
 from src.models.inference import get_pred_edges
 from src.graph import Graph
 
-SHADES = plt.get_cmap("Pastel1")
-
+# SHADES = plt.get_cmap("Pastel1")
+from ..colors import cmap1
 
 class GraphCanvas(FigureCanvasQTAgg):
     """
@@ -47,7 +47,7 @@ class GraphCanvas(FigureCanvasQTAgg):
             norm = matplotlib.colors.Normalize(vmin=self.graph.min_degree,
                                                vmax=self.graph.max_degree,
                                                clip=True)
-            mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap=SHADES)
+            mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap1)
             colors = {}
             for node, degree in self.graph.degrees.items():
                 colors[node] = mapper.to_rgba(degree)
