@@ -25,8 +25,8 @@ def parse_readme(path):
 # ==================================================
 
 LANDING_PAGE_TITLE = "Social Network Analysis of Animals"
-LANDING_PAGE_WIDTH = 500
-LANDING_PAGE_HEIGHT = 100
+LANDING_PAGE_WIDTH = 600
+LANDING_PAGE_HEIGHT = 360
 
 MAIN_WINDOW_HEIGHT = 800
 MAIN_WINDOW_WIDTH = 1000
@@ -80,7 +80,7 @@ class PageState:
     def clear():
         PageState.id = None
         PageState.category = None
-        PageState.version = -1 
+        PageState.version = -1
 
     @staticmethod
     def select_id(category, id):

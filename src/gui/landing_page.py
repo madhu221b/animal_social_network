@@ -1,5 +1,9 @@
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtGui import QScreen
+from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QPushButton
+from PyQt6.QtCore import Qt
+import os
+
 from .main_window import MainWindow
 from ..static import (
     GRAPH_DATA,
@@ -10,6 +14,8 @@ from ..static import (
     VERSIONS,
 )
 
+INTRO_FOLDER = 'res/animal_intro'
+
 
 class DropDownListBox(QtWidgets.QComboBox):
     popup_dropdown_window = QtCore.pyqtSignal()
@@ -17,6 +23,31 @@ class DropDownListBox(QtWidgets.QComboBox):
     def showPopup(self):
         self.popup_dropdown_window.emit()
         super(DropDownListBox, self).showPopup()
+
+
+class SelectButton(QPushButton):
+
+    def __init__(self, parent=None):
+        super(SelectButton, self).__init__(parent)
+
+        # Set button properties and styles
+        self.setText("Select")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setStyleSheet('''
+            QPushButton {
+                background-color: #3C8F40;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            
+            QPushButton:hover {
+                background-color: #4CAF50;
+                /* Add additional hover effects if desired */
+            }
+            ''')
 
 
 class LandingPage(QtWidgets.QWidget):
@@ -33,62 +64,168 @@ class LandingPage(QtWidgets.QWidget):
         # Set default layout
         self.setWindowTitle(LANDING_PAGE_TITLE)
         self.setGeometry(0, 0, LANDING_PAGE_WIDTH, LANDING_PAGE_HEIGHT)
-        self.layout = QtWidgets.QHBoxLayout(
-            self)  # Change to QHBoxLayout to place elements side by side
+        self.layout = QtWidgets.QVBoxLayout(self)
 
-        # Add dropdown list to the window
-        self._create_dropdown_list()
+        # First, read shortcuts for animal files
+        self._animal_encoder, self._animal_decoder = self._read_animal_shortcuts()
 
-        # Add select button to the window
-        self._create_select_button()
+        # Add instruction
+        instruction = self._create_instruction()
+        self.layout.addWidget(instruction)
+
+        # Add dropdown list
+        self.button_layout = self._create_dropdown_list()
+        self.layout.addLayout(self.button_layout)
+
+        # Add horizontal line
+        self.layout.addWidget(self._create_horizontal_line())
+
+        # Fill up the rest of the window with empty space
+        self.layout.addStretch()
+
+        # Add intro page
+        self.intro_layout = self._create_intro_page()
+        self.layout.addLayout(self.intro_layout)
+
+        # Add space and horizontal line again
+        self.layout.addStretch()
+        self.layout.addWidget(self._create_horizontal_line())
+
+        # Add select button
+        self.select_button_layout = self._create_select_button_layout()
+        self.layout.addLayout(self.select_button_layout)
+
+        # Set up trigger events
+        self._create_event_connections()
+
+        # Set initial state
+        self.preset()
 
         # Center the window on the screen
         self._center_window()
 
     def show(self):
-        # Bring window to the front and keep it there
+        """Bring window to the front and keep it there"""
         self.setWindowFlags(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         super().show()
 
-    def _center_window(self):
-        """Center the window on the screen"""
+    def _read_animal_shortcuts(self):
+        full_animals = list(VERSIONS.keys())
+        encoder = {x: x.split('_')[0] for x in full_animals}
+        decoder = {v: k for k, v in encoder.items()}
+        return encoder, decoder
 
-        screen_geometry = QtWidgets.QApplication.primaryScreen().geometry()
-        x = (screen_geometry.width() - LANDING_PAGE_WIDTH) // 2
-        y = (screen_geometry.height() - LANDING_PAGE_HEIGHT) // 2
-        self.move(x, y)
+    def _create_horizontal_line(self):
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        line.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        return line
+
+    def _create_instruction(self):
+        label = QtWidgets.QLabel("Choose a graph to analyze!")
+        label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        label.setContentsMargins(0, 0, 0, 5)
+        return label
+
+    def _create_intro_page(self):
+        self.intro_layout = QtWidgets.QHBoxLayout()
+        self.image_label = QtWidgets.QLabel(self)
+        self.description_label = QtWidgets.QLabel(self)
+        self.description_label.setWordWrap(True)
+        self.description_label.setSizePolicy(QSizePolicy.Policy.Expanding,
+                                             QSizePolicy.Policy.Expanding)
+        self.intro_layout.addWidget(self.image_label)
+        self.intro_layout.addWidget(self.description_label)
+        return self.intro_layout
 
     def _create_dropdown_list(self):
-        """Create a clickable dropdown list to this window"""
 
-        dropdown_category = DropDownListBox(self)
-        dropdown_list = DropDownListBox(self)
-        dropdown_list_version = DropDownListBox(self)
+        FONT_FAMILY = "Arial"
+        FONT_SIZE = 9
+        LABEL_HEIGHT = 20
+        FONT_WEIGHT = QFont.Weight.Bold
 
         # Define all choices the users can choose from
-        dropdown_category.addItems(sorted(GRAPH_DATA.keys()))
-        dropdown_category.setCurrentIndex(0)  # Select the first item by default
+        self.dropdown_category = DropDownListBox(self)
+        self.dropdown_list = DropDownListBox(self)
+        self.dropdown_list_version = DropDownListBox(self)
+        self.dropdown_category.addItems(sorted(GRAPH_DATA.keys()))
+        self.dropdown_category.setCurrentIndex(0)  # Select the first item by default
 
-        # Add widget to the layout
-        self.layout.addWidget(dropdown_category)
-        self.layout.addWidget(dropdown_list)
-        self.layout.addWidget(dropdown_list_version)
-        self.dropdown_category = dropdown_category
-        self.dropdown_list = dropdown_list
-        self.dropdown_list_version = dropdown_list_version
+        # Layouts
+        taxonomy_layout = QtWidgets.QVBoxLayout()
+        animal_layout = QtWidgets.QVBoxLayout()
+        version_layout = QtWidgets.QVBoxLayout()
+        select_layout = QtWidgets.QVBoxLayout()
+        button_layout = QtWidgets.QHBoxLayout()
 
-        # Signal slot connection
-        dropdown_category.currentIndexChanged.connect(self.update_listing)
-        dropdown_list.currentIndexChanged.connect(self.update_version_dropdown)
-        # Trigger the update manually for the first time
+        # Taxonomy dropdown list
+        taxonomy_label = QtWidgets.QLabel("Taxonomy")
+        taxonomy_label.setFixedHeight(LABEL_HEIGHT)
+        taxonomy_label.setFont(QFont(FONT_FAMILY, FONT_SIZE, FONT_WEIGHT))
+        taxonomy_layout.addWidget(taxonomy_label)
+        taxonomy_layout.addWidget(self.dropdown_category)
+        taxonomy_layout.setSpacing(0)
+
+        # Animal dropdown list
+        animal_label = QtWidgets.QLabel("Animal")
+        animal_label.setFixedHeight(LABEL_HEIGHT)
+        animal_label.setFont(QFont(FONT_FAMILY, FONT_SIZE, FONT_WEIGHT))
+        animal_layout.addWidget(animal_label)
+        animal_layout.addWidget(self.dropdown_list)
+        animal_layout.setSpacing(0)
+
+        # Version dropdown list
+        version_label = QtWidgets.QLabel("Version")
+        version_label.setFixedHeight(LABEL_HEIGHT)
+        version_label.setFont(QFont(FONT_FAMILY, FONT_SIZE, FONT_WEIGHT))
+        version_layout.addWidget(version_label)
+        version_layout.addWidget(self.dropdown_list_version)
+        version_layout.setSpacing(0)
+
+        # Add buttons to the layout
+        button_layout.addLayout(taxonomy_layout)
+        button_layout.addLayout(animal_layout)
+        button_layout.addLayout(version_layout)
+
+        return button_layout
+
+    @property
+    def selected_animal(self):
+        index = self.dropdown_list.currentIndex()
+        item = self.dropdown_list.itemText(index)
+        if item in self._animal_decoder:
+            return self._animal_decoder[item]
+        else:
+            return None
+
+    def _center_window(self):
+        """Center the window on the screen"""
+        screen_geometry = QtWidgets.QApplication.primaryScreen().geometry()
+        x = (screen_geometry.width() - self.width()) // 2
+        y = (screen_geometry.height() - self.height()) // 2
+        self.move(x, y)
+
+    def _create_event_connections(self):
+        """Create event connections for the dropdown list and the select button"""
+        self.dropdown_category.currentIndexChanged.connect(self.update_listing)
+        self.dropdown_list.currentIndexChanged.connect(self.update_version_dropdown)
+        self.dropdown_list.currentIndexChanged.connect(self.update_image_and_description)
+        self.select_button.clicked.connect(self._select_button_on_click)
+
+    def preset(self):
         self.update_listing(0)
         self.update_version_dropdown(0)
+        self.update_image_and_description()
 
     def update_listing(self, index):
         """Update the version dropdown based on the selected item in the first dropdown"""
         selected_category = self.dropdown_category.itemText(index)
         self.dropdown_list.clear()
-        self.dropdown_list.addItems(sorted(GRAPH_DATA[selected_category].keys()))
+        animals = sorted(GRAPH_DATA[selected_category].keys())
+        encoded_animals = [self._animal_encoder[x] for x in animals]
+        self.dropdown_list.addItems(encoded_animals)
 
     def update_version_dropdown(self, index=None):
         """Update the version dropdown based on the selected item in the second dropdown"""
@@ -97,7 +234,7 @@ class LandingPage(QtWidgets.QWidget):
 
         if index is None:
             index = self.dropdown_list.currentIndex()
-        selected_animal = self.dropdown_list.itemText(index)
+        selected_animal = self._animal_decoder[self.dropdown_list.itemText(index)]
         self.dropdown_list_version.clear()
         self.dropdown_list_version.addItems(VERSIONS[selected_animal])
 
@@ -106,21 +243,38 @@ class LandingPage(QtWidgets.QWidget):
         else:
             self.dropdown_list_version.setDisabled(True)
 
+    def update_image_and_description(self):
+        """Update the image and the description based on the selected item in the dropdown list"""
+        # Load image
+        filepath = f"{INTRO_FOLDER}/images/{self.selected_animal}.jpg"
+        if os.path.isfile(filepath):
+            pixmap = QPixmap(filepath)
+            self.image_label.setPixmap(pixmap)
+
+        # Load description
+        filepath = f"{INTRO_FOLDER}/descriptions/{self.selected_animal}.txt"
+        if os.path.isfile(filepath):
+            with open(filepath, 'r') as file:
+                description = file.read()
+            self.description_label.setText(description)
+        self._center_window()
+
+    def _create_select_button_layout(self):
+        """Make select button appear on right side"""
+        self.select_button = self._create_select_button()
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.select_button)
+        return layout
+
     def _create_select_button(self):
         """Create a select button to this window"""
-        select_button = QtWidgets.QPushButton("Select", self)
+        select_button = SelectButton(self)
 
-        # Set click event
-        select_button.clicked.connect(self._select_button_on_click)
-
-        # Calculate the preferred size of the button
+        # Calculate the preferred size of the button + set it
         size_hint = select_button.sizeHint()
-
-        # Set the fixed width based on the preferred size
         select_button.setFixedWidth(size_hint.width())
-
-        # Add widget to the layout
-        self.layout.addWidget(select_button)
+        return select_button
 
     def _select_button_on_click(self):
         """
@@ -130,7 +284,7 @@ class LandingPage(QtWidgets.QWidget):
 
         # Select item and version
         category = self.dropdown_category.currentText()
-        page_id = self.dropdown_list.currentText()
+        page_id = self._animal_decoder[self.dropdown_list.currentText()]
         page_version = self.dropdown_list_version.currentText()
 
         # In case we already opened, close the previous one
