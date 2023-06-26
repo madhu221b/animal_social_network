@@ -8,6 +8,7 @@ from src.models.train import train_model
 from ..action import GlobalAction
 from ...static import PageState, GRAPH_VERSION_FOLDER, VERSIONS
 from ..stack import ActionStack
+from ...gui.action_forms.notification import notify_user
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("retrain.action")
@@ -22,7 +23,11 @@ class Retrain(GlobalAction):
     def do(self):
         # Retraining graph
         features, edgelist, adj, _, _ = ASNRGraph(graph_obj=self.graph_gui.graph.graph).preprocess()
-        train_model(PageState.id, features, edgelist, adj)
+        try:
+            train_model(PageState.id, features, edgelist, adj)
+        except:
+            return False
+
         logger.info("Graph retrained")
 
         # Increasing current version number
@@ -38,3 +43,5 @@ class Retrain(GlobalAction):
         ActionStack.reset()
         logger.info("Graph set as default, starting position.")
         self.graph_gui.refresh()
+
+        return True

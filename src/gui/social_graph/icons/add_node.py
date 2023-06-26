@@ -19,3 +19,6 @@ class AddNodeIcon(IconAction):
         if hasattr(self.parent, "node_form"):
             self.parent.node_form.close()
             del self.parent.node_form
+
+    def set_enabled_or_not(self):
+        self.enable()

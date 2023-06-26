@@ -139,12 +139,14 @@ class Graph(QObject):
     def hanging_nodes(self):
         degrees = self.degrees
         nodes = self.nodes
-        return {nodes[node_name] for node_name in self.fresh_nodes if degrees[node_name] == 0}
+        return {
+            node_name: nodes[node_name] for node_name in self.fresh_nodes if degrees[node_name] == 0
+        }
 
     @property
     def predictable(self):
         # Can we run predict() on this graph
-        return self.min_degree == 0
+        return len(self.hanging_nodes) > 0
 
     @property
     def selected_undirected_edges(self):

@@ -15,3 +15,6 @@ class OpenIcon(IconAction):
     def onclick(self):
         if self.enabled:
             perform_global_action(Load)()
+
+    def set_enabled_or_not(self):
+        self.enable()

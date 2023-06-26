@@ -18,10 +18,13 @@ class _ActionStack(QObject):
     @staticmethod
     def add(item):
         assert isinstance(item, GraphAction), f"Action must be GraphAction, not {type(item)}"
-        item.do()
-        ActionStack.done_stack.append(item)
-        ActionStack.undone_stack = []
-        ActionStack.trigger_events()
+        success = item.do()
+        success = success is None or success
+        if success:
+            ActionStack.done_stack.append(item)
+            ActionStack.undone_stack = []
+            ActionStack.trigger_events()
+        return success
 
     @staticmethod
     def undo():
@@ -57,7 +60,7 @@ def perform_action_on_graph(graph, action_class):
 
     def _perform_action(*args, **kwargs):
         action = action_class(graph, *args, **kwargs)
-        ActionStack.add(action)
+        return ActionStack.add(action)
 
     return _perform_action
 
@@ -66,7 +69,7 @@ def perform_global_action(action_class):
 
     def _perform_action(*args, **kwargs):
         action = action_class(*args, **kwargs)
-        action.do()
+        return action.do()
         # Note: this is a global action, not added to the stack
 
     return _perform_action
