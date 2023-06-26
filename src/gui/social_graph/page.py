@@ -51,6 +51,9 @@ class GraphPage(QWidget):
         content_layout.addWidget(self.color_bar, 2)
         content_layout.addWidget(self.top_page, 1)
         content_layout.addWidget(self.button, 1)
+        
+        # Set margins
+        content_layout.setSpacing(0)
 
         # Sub-pages allocation on main page
         hlayout.addWidget(self.left_page)
