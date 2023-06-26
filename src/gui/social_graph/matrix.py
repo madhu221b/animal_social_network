@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton
 from PyQt6 import QtCore
 
-shades = plt.get_cmap('cet_glasbey_light')
+shades = plt.get_cmap('Pastel2')
 matplotlib.use("QtAgg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -31,6 +31,7 @@ class FullScreenWidget(QDialog):
         self.button = QPushButton("Close", self)
         self.button.clicked.connect(self.exit_fullscreen)
         self.button.setStyleSheet("font-size: 24px; padding 10px;")
+        self.layout.addWidget(self.button)
 
         self.update_figure()
 

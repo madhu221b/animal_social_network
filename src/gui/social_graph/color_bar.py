@@ -5,7 +5,8 @@ from PyQt6.QtGui import *
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-shades = plt.get_cmap('Pastel1')
+# shades = plt.get_cmap('Pastel1')
+from ..colors import cmap1
 
 mpl.use("Qt5Agg")
 
@@ -25,7 +26,7 @@ class ColorBar(FigureCanvasQTAgg):
 
         degree = [val for (node, val) in graph.degree()]
         norm = mpl.colors.Normalize(vmin=min(degree), vmax=max(degree))
-        self.figure.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=shades),
+        self.figure.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap1),
                              cax=self.ax,
                              orientation='horizontal',
                              label='Degree')
