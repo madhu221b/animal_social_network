@@ -3,7 +3,6 @@
 ./asnr/Networks/Aves/sparrow_flockmembership_weighted/sparrow_arnberg_social_2010_attribute.graphml
 ./asnr/Networks/Insecta/beetle_proximity_weighted/beetle_formica_group_C3_period_1_attribute.graphml
 ./asnr/Networks/Insecta/ants_proximity_weighted/ant_mersch_col1_day01_attribute.graphml
-./asnr/Networks/Mammalia/hyenas_groupmembership_weighted/hyena_holekamp_networkA_attribute.graphml
 ./asnr/Networks/Mammalia/mouse_social_projection_bipartite_weighted/mice_lopes_attribute.graphml
 ./asnr/Networks/Mammalia/rhesusmacaque_association_weighted/macaque_massen_grooming_bouts_attribute.graphml
 ./asnr/Networks/Mammalia/bison_dominance_weighted/bison_lott_dominance_attribute.graphml
