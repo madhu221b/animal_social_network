@@ -166,20 +166,6 @@ class GraphAnalytics(QWidget):
         except:
             pass
 
-        # Add chord diagram
-        line_edit = QLineEdit()
-        chord_button = QPushButton("Update Chord Diagram")
-        chord_button.setEnabled(False)
-        line_edit.textChanged.connect(lambda text: chord_button.setEnabled(bool(text)))
-        chord_button.clicked.connect(
-            lambda: self.update_chord_diagram(int(line_edit.text()), plots_layout))
-        plots_layout.addWidget(line_edit)
-        plots_layout.addWidget(chord_button)
-
-        self.chord_diagram = self.chord_diagram(self.disc_attribute_labels, node_features, graph)
-        self.chord_diagram.setFixedHeight(500)
-        plots_layout.addWidget(self.chord_diagram)
-
         plots_layout.addStretch()
         plots_widget = QWidget()
         plots_widget.setLayout(plots_layout)
@@ -502,5 +488,14 @@ class GraphAnalytics(QWidget):
         chord = hv.Chord((top_edges, nodes))
         chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
         fig = hv.render(chord)
+
+        # label_data = chord.nodes.data.drop(['index'], axis=1)
+        # label_data['rotation'] = np.arctan((label_data.y / label_data.x))
+        # label_data['x'] = label_data['x'].apply(lambda x: x * 1.3)
+        # label_data['y'] = label_data['y'].apply(lambda x: x * 1.3)
+
+        # labels = hv.Labels(label_data)
+        # labels.opts(opts.Labels(rotation=dim('rotation)))
+        # fig = hv.render(chord * labels)
 
         return fig
