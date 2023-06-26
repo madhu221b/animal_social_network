@@ -124,13 +124,13 @@ if __name__ == "__main__":
     if args.seed:
         np.random.seed(args.seed)
         torch.manual_seed(args.seed)
-
-    with open("./out/bad_graphs.txt", "w") as f:
-        for file in glob("./datasets/**.graphml"):
-            print(file)
-            features, edgelist, adj, _, _ = ASNRGraph(file).preprocess()
-            try:
-                train_model(file.split("/")[-1], features, edgelist, adj)
-                print("#########")
-            except:
-                f.write(file + "\n")
+    
+    with open('./datasets/final_datasets.txt') as f:
+          lines = f.readlines()
+    for path in lines:
+        path = path.replace("\n", "")       
+        features, edgelist, adj, _, _ = ASNRGraph(path=path).preprocess()
+        animal = path.split("/")[-1].split(".")[0]
+        train_model(animal, features, edgelist, adj)
+        print("Animal trained for: ", animal)
+   

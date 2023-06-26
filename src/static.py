@@ -73,18 +73,21 @@ class PageState:
     title = None
     landing_page = None
     welcome_page = None
+    version = None
     # TODO move selected_nodes, selected_edges here
 
     @staticmethod
     def clear():
         PageState.id = None
         PageState.category = None
+        PageState.version = -1 
 
     @staticmethod
     def select_id(category, id):
         PageState.id = id
         PageState.category = category
-        PageState.graph_path = PageState.title = GRAPH_DATA[category][id]["path"]
+        PageState.title = f"Social Network for Category: {category}, Animal: {id}"
+        PageState.graph_path = GRAPH_DATA[category][id]["path"]
         PageState.metadata = GRAPH_DATA[category][id]["metadata"]
 
     @staticmethod
