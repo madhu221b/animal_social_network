@@ -44,6 +44,7 @@ class FullScreenWidget(QDialog):
         input_layout = QHBoxLayout(input_widget)
         input_layout.addWidget(line_edit)
         input_layout.addWidget(chord_button)
+        input_widget.setFixedHeight(40)
 
         canvas_widget = QWidget()
         canvas_layout = QVBoxLayout(canvas_widget)
@@ -81,7 +82,6 @@ class FullScreenWidget(QDialog):
         chord.opts(opts.Chord(cmap='Set3', edge_cmap='Set3', edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
         fig = hv.render(chord)
         self.canvas = FigureCanvasQTAgg(fig)
-        self.canvas.setFixedHeight(400)
 
         canvas_layout.addWidget(self.canvas)
 
