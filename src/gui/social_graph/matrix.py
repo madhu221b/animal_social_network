@@ -69,7 +69,7 @@ class FullScreenWidget(QDialog):
 
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ['white', cmap1(0.1)])
         im = ax.matshow(bi_adj_matrix.todense(), cmap=cmap, )
-        # ax.grid(color='grey', linestyle='-', linewidth=0.5)
+
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
         ax.set_yticks(np.arange(len(nodes)))
