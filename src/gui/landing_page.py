@@ -291,7 +291,6 @@ class LandingPage(QtWidgets.QWidget):
             "mouse": "Mammalia",
             "rhesusmacaque": "Mammalia"
         }[animal]
-
         index = self.dropdown_category.findText(taxonomy)
         self.dropdown_category.setCurrentIndex(index)
 
