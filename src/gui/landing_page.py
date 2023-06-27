@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 import os
 
 from .main_window import MainWindow
+from .custom_buttons import MediumGreenButton
 from ..static import (
     GRAPH_DATA,
     LANDING_PAGE_TITLE,
@@ -23,31 +24,6 @@ class DropDownListBox(QtWidgets.QComboBox):
     def showPopup(self):
         self.popup_dropdown_window.emit()
         super(DropDownListBox, self).showPopup()
-
-
-class SelectButton(QPushButton):
-
-    def __init__(self, parent=None):
-        super(SelectButton, self).__init__(parent)
-
-        # Set button properties and styles
-        self.setText("Select")
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setStyleSheet('''
-            QPushButton {
-                background-color: #3C8F40;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                font-weight: bold;
-                font-size: 14px;
-            }
-            
-            QPushButton:hover {
-                background-color: #4CAF50;
-                /* Add additional hover effects if desired */
-            }
-            ''')
 
 
 class LandingPage(QtWidgets.QWidget):
@@ -269,7 +245,7 @@ class LandingPage(QtWidgets.QWidget):
 
     def _create_select_button(self):
         """Create a select button to this window"""
-        select_button = SelectButton(self)
+        select_button = MediumGreenButton("Select")
 
         # Calculate the preferred size of the button + set it
         size_hint = select_button.sizeHint()
@@ -315,7 +291,7 @@ class LandingPage(QtWidgets.QWidget):
             "mouse": "Mammalia",
             "rhesusmacaque": "Mammalia"
         }[animal]
-        
+
         index = self.dropdown_category.findText(taxonomy)
         self.dropdown_category.setCurrentIndex(index)
 

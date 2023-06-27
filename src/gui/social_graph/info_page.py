@@ -3,6 +3,7 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 
 from src.static import PageState
+from src.gui.custom_buttons import MediumGreenButton
 
 
 class InfoPage(QWidget):
@@ -11,6 +12,7 @@ class InfoPage(QWidget):
         super(InfoPage, self).__init__()
 
         self.layout = QVBoxLayout()
+        self.button_layout = QHBoxLayout()
         self.setLayout(self.layout)
 
         self.headers = ["Nodes", "Edges", "Interaction type", "Taxonomic class", "Population type"]
@@ -55,7 +57,7 @@ class InfoPage(QWidget):
             self.table2.horizontalHeader().setSectionResizeMode(
                 count, QHeaderView.ResizeMode.ResizeToContents)
 
-        self.button = QPushButton("More Network Attributes")
+        self.button = MediumGreenButton("More Network Attributes")
         self.button.clicked.connect(self.button_clicked)
 
         title = "Network Attributes"
@@ -65,7 +67,8 @@ class InfoPage(QWidget):
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.table)
         self.layout.addWidget(self.table2)
-        self.layout.addWidget(self.button)
+        self.button_layout.addWidget(self.button, 1)
+        self.layout.addLayout(self.button_layout)
 
         self.layout.addStretch(1)
 
