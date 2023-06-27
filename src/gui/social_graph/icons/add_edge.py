@@ -51,4 +51,4 @@ class AddEdgeIcon(IconAction):
         if len(self.parent.graph_page.graph.selected_nodes) <= 2:
             self.enable()
         else:
-            self.desable()
+            self.disable()
