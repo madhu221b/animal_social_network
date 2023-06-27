@@ -123,7 +123,7 @@ class LandingPage(QtWidgets.QWidget):
         return line
 
     def _create_instruction(self):
-        label = QtWidgets.QLabel("Choose a graph to analyze!")
+        label = QtWidgets.QLabel("Select Animal to analyze its Social Network")
         label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         label.setContentsMargins(0, 0, 0, 5)
         return label

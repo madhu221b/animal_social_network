@@ -24,7 +24,7 @@ def parse_readme(path):
 # Constants
 # ==================================================
 
-LANDING_PAGE_TITLE = "Social Network Analysis of Animals"
+LANDING_PAGE_TITLE = "ASNViz: Animal Social Network Visualization"
 LANDING_PAGE_WIDTH = 600
 LANDING_PAGE_HEIGHT = 360
 
