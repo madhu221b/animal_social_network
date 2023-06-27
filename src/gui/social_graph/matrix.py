@@ -11,6 +11,7 @@ matplotlib.use("QtAgg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib import colorbar
+from ..colors import cmap1
 
 
 class FullScreenWidget(QDialog):
@@ -66,13 +67,17 @@ class FullScreenWidget(QDialog):
         fig.tight_layout(pad=4.0)
         fig.subplots_adjust(top=0.95)
 
-        cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["white", "black"])
-        im = ax.matshow(bi_adj_matrix.todense(), cmap='binary')
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ['white', cmap1(0.1)])
+        im = ax.matshow(bi_adj_matrix.todense(), cmap=cmap, )
+        # ax.grid(color='grey', linestyle='-', linewidth=0.5)
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))
         ax.set_yticks(np.arange(len(nodes)))
         ax.set_xticklabels(nodes, fontsize=7)
         ax.set_yticklabels(nodes, fontsize=7)
+        ax.set_xticks(np.arange(-.5, len(nodes), 1), minor=True)
+        ax.set_yticks(np.arange(-.5, len(nodes), 1), minor=True)
+        ax.grid(which='minor', color='grey', linestyle='-', linewidth=0.5)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
 
         ax.legend()
