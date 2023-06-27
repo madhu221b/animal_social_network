@@ -129,8 +129,10 @@ class GraphAnalytics(QWidget):
         self.attribute_distribution_plot = self.attribute_distribution_plot()
         self.attribute_distribution_cont = self.attribute_distribution_cont()
         self.modularity = Modularity(self.graph.graph)
-        self.info_tab2 = QLabel(text=f"Ideal No of Communities: {self.modularity.subcommunity_n} " + \
-                                     f"with Modularity: {self.modularity.max_modularity}",
+
+        self.info_tab2 = QLabel(text=f"The optimal number of communities is {self.modularity.subcommunity_n}, " + \
+                                     f"with Modularity = {self.modularity.max_modularity}.\n" + \
+                                          "Nodes are color-coded by community.",
                                     alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
         self.graph_gui_small = GraphCanvas(self.parent)
         self.graph_gui_small.node_colors = self.modularity.node_colors
@@ -184,13 +186,22 @@ class GraphAnalytics(QWidget):
         self.modularity.bar.setMinimumHeight(400)
         plots_layout.addWidget(self.modularity.bar)
 
+        self.graphlayout = QVBoxLayout()
+
+        self.graphlayout.addWidget(QLabel(text="Optimal Community Distribtuion", alignment=QtCore.Qt.AlignmentFlag.AlignCenter, font=QtGui.QFont("Helvetica", 18, QtGui.QFont.Weight.Normal), styleSheet="padding: 5px; background-color: 'white';"))
+        
+
         self.info_tab2.setMinimumHeight(50)
-        plots_layout.addWidget(self.info_tab2)
+        self.info_tab2.setStyleSheet("font-size: 12px; background-color: 'white';")
+        self.graphlayout.addWidget(self.info_tab2)
         
         self.graph_gui_small.setMinimumHeight(400)
         self.graph_gui_small.node_colors = self.modularity.node_colors
         self.graph_gui_small.refresh()
-        plots_layout.addWidget(self.graph_gui_small)
+        self.graphlayout.addWidget(self.graph_gui_small)
+        self.graphlayout.setSpacing(0)
+
+        plots_layout.addLayout(self.graphlayout)
     
 
         plots_layout.addStretch()
@@ -361,7 +372,9 @@ class GraphAnalytics(QWidget):
         ],
                                   key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle('Node Attribute Distribution (continuous variables)')
+        fig.suptitle(f'Continuous Attribute Distribution for {self.N} Nodes')
+        rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
+
         # fig.text(0.5,0.5, s="test")
         c = 2
         k = int(np.ceil(n / c))
@@ -373,7 +386,8 @@ class GraphAnalytics(QWidget):
                 for features in node_features.values()
                 if attribute in features.keys()
             ]
-            ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5)
+            attribute_values.sort(reverse=True)
+            ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5, color=cmap1(0.1))
             ax.tick_params(axis='y', labelsize=5)
             ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
             ax.set_title(attribute, fontsize=6)
@@ -388,7 +402,7 @@ class GraphAnalytics(QWidget):
         attribute_labels = self.disc_attribute_labels
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle(f"Node Attribute Distribution (N={self.N})")
+        fig.suptitle(f"Discrete Attribute Distribution for {self.N} Nodes")
         fig.tight_layout(pad=1.0)
         bars = []
 

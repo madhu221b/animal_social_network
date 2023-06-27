@@ -39,9 +39,9 @@ class Modularity(QWidget):
     
     def get_bar(self, communities):
         fig, ax  = plt.subplots()
-        fig.subplots_adjust(top=0.4, left=0.2)
+        fig.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.25)
 
-        fig.suptitle('Modularity for Different No. of Communities', fontsize=6)
+        fig.suptitle('Modularity for Different No. of Communities')
        
         rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
 
@@ -54,16 +54,17 @@ class Modularity(QWidget):
         self.max_id = np.argmax(y_vals)
         self.max_modularity = round(np.max(y_vals),6)
         bar = ax.bar(x_vals, y_vals, color=cmap1(rescale(y_vals)))
-        ax.set_title("Modularity measures the density of connections within a community relative to the density of connections between communities.", fontsize=6)
+        # ax.set_title("Modularity per No. of Communities")
+        ax.set_title("Modularity measures the density of connections within a community relative to the density of connections between communities. Communities are detected using the Grivan-Newman algorithm.", ha='center',fontsize=8, wrap=True)
         ax.tick_params(axis='y', labelsize=6)
         ax.tick_params(axis='x', labelsize=6)
         ax.set_xlabel("No. of Communities",fontsize=6)
         ax.set_ylabel("Modularity Score",fontsize=6)
-       
+        
 
-        fig.tight_layout(pad=4.0)   
+        # fig.tight_layout(pad=4.0)   
         norm = matplotlib.colors.Normalize(vmin=min(y_vals), vmax=max(y_vals))
-        ax2 = fig.add_axes([0.3 ,0.85, 0.4, 0.05])
+        ax2 = fig.add_axes([0.3 ,0.08, 0.4, 0.04])
 
         m_start = min(y_vals)         # colorbar min value
         m_end = max(y_vals)            # colorbar max value
@@ -78,7 +79,6 @@ class Modularity(QWidget):
     def create_community_node_colors(self,graph, community):
         number_of_colors = len(community)
         colors = mcp.gen_color(cmap=cmap1_str, n=number_of_colors+2)
-
         node_colors = {}
         subcommunity_n = 0
         for i, subcommunity in enumerate(community):
