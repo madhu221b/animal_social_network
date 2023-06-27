@@ -17,6 +17,7 @@ from src.graph import Graph
 # SHADES = plt.get_cmap("Pastel1")
 from ..colors import cmap1
 
+
 class GraphCanvas(FigureCanvasQTAgg):
     """
     Graph page, containing the graph and handling events such as clicks or hovers.
@@ -25,6 +26,10 @@ class GraphCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         super(GraphCanvas, self).__init__(Figure(figsize=(width, height), dpi=dpi))
         self.parent = parent
+        self.highligh_node_width = 1.
+        self.normal_node_width = 0.5
+        self.highligh_edge_width = 1.5
+        self.normal_edge_width = 1.
         self.setParent(parent)
         self.ax = self.figure.add_subplot(111)
 
@@ -100,7 +105,9 @@ class GraphCanvas(FigureCanvasQTAgg):
     def node_width(self):
         width = {}
         for node_name, node in self.graph.nodes:
-            width[node_name] = 1. if node_name in self.graph.selected_nodes else 0.5
+            width[node_name] = self.highligh_node_width \
+                               if node_name in self.graph.selected_nodes \
+                               else self.normal_node_width
         return width
 
     @property
@@ -108,7 +115,9 @@ class GraphCanvas(FigureCanvasQTAgg):
         width = {}
         for edge in self.graph.directed_edges:
             undirected_edge = set(edge)
-            width[edge] = 1.5 if undirected_edge in self.graph.selected_undirected_edges else 1.
+            width[edge] = self.highligh_edge_width \
+                          if undirected_edge in self.graph.selected_undirected_edges \
+                          else self.normal_edge_width
         return width
 
     def refresh(self):

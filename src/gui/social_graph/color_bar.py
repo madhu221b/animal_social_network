@@ -27,7 +27,6 @@ class ColorBar(FigureCanvasQTAgg):
         self.refresh()
 
     def refresh(self):
-        print(self.graph.min_degree, self.graph.max_degree)
         if self.min_degree != self.graph.min_degree or self.max_degree != self.graph.max_degree:
             self.min_degree = self.graph.min_degree
             self.max_degree = self.graph.max_degree
