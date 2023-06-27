@@ -15,8 +15,7 @@ from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import patches
-from mpl_chord_diagram import chord_diagram
-
+from ..mpl_chord_diagram_2 import chord_diagram
 # shades = plt.get_cmap('Pastel2_r')
 matplotlib.use("QtAgg")
 
@@ -440,11 +439,8 @@ class GraphAnalytics(QWidget):
     def attribute_distribution_cont(self):
         fig = Figure(figsize=(7, 5), dpi=100)
         node_features = self.parent.graph_page.graph_page.features
-        attribute_labels = sorted([
-            k for k,
-            v in list(node_features.values())[0].items() if type(v) == float and int(v) != v
-        ],
-                                  key=lambda x: x.lower())
+
+        attribute_labels = self.cont_attribute_labels
         n = len(attribute_labels)
         fig.suptitle(f'Continuous Attribute Distribution for {self.N} Nodes')
         rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))

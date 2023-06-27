@@ -34,6 +34,8 @@ def clean_nodes(g):
                 remove_arr.append(node) # some strings have useless spl char, "-"
             elif "tag_id" in data.keys():
                 g.nodes[node].pop("tag_id",None)
+            elif "node" in data.keys():
+                g.nodes[node].pop("node",None)
                 # g = g.remove_attribute(tnode=node, attr='tag_id')
             
     [g.remove_node(node) for node in remove_arr]

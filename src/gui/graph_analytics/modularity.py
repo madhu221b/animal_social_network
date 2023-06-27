@@ -39,7 +39,6 @@ class Modularity(QWidget):
     
     def get_bar(self, communities):
         fig, ax  = plt.subplots()
-        fig.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.25)
 
         fig.suptitle('Modularity for Different No. of Communities')
        
@@ -54,6 +53,7 @@ class Modularity(QWidget):
         self.max_id = np.argmax(y_vals)
         self.max_modularity = round(np.max(y_vals),6)
         bar = ax.bar(x_vals, y_vals, color=cmap1(rescale(y_vals)))
+        fig.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.25)
         # ax.set_title("Modularity per No. of Communities")
         ax.set_title("Modularity measures the density of connections within a community relative to the density of connections between communities. Communities are detected using the Grivan-Newman algorithm.", ha='center',fontsize=8, wrap=True)
         ax.tick_params(axis='y', labelsize=6)
