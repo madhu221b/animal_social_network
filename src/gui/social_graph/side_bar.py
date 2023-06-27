@@ -10,8 +10,7 @@ class NodeInfoPage(QWidget):
     def __init__(self, features, metrics, title="Features"):
         super(NodeInfoPage, self).__init__()
 
-        self.LEFT_WIDTH = 200
-        self.RIGHT_WIDTH = 200
+        self.WIDTH = 200
         self.CELL_HEIGHT = 30
         self.FEATURES = None
         self.METRICS = None  # None == select all
@@ -29,18 +28,19 @@ class NodeInfoPage(QWidget):
         for _, data in self.features.items():
             self.FEATURES = data.keys()
             break
-        self.feature_table = self._create_table(self.features, self.LEFT_WIDTH, self.FEATURES)
+        self.feature_table = self._create_table(self.features, self.WIDTH, self.FEATURES)
         self.layout.addWidget(self.feature_table)
-
 
         self.metric_title_label = QLabel("Metrics")
         self.metric_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         self.layout.addWidget(self.metric_title_label)
 
-        self.metric_table = self._create_table(metrics, self.RIGHT_WIDTH, self.METRICS)
+        self.metric_table = self._create_table(metrics, self.WIDTH, self.METRICS)
         self.layout.addWidget(self.metric_table)
 
         self.layout.addStretch(1)
+
+        self.must_be_visible = False
 
     def _create_table(self, data, width, columns=None):
         table = QTableWidget()
@@ -75,6 +75,7 @@ class NodeInfoPage(QWidget):
     def update(self, node_name, features=None, metrics=None):
 
         if node_name:
+            self.must_be_visible = True
             self.features = features
             self.metrics = swap_dict_keys(metrics)
             self._update_table(self.feature_table, self.features[node_name], node_name=node_name)

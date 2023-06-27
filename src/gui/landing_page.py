@@ -300,12 +300,32 @@ class LandingPage(QtWidgets.QWidget):
         self.main_window.show()
         self.hide()
 
-    def _simulate_select_first_item(self, text):
+    def _simulate_select(self, animal="bats"):
         """Simulate selecting a specific item for development purposes"""
-        index = self.dropdown_list.findText(text)
-        if index >= 0:  # make sure the item was found
-            self.dropdown_list.setCurrentIndex(index)
-            self._select_button_on_click()
+        taxonomy = {
+            "barnswallow": "Aves",
+            "songbird": "Aves",
+            "sparrow": "Aves",
+            "ants": "Insecta",
+            "beetle": "Insecta",
+            "baboon": "Mammalia",
+            "bats": "Mammalia",
+            "bison": "Mammalia",
+            "groundsquirrel": "Mammalia",
+            "mouse": "Mammalia",
+            "rhesusmacaque": "Mammalia"
+        }[animal]
+        
+        index = self.dropdown_category.findText(taxonomy)
+        self.dropdown_category.setCurrentIndex(index)
+
+        index = self.dropdown_list.findText(animal)
+        self.dropdown_list.setCurrentIndex(index)
+
+        last_index = self.dropdown_list_version.count() - 1
+        self.dropdown_list_version.setCurrentIndex(last_index)
+
+        self._select_button_on_click()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QPushButton, QLabel
-from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QPushButton, QScrollArea, QFrame, QLabel
 from PyQt6.QtCore import Qt
 import matplotlib
 
@@ -38,9 +37,11 @@ class GraphPage(QWidget):
         self.versionlabel = QLabel("Version: " + PageState.version)
         self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
-        self.right_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics, title="Selected Node")
+        self.right_page = NodeInfoPage(self.graph_page.features,
+                                       self.graph_page.metrics,
+                                       title="Selected Node")
         self.top_page = InfoPage(self.graph_page.graph.graph)
-        self.color_bar = ColorBar(parent, self.graph_page.graph.graph)
+        self.color_bar = ColorBar(parent, self.graph_page.graph)
         self.adj_matrix = FullScreenWidget(self.graph_page.graph, self)
         self.button = QPushButton("Adjacency Matrix")
 
@@ -57,15 +58,31 @@ class GraphPage(QWidget):
         content_layout.addWidget(self.color_bar, 2)
         content_layout.addWidget(self.top_page, 1)
         content_layout.addWidget(self.button, 1)
-        
+
         # Set margins
         content_layout.setSpacing(0)
 
+        # Make left_page scrollable
+        self.scrollable_left_page = QScrollArea()
+        self.scrollable_left_page.setWidget(self.left_page)
+        self.scrollable_left_page.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scrollable_left_page.setContentsMargins(0, 0, 0, 0)
+        self.scrollable_left_page.setFrameShape(QFrame.Shape.NoFrame)
+
+        # Make right_page scrollable
+        self.scrollable_right_page = QScrollArea()
+        self.scrollable_right_page.setWidget(self.right_page)
+        self.scrollable_right_page.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scrollable_right_page.setContentsMargins(0, 0, 0, 0)
+        self.scrollable_right_page.setFrameShape(QFrame.Shape.NoFrame)
+
         # Sub-pages allocation on main page
-        hlayout.addWidget(self.left_page)
+        hlayout.addWidget(self.scrollable_left_page)
         hlayout.addLayout(content_layout)
-        hlayout.addWidget(self.right_page)
-        self.right_page.hide()
+        hlayout.addWidget(self.scrollable_right_page)
+        self.scrollable_right_page.hide()
 
         main_layout.addLayout(hlayout)
 
@@ -105,3 +122,7 @@ class GraphPage(QWidget):
         self.graph_page.refresh()
         self.top_page.refresh(self.graph_page.graph.graph)
         self.icons["pred"].refresh(self.graph_page.graph.predictable)
+        self.color_bar.refresh()
+
+        if self.right_page.must_be_visible:
+            self.scrollable_right_page.show()

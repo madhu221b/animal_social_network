@@ -113,6 +113,10 @@ class Graph(QObject):
         return self.graph.nodes(data=True)
 
     @property
+    def n_nodes(self) -> dict:
+        return len(self.nodes)
+
+    @property
     def features(self) -> dict:
         return dict(self.nodes)
 
@@ -127,6 +131,11 @@ class Graph(QObject):
     @property
     def degrees(self):
         return dict(self.graph.degree())
+
+    @property
+    def avg_degree(self):
+        degrees = self.degrees
+        return sum(list(degrees.values())) / len(degrees)
 
     @property
     def min_degree(self):
@@ -161,6 +170,10 @@ class Graph(QObject):
             "prev_version": PageState.prev_version,
             "prev_path": PageState.prev_path
         }
+
+    @property
+    def avg_coeff(self):
+        return round(nx.average_clustering(G=self.graph), 6)
 
     # =====================================================
     # Add / remove nodes
@@ -216,6 +229,24 @@ class Graph(QObject):
     # =====================================================
     # Other utilities
     # =====================================================
+
+    def difference_to(self, other=None):
+
+        if other is None:
+            return [], []
+
+        this_nodes = set([name for name, _ in self.nodes])
+        other_nodes = set([name for name, _ in other.nodes])
+        new_nodes = list(this_nodes - other_nodes)
+
+        new_edges = set(self.undirected_edges.keys())
+        for edge_name, edge in other.undirected_edges.items():
+            if edge_name in new_edges and edge == self.undirected_edges[edge_name]:
+                # Make sure edge exist with same name and value
+                new_edges.remove(edge_name)
+        new_edges = list(new_edges)
+
+        return new_nodes, new_edges
 
     def toggle_status_of_node(self, node_name):
         if node_name in self.selected_nodes:
