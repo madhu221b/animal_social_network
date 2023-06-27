@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QPushButton, QScrollArea, QFrame
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QPushButton, QScrollArea, QFrame, QLabel
 from PyQt6.QtCore import Qt
 import matplotlib
 
@@ -10,6 +10,7 @@ from .info_page import InfoPage
 from .color_bar import ColorBar
 from .icons import AddNodeIcon, UndoIcon, PredEdgesIcon, AddEdgeIcon, RedoIcon, SaveIcon, OpenIcon, InfoIcon
 from .matrix import FullScreenWidget
+from src.static import PageState
 
 
 class GraphPage(QWidget):
@@ -33,6 +34,7 @@ class GraphPage(QWidget):
         content_layout = QVBoxLayout()
 
         # Sub-pages definition
+        self.versionlabel = QLabel("Version: " + PageState.version)
         self.graph_page = GraphCanvas(parent, width=5, height=2, dpi=100)
         self.left_page = NodeInfoPage(self.graph_page.features, self.graph_page.metrics)
         self.right_page = NodeInfoPage(self.graph_page.features,
@@ -47,7 +49,11 @@ class GraphPage(QWidget):
         self.button.clicked.connect(self.adj_matrix.showMaximized)
         self.button.setStyleSheet("font-size: 24px; padding 10px;")
 
+        # versionlabel positioning to right
+        self.versionlabel.setAlignment(Qt.AlignmentFlag.AlignRight)
+
         # Add content
+        content_layout.addWidget(self.versionlabel, 1)
         content_layout.addWidget(self.graph_page, 7)
         content_layout.addWidget(self.color_bar, 2)
         content_layout.addWidget(self.top_page, 1)
