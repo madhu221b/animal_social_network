@@ -1,7 +1,7 @@
 [
     {
         "text": "<h1>Welcome!</h1><br />This is a graphical interface for analysing social graphs. This is a short tutorial on how to use our application.",
-        "image_path": "res/tutorial/welcome.png",
+        "image_path": "res/tutorial/logo.png",
         "image_alignment": "right"
     },
     {
