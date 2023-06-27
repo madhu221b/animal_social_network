@@ -4,8 +4,6 @@ import networkx as nx
 import numpy as np
 from ...utils.analytics_utils import get_correlations_att_edge
 import pandas as pd
-import holoviews as hv
-from holoviews import opts, dim
 from collections import defaultdict
 from textwrap import wrap
 from .modularity import Modularity
@@ -13,12 +11,11 @@ from src.gui.social_graph.graph import GraphCanvas
 from mycolorpy import colorlist as mcp
 from ..colors import cmap1, cmap1_str
 
-
-hv.extension('matplotlib')
-
 from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib import patches
+from mpl_chord_diagram import chord_diagram
 
 # shades = plt.get_cmap('Pastel2_r')
 matplotlib.use("QtAgg")
@@ -36,32 +33,52 @@ class FullScreenWidget(QDialog):
         self.setWindowTitle("Chord Diagram")
         self.setModal(True)
         self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        line_edit = QLineEdit()
-        chord_button = QPushButton("Generate Chord Diagram")
-        chord_button.setEnabled(False)
-        line_edit.textChanged.connect(lambda text: chord_button.setEnabled(bool(text)))
-        chord_button.clicked.connect(lambda: self.update_chord_diagram(int(line_edit.text()), canvas_layout))
+        label = QLabel('Select number of edges displayed: ')
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        label.setFont(font)
+        self.line_edit = QLineEdit()
+        self.chord_button = QPushButton("Generate Chord Diagram")
+        self.chord_button.setEnabled(False)
+        self.line_edit.textChanged.connect(lambda text: self.chord_button.setEnabled(bool(text)))
+        self.chord_button.clicked.connect(self.check_input)
+        self.error_label = QLabel()
+        self.error_label.setStyleSheet("color: red")
+
+        horizontal_layout = QHBoxLayout()
+        horizontal_layout.addWidget(label)
+        horizontal_layout.addWidget(self.line_edit)
+        horizontal_layout.addWidget(self.chord_button)
 
         input_widget = QWidget()
-        input_layout = QHBoxLayout(input_widget)
-        input_layout.addWidget(line_edit)
-        input_layout.addWidget(chord_button)
-        input_widget.setFixedHeight(40)
+        input_layout = QVBoxLayout(input_widget)
+        input_layout.addLayout(horizontal_layout)
+        input_layout.addWidget(self.error_label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
         canvas_widget = QWidget()
-        canvas_layout = QVBoxLayout(canvas_widget)
+        canvas_widget.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.canvas_layout = QVBoxLayout(canvas_widget)
         self.canvas = FigureCanvasQTAgg(content_fig)
-        canvas_layout.addWidget(self.canvas)
+        self.canvas_layout.addWidget(self.canvas)
 
         close_button = QPushButton("Close", self)
         close_button.clicked.connect(self.exit_fullscreen)
         close_button.setStyleSheet("font-size: 24px; padding 10px;")
 
+        text = 'This chord diagram represents connections between different values of animal attributes. ' \
+       'Each node corresponds to an attribute value. The thickness of the edges between them indicates the frequency of connections between animals with those attributes. ' \
+       'Only the most recurring edges are displayed (default is top 20 if there are more than 20 edges; all edges otherwise).'
+
+        description = QLabel(text)
+        description.setFont(font)
+        description.setWordWrap(True)
+        description.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+
         self.layout = QVBoxLayout()
         self.layout.addWidget(input_widget)
         self.layout.addWidget(canvas_widget)
+        self.layout.addWidget(description)
         self.layout.addWidget(close_button)
 
         self.setLayout(self.layout)
@@ -74,17 +91,74 @@ class FullScreenWidget(QDialog):
         self.showNormal()
         self.close()
 
+    def check_input(self):
+        try:
+            input_value = int(self.line_edit.text())
+            self.chord_button.setEnabled(bool(input_value))
+            max_edges = len(self.parent.sorted_df)
+            if input_value >= 1 and input_value <= max_edges:
+                self.error_label.setText('')
+                self.update_chord_diagram(input_value, self.canvas_layout)
+            else:
+                self.error_label.setText('Value must be between 1 and ' + str(max_edges))
+        except ValueError:
+            self.error_label.setText("'" + self.line_edit.text() + "'" + ' is not a valid input')
+
     def update_chord_diagram(self, top_n, canvas_layout):
         canvas_layout.removeWidget(self.canvas)
         self.canvas.close()
 
-        top_edges = self.parent.sorted_df.nlargest(top_n, 'value')
-        selected_nodes = self.parent.chord_nodes.loc[self.parent.chord_nodes['index'].isin(top_edges['source'].tolist() + top_edges['target'].tolist())]
-        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
+        fig = Figure(figsize=(8, 5), dpi=100)
+        ax, legend_ax = fig.subplots(1,2, gridspec_kw={'width_ratios': [4, 1]})
 
-        chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
-        chord.opts(opts.Chord(cmap=cmap1, edge_cmap=cmap1, edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
-        fig = hv.render(chord)
+        names = self.parent.chord_nodes['name'].tolist()
+        matrix = np.zeros((len(names), len(names)))
+
+        top_edges = self.parent.sorted_df.nlargest(top_n, 'value')
+
+        for _, row in top_edges.iterrows():
+            matrix[row['source']][row['target']] = row['value']
+            matrix[row['target']][row['source']] = row['value']
+
+        common = np.intersect1d(np.where(np.all(matrix == 0, axis=0)), np.where(np.all(matrix == 0, axis=1)))
+        matrix = np.delete(matrix, common, axis=0)
+        matrix = np.delete(matrix, common, axis=1)
+
+        common_indices_list = common.tolist()
+        for index in sorted(common_indices_list, reverse=True):
+            del names[index]
+
+        row_sums = np.sum(matrix, axis=1)
+        column_sums = np.sum(matrix, axis=0)
+        index_sums = row_sums + column_sums
+        max_index = np.argsort(index_sums)[-20:][::-1]
+
+        chord_diagram(matrix, ax=ax, use_gradient=True, sort='size', directed=False, cmap=cmap1, chord_colors=None)
+
+        num_nodes = matrix.shape[0]
+        colors = cmap1(np.linspace(0, 1, num_nodes))
+        handles = []
+        labels = []
+        if len(names) > 20:
+            for i in max_index:
+                handle = patches.Patch(color=colors[i], label=names[i], alpha=0.7)
+                handles.append(handle)
+                labels.append(names[i])
+
+            title = 'Top 20 Nodes'
+        else:
+            for i, name in enumerate(names):
+                handle = patches.Patch(color=colors[i], label=name, alpha=0.7)
+                handles.append(handle)
+                labels.append(name)
+
+            title = 'Nodes'
+
+        legend_ax.plot([], [], ' ', label='Legend')
+        legend = legend_ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.15), title=title, fontsize=9, title_fontsize=10)
+        legend_ax.axis('off')
+        legend.set_frame_on(False)
+
         self.canvas = FigureCanvasQTAgg(fig)
 
         canvas_layout.addWidget(self.canvas)
@@ -483,7 +557,8 @@ class GraphAnalytics(QWidget):
         return FigureCanvasQTAgg(fig)
 
     def chord_diagram(self, attribute_names, node_features, graph):
-        fig = Figure(figsize=(3, 3), dpi=100)
+        fig = Figure(figsize=(8, 5), dpi=100)
+        ax, legend_ax = fig.subplots(1,2, gridspec_kw={'width_ratios': [4, 1]})
 
         features_df = pd.DataFrame(node_features).T
         features_df.index.name = 'node'
@@ -509,6 +584,9 @@ class GraphAnalytics(QWidget):
         self.chord_nodes = pd.DataFrame(chord_nodes_list)
         self.chord_nodes = self.chord_nodes.sort_values(by='group')
 
+        names = self.chord_nodes['name'].tolist()
+        matrix = np.zeros((len(names), len(names)))
+        
         combinations = []
         for _, row in edges_df.iterrows():
             sources = features_df.loc[row['source'], attribute_names].dropna()
@@ -519,24 +597,52 @@ class GraphAnalytics(QWidget):
 
         chord_df = pd.DataFrame(combinations, columns=['source', 'target'])
         chord_df = chord_df.groupby(['source', 'target']).size().reset_index(name='value')
+        chord_df = chord_df.nlargest(500, 'value')
 
         self.sorted_df = chord_df.sort_values('value', ascending=False)
         top_edges = self.sorted_df.nlargest(20, 'value')
-        selected_nodes = self.chord_nodes.loc[self.chord_nodes['index'].isin(
-            top_edges['source'].tolist() + top_edges['target'].tolist())]
-        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
-        chord = hv.Chord((top_edges, nodes))
-        chord.opts(opts.Chord(cmap=cmap1, edge_cmap=cmap1, edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
-        fig = hv.render(chord)
+        for _, row in top_edges.iterrows():
+            matrix[row['source']][row['target']] = row['value']
+            matrix[row['target']][row['source']] = row['value']
 
-        # label_data = chord.nodes.data.drop(['index'], axis=1)
-        # label_data['rotation'] = np.arctan((label_data.y / label_data.x))
-        # label_data['x'] = label_data['x'].apply(lambda x: x * 1.3)
-        # label_data['y'] = label_data['y'].apply(lambda x: x * 1.3)
+        common = np.intersect1d(np.where(np.all(matrix == 0, axis=0)), np.where(np.all(matrix == 0, axis=1)))
+        matrix = np.delete(matrix, common, axis=0)
+        matrix = np.delete(matrix, common, axis=1)
 
-        # labels = hv.Labels(label_data)
-        # labels.opts(opts.Labels(rotation=dim('rotation)))
-        # fig = hv.render(chord * labels)
+        common_indices_list = common.tolist()
+        for index in sorted(common_indices_list, reverse=True):
+            del names[index]
+
+        row_sums = np.sum(matrix, axis=1)
+        column_sums = np.sum(matrix, axis=0)
+        index_sums = row_sums + column_sums
+        max_index = np.argsort(index_sums)[-20:][::-1]
+
+        chord_diagram(matrix, ax=ax, use_gradient=True, sort='size', directed=False, cmap=cmap1, chord_colors=None)
+
+        num_nodes = matrix.shape[0]
+        colors = cmap1(np.linspace(0, 1, num_nodes))
+        handles = []
+        labels = []
+        if len(names) > 20:
+            for i in max_index:
+                handle = patches.Patch(color=colors[i], label=names[i], alpha=0.7)
+                handles.append(handle)
+                labels.append(names[i])
+
+            title = 'Top 20 Nodes'
+        else:
+            for i, name in enumerate(names):
+                handle = patches.Patch(color=colors[i], label=name, alpha=0.7)
+                handles.append(handle)
+                labels.append(name)
+
+            title = 'Nodes'
+
+        legend_ax.plot([], [], ' ', label='Legend')
+        legend = legend_ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.15), title=title, fontsize=9, title_fontsize=10)
+        legend_ax.axis('off')
+        legend.set_frame_on(False)
 
         return fig
