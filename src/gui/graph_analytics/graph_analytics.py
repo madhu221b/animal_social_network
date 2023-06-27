@@ -1,20 +1,26 @@
 from PyQt6 import QtGui, QtWidgets, QtCore
-from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget, QLineEdit
+from PyQt6.QtWidgets import QDialog, QPushButton, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QTableWidget, QLineEdit, QSizePolicy
 import networkx as nx
 import numpy as np
-from ..utils.analytics_utils import get_correlations_att_edge
+from ...utils.analytics_utils import get_correlations_att_edge
 import pandas as pd
+import holoviews as hv
+from holoviews import opts, dim
 from collections import defaultdict
 from textwrap import wrap
-from matplotlib import patches
-from mpl_chord_diagram import chord_diagram
+from .modularity import Modularity
+from src.gui.social_graph.graph import GraphCanvas
+from mycolorpy import colorlist as mcp
+from ..colors import cmap1, cmap1_str
+
+
+hv.extension('matplotlib')
 
 from collections import Counter
 import matplotlib
 import matplotlib.pyplot as plt
 
-shades = plt.get_cmap('Accent')
-
+# shades = plt.get_cmap('Pastel2_r')
 matplotlib.use("QtAgg")
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -30,53 +36,32 @@ class FullScreenWidget(QDialog):
         self.setWindowTitle("Chord Diagram")
         self.setModal(True)
         self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        self.line_edit = QLineEdit()
-        self.chord_button = QPushButton("Generate Chord Diagram")
-        self.chord_button.setEnabled(False)
-        self.line_edit.textChanged.connect(lambda text: self.chord_button.setEnabled(bool(text)))
-        self.chord_button.clicked.connect(self.check_input)
-        self.error_label = QLabel()
+        line_edit = QLineEdit()
+        chord_button = QPushButton("Generate Chord Diagram")
+        chord_button.setEnabled(False)
+        line_edit.textChanged.connect(lambda text: chord_button.setEnabled(bool(text)))
+        chord_button.clicked.connect(lambda: self.update_chord_diagram(int(line_edit.text()), canvas_layout))
 
-        label = QLabel('Select number of edges displayed: ')
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        label.setFont(font)
         input_widget = QWidget()
-        input_layout = QVBoxLayout(input_widget)
-        horizontal_layout = QHBoxLayout()
-
-        horizontal_layout.addWidget(label)
-        horizontal_layout.addWidget(self.line_edit)
-        horizontal_layout.addWidget(self.chord_button)
-        
-
-        input_layout.addLayout(horizontal_layout)
-        input_layout.addWidget(self.error_label)
+        input_layout = QHBoxLayout(input_widget)
+        input_layout.addWidget(line_edit)
+        input_layout.addWidget(chord_button)
+        input_widget.setFixedHeight(40)
 
         canvas_widget = QWidget()
-        canvas_widget.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.canvas_layout = QVBoxLayout(canvas_widget)
+        canvas_layout = QVBoxLayout(canvas_widget)
         self.canvas = FigureCanvasQTAgg(content_fig)
-        self.canvas_layout.addWidget(self.canvas)
+        canvas_layout.addWidget(self.canvas)
 
         close_button = QPushButton("Close", self)
         close_button.clicked.connect(self.exit_fullscreen)
         close_button.setStyleSheet("font-size: 24px; padding 10px;")
 
-        description = QLabel('This chord diagram represents connections between different values of animal attributes. Each node corresponds to an attribute value and the edges between them indicate the amount of connections between animals with those attributes. Only the most recurring edges are displayed.')
-        
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        description.setFont(font)
-
-        description.setWordWrap(True)
-        description.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
-
         self.layout = QVBoxLayout()
         self.layout.addWidget(input_widget)
         self.layout.addWidget(canvas_widget)
-        self.layout.addWidget(description)
         self.layout.addWidget(close_button)
 
         self.setLayout(self.layout)
@@ -89,67 +74,17 @@ class FullScreenWidget(QDialog):
         self.showNormal()
         self.close()
 
-    def check_input(self):
-        try:
-            input_value = int(self.line_edit.text())
-            self.chord_button.setEnabled(bool(input_value))
-            max_edges = len(self.parent.sorted_df)
-            if input_value >= 1 and input_value <= max_edges:
-                self.error_label.setText('')
-                self.update_chord_diagram(input_value, self.canvas_layout)
-            else:
-                self.error_label.setText('Must be between 1 and ' + str(max_edges))
-        except ValueError:
-            self.error_label.setText('Not a valid number')
-
     def update_chord_diagram(self, top_n, canvas_layout):
         canvas_layout.removeWidget(self.canvas)
         self.canvas.close()
 
-        fig = Figure(figsize=(8, 5), dpi=100)
-        ax, legend_ax = fig.subplots(1,2, gridspec_kw={'width_ratios': [4, 1]})
-
-        names = self.parent.chord_nodes['name'].tolist()
-
-        matrix = np.zeros((len(names), len(names)))
-
         top_edges = self.parent.sorted_df.nlargest(top_n, 'value')
+        selected_nodes = self.parent.chord_nodes.loc[self.parent.chord_nodes['index'].isin(top_edges['source'].tolist() + top_edges['target'].tolist())]
+        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
-        for _, row in top_edges.iterrows():
-            matrix[row['source']][row['target']] = row['value']
-            matrix[row['target']][row['source']] = row['value']
-
-        common = np.intersect1d(np.where(np.all(matrix == 0, axis=0)), np.where(np.all(matrix == 0, axis=1)))
-        matrix = np.delete(matrix, common, axis=0)
-        matrix = np.delete(matrix, common, axis=1)
-
-        common_indices_list = common.tolist()
-        for index in sorted(common_indices_list, reverse=True):
-            del names[index]
-
-        row_sums = np.sum(matrix, axis=1)
-        column_sums = np.sum(matrix, axis=0)
-        index_sums = row_sums + column_sums
-        max_index = np.argsort(index_sums)[-20:][::-1]
-
-
-        chord_diagram(matrix, ax=ax, use_gradient=True, sort='size', directed=False,
-                        cmap=None, chord_colors=None)
-
-        num_nodes = matrix.shape[0]
-        colors = plt.cm.get_cmap('viridis')(np.linspace(0, 1, num_nodes))
-        handles = []
-        labels = []
-        for i in max_index:
-            handle = patches.Patch(color=colors[i], label=names[i], alpha=0.7)
-            handles.append(handle)
-            labels.append(names[i])
-
-        legend_ax.plot([], [], ' ', label='Legend')
-        legend = legend_ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.15))
-        legend_ax.axis('off')
-        legend.set_frame_on(False)
-
+        chord = hv.Chord((top_edges, nodes)).select(value=(5, None))
+        chord.opts(opts.Chord(cmap=cmap1, edge_cmap=cmap1, edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
+        fig = hv.render(chord)
         self.canvas = FigureCanvasQTAgg(fig)
 
         canvas_layout.addWidget(self.canvas)
@@ -163,6 +98,44 @@ class GraphAnalytics(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
+
+        # background utilities
+        self.graph = self.parent.graph_page.graph_page.graph
+        self.node_features = self.parent.graph_page.graph_page.features
+        self.N = self.graph.graph.number_of_nodes()
+        nodes = list(self.graph.node_layout.keys())
+        labels = [k for k, _ in list(self.node_features.values())[0].items()]
+        for l in labels:
+            features = [self.node_features[n][l] for n in nodes]
+            if all(self.is_number(f) for f in features) and all(
+                    isinstance(f, str) for f in features):
+                for n in nodes:
+                    self.node_features[n][l] = float(self.node_features[n][l])
+            else:
+                continue
+
+        self.disc_attribute_labels = []
+        index = defaultdict(list)
+        for itemdict in list(self.node_features.values()):
+            for k, v in itemdict.items():
+                index[k].append(v)
+
+        for k, v in index.items():
+            if all(isinstance(x, str) or int(x) == x for x in v):
+                self.disc_attribute_labels.append(k)
+
+        self.cont_attribute_labels = list(set(labels) - set(self.disc_attribute_labels))
+
+        self.attribute_distribution_plot = self.attribute_distribution_plot()
+        self.attribute_distribution_cont = self.attribute_distribution_cont()
+        self.modularity = Modularity(self.graph.graph)
+
+        self.info_tab2 = QLabel(text=f"The optimal number of communities is {self.modularity.subcommunity_n}, " + \
+                                     f"with Modularity = {self.modularity.max_modularity}.\n" + \
+                                          "Nodes are color-coded by community.",
+                                    alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.graph_gui_small = GraphCanvas(self.parent)
+        self.graph_gui_small.node_colors = self.modularity.node_colors
         self.setup_ui()
 
     def is_number(self, s):
@@ -185,47 +158,21 @@ class GraphAnalytics(QWidget):
         scroll.setWidgetResizable(True)
         scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        graph = self.parent.graph_page.graph_page.graph
-        node_features = self.parent.graph_page.graph_page.features
-        self.N = graph.graph.number_of_nodes()
-        nodes = list(graph.node_layout.keys())
-        labels = [k for k, v in list(node_features.values())[0].items()]
-        for l in labels:
-            features = [node_features[n][l] for n in nodes]
-            if all(self.is_number(f) for f in features) and all(
-                    isinstance(f, str) for f in features):
-                for n in nodes:
-                    node_features[n][l] = float(node_features[n][l])
-            else:
-                continue
-
-        self.disc_attribute_labels = []
-        index = defaultdict(list)
-        for itemdict in list(node_features.values()):
-            for k, v in itemdict.items():
-                index[k].append(v)
-
-        for k, v in index.items():
-            if all(isinstance(x, str) or int(x) == x for x in v):
-                self.disc_attribute_labels.append(k)
-
-        self.cont_attribute_labels = list(set(labels) - set(self.disc_attribute_labels))
+        # graph = self.graph
 
         # Add discrete attribute distribution plot
         if len(self.disc_attribute_labels) > 0:
-            attribute_distribution_plot = self.attribute_distribution_plot()
-            attribute_distribution_plot.setFixedHeight(40 * len(self.disc_attribute_labels) + 200)
-            plots_layout.addWidget(attribute_distribution_plot)
+            self.attribute_distribution_plot.setFixedHeight(40 * len(self.disc_attribute_labels) + 200)
+            plots_layout.addWidget(self.attribute_distribution_plot)
 
         # Add attribute distribution plot continuous variables
         if len(self.cont_attribute_labels) > 0:
 
-            attribute_distribution_cont = self.attribute_distribution_cont()
-            attribute_distribution_cont.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+            self.attribute_distribution_cont.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                                       QtWidgets.QSizePolicy.Policy.Expanding)
-            attribute_distribution_cont.setFixedHeight(
+            self.attribute_distribution_cont.setFixedHeight(
                 190 * int(np.ceil(len(self.cont_attribute_labels) / 2)) + 100)
-            plots_layout.addWidget(attribute_distribution_cont)
+            plots_layout.addWidget(self.attribute_distribution_cont)
 
         # # Add heatmap
         try:
@@ -234,6 +181,28 @@ class GraphAnalytics(QWidget):
             plots_layout.addWidget(heatmap_plot)
         except:
             pass
+        
+        # add modularity plot
+        self.modularity.bar.setMinimumHeight(400)
+        plots_layout.addWidget(self.modularity.bar)
+
+        self.graphlayout = QVBoxLayout()
+
+        self.graphlayout.addWidget(QLabel(text="Optimal Community Distribtuion", alignment=QtCore.Qt.AlignmentFlag.AlignCenter, font=QtGui.QFont("Helvetica", 18, QtGui.QFont.Weight.Normal), styleSheet="padding: 5px; background-color: 'white';"))
+        
+
+        self.info_tab2.setMinimumHeight(50)
+        self.info_tab2.setStyleSheet("font-size: 12px; background-color: 'white';")
+        self.graphlayout.addWidget(self.info_tab2)
+        
+        self.graph_gui_small.setMinimumHeight(400)
+        self.graph_gui_small.node_colors = self.modularity.node_colors
+        self.graph_gui_small.refresh()
+        self.graphlayout.addWidget(self.graph_gui_small)
+        self.graphlayout.setSpacing(0)
+
+        plots_layout.addLayout(self.graphlayout)
+    
 
         plots_layout.addStretch()
         plots_widget = QWidget()
@@ -241,26 +210,24 @@ class GraphAnalytics(QWidget):
         scroll.setWidget(plots_widget)
         container_layout.addWidget(scroll)
 
-        # Add the plots layout to the container layout
-        # container_layout.addLayout(plots_layout)
-
+        # add right column with table and button
         table_widget = QWidget()
         table_layout = QVBoxLayout(table_widget)
-        # Add graph analytics table
         graph_analytics_table = self.graph_analytics_table()
-        table_layout.addWidget(graph_analytics_table)
+        table_layout.addWidget(graph_analytics_table)                
+        table_widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        container_layout.addWidget(table_widget)
+        
 
         # Add chord diagram
-        chord_diagram_fig = self.chord_diagram(self.disc_attribute_labels, node_features, graph)
+        chord_diagram_fig = self.chord_diagram(self.disc_attribute_labels, self.node_features, self.graph)
         self.chord_diagram_canvas = FigureCanvasQTAgg(chord_diagram_fig)
         fullscreen_widget = FullScreenWidget(chord_diagram_fig, self)
         button = QPushButton("Chord Diagram", self)
         button.clicked.connect(fullscreen_widget.show)
         button.setStyleSheet("font-size: 24px; padding 10px;")
         table_layout.addWidget(button)
-        table_widget.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
-        container_layout.addWidget(table_widget)
-        
+
 
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(container_widget)
@@ -313,14 +280,14 @@ class GraphAnalytics(QWidget):
         coefficients = [c[0] for c in list(correlations.values())]
         p_values = [c[1] for c in list(correlations.values())]
         array = np.array(coefficients).reshape(1, len(correlations))
-        im = ax.imshow(array, cmap='seismic', vmin=-0.5, vmax=0.5)
+        im = ax.imshow(array, cmap=cmap1, vmin=-0.5, vmax=0.5)
         fig.tight_layout(pad=3.0)
 
         #add legend
         fig.colorbar(im,
                      ax=ax,
                      label="Correlation",
-                     cmap='seismic',
+                     cmap=cmap1,
                      ticks=[0.5, 0, -0.5],
                      shrink=0.5)
 
@@ -386,6 +353,7 @@ class GraphAnalytics(QWidget):
         table.setRowCount(len(graph_metrics))
         table.setColumnCount(2)
         table.setHorizontalHeaderLabels(['Metric', 'Value'])
+        table.verticalHeader().setVisible(False)
         # table.setVerticalHeaderLabels(graph_metrics.keys())
         for i, (metric, value) in enumerate(graph_metrics.items()):
             table.setItem(i, 0, QtWidgets.QTableWidgetItem(metric))
@@ -404,7 +372,9 @@ class GraphAnalytics(QWidget):
         ],
                                   key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle('Node Attribute Distribution (continuous variables)')
+        fig.suptitle(f'Continuous Attribute Distribution for {self.N} Nodes')
+        rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
+
         # fig.text(0.5,0.5, s="test")
         c = 2
         k = int(np.ceil(n / c))
@@ -416,7 +386,8 @@ class GraphAnalytics(QWidget):
                 for features in node_features.values()
                 if attribute in features.keys()
             ]
-            ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5)
+            attribute_values.sort(reverse=True)
+            ax.bar(np.arange(len(attribute_values)), attribute_values, width=0.5, color=cmap1(0.1))
             ax.tick_params(axis='y', labelsize=5)
             ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
             ax.set_title(attribute, fontsize=6)
@@ -431,7 +402,7 @@ class GraphAnalytics(QWidget):
         attribute_labels = self.disc_attribute_labels
         # attribute_labels = sorted(set([key for _, value in node_features.items() for key, v in value.items() if type(v) == str or int(v) == v]), key=lambda x: x.lower())
         n = len(attribute_labels)
-        fig.suptitle(f"Node Attribute Distribution (N={self.N})")
+        fig.suptitle(f"Discrete Attribute Distribution for {self.N} Nodes")
         fig.tight_layout(pad=1.0)
         bars = []
 
@@ -457,13 +428,14 @@ class GraphAnalytics(QWidget):
             element_counts = Counter(attribute_values)
             values = list(element_counts.keys())
             count = list(element_counts.values())
+            shades = mcp.gen_color(cmap=cmap1_str, n=max(int(len(values)+1), 25))
 
             for i in range(len(values)):
                 bar = ax.barh(attribute,
                               count[i],
                               left=sum(count[:i]),
                               label=values[i],
-                              color=shades(i))
+                              color=shades[i])
                 bars.extend(bar)
                 ax.text(sum(count[:i]) + count[i] / 2,
                         attribute,
@@ -511,8 +483,7 @@ class GraphAnalytics(QWidget):
         return FigureCanvasQTAgg(fig)
 
     def chord_diagram(self, attribute_names, node_features, graph):
-        fig = Figure(figsize=(10, 5), dpi=100)
-        ax, legend_ax = fig.subplots(1,2, gridspec_kw={'width_ratios': [5, 1]})
+        fig = Figure(figsize=(3, 3), dpi=100)
 
         features_df = pd.DataFrame(node_features).T
         features_df.index.name = 'node'
@@ -538,10 +509,6 @@ class GraphAnalytics(QWidget):
         self.chord_nodes = pd.DataFrame(chord_nodes_list)
         self.chord_nodes = self.chord_nodes.sort_values(by='group')
 
-        names = self.chord_nodes['name'].tolist()
-
-        matrix = np.zeros((len(names), len(names)))
-        
         combinations = []
         for _, row in edges_df.iterrows():
             sources = features_df.loc[row['source'], attribute_names].dropna()
@@ -552,44 +519,24 @@ class GraphAnalytics(QWidget):
 
         chord_df = pd.DataFrame(combinations, columns=['source', 'target'])
         chord_df = chord_df.groupby(['source', 'target']).size().reset_index(name='value')
-        chord_df = chord_df.nlargest(500, 'value')
 
         self.sorted_df = chord_df.sort_values('value', ascending=False)
         top_edges = self.sorted_df.nlargest(20, 'value')
+        selected_nodes = self.chord_nodes.loc[self.chord_nodes['index'].isin(
+            top_edges['source'].tolist() + top_edges['target'].tolist())]
+        nodes = hv.Dataset(pd.DataFrame(selected_nodes), 'index')
 
-        for _, row in top_edges.iterrows():
-            matrix[row['source']][row['target']] = row['value']
-            matrix[row['target']][row['source']] = row['value']
+        chord = hv.Chord((top_edges, nodes))
+        chord.opts(opts.Chord(cmap=cmap1, edge_cmap=cmap1, edge_color=dim('source').str(), labels='name', node_color=dim('group').str(), node_size=0))
+        fig = hv.render(chord)
 
-        common = np.intersect1d(np.where(np.all(matrix == 0, axis=0)), np.where(np.all(matrix == 0, axis=1)))
-        matrix = np.delete(matrix, common, axis=0)
-        matrix = np.delete(matrix, common, axis=1)
+        # label_data = chord.nodes.data.drop(['index'], axis=1)
+        # label_data['rotation'] = np.arctan((label_data.y / label_data.x))
+        # label_data['x'] = label_data['x'].apply(lambda x: x * 1.3)
+        # label_data['y'] = label_data['y'].apply(lambda x: x * 1.3)
 
-        common_indices_list = common.tolist()
-        for index in sorted(common_indices_list, reverse=True):
-            del names[index]
-
-        row_sums = np.sum(matrix, axis=1)
-        column_sums = np.sum(matrix, axis=0)
-        index_sums = row_sums + column_sums
-        max_index = np.argsort(index_sums)[-20:][::-1]
-
-
-        chord_diagram(matrix, ax=ax, use_gradient=True, sort='size', directed=False,
-                        cmap=None, chord_colors=None)
-
-        num_nodes = matrix.shape[0]
-        colors = plt.cm.get_cmap('viridis')(np.linspace(0, 1, num_nodes))
-        handles = []
-        labels = []
-        for i in max_index:
-            handle = patches.Patch(color=colors[i], label=names[i], alpha=0.7)
-            handles.append(handle)
-            labels.append(names[i])
-
-        legend_ax.plot([], [], ' ', label='Legend')
-        legend = legend_ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.15))
-        legend_ax.axis('off')
-        legend.set_frame_on(False)
+        # labels = hv.Labels(label_data)
+        # labels.opts(opts.Labels(rotation=dim('rotation)))
+        # fig = hv.render(chord * labels)
 
         return fig

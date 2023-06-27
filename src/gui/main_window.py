@@ -3,7 +3,7 @@ from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QMainWindow, QTabWidget, QWidget
 from PyQt6.QtGui import QGuiApplication
 
-from src.gui.graph_analytics import GraphAnalytics
+from src.gui.graph_analytics.graph_analytics import GraphAnalytics
 from .social_graph import GraphPage
 from .faq import FAQPage
 from .welcome_window import WelcomeScreen
