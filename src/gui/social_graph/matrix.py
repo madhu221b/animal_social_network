@@ -77,7 +77,7 @@ class FullScreenWidget(QDialog):
         ax.set_yticklabels(nodes, fontsize=7)
         ax.set_xticks(np.arange(-.5, len(nodes), 1), minor=True)
         ax.set_yticks(np.arange(-.5, len(nodes), 1), minor=True)
-        ax.grid(which='minor', color='grey', linestyle='-', linewidth=0.5)
+        ax.grid(which='minor', color='grey', linestyle='-', linewidth=0.5, alpha=0.5)
         plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
 
         ax.legend()
