@@ -48,6 +48,9 @@ class GraphPage(QWidget):
         self.button.clicked.connect(self.adj_matrix.showMaximized)
         self.button.setStyleSheet("font-size: 24px; padding 10px;")
 
+        # versionlabel positioning to right
+        self.versionlabel.setAlignment(Qt.AlignmentFlag.AlignRight)
+
         # Add content
         content_layout.addWidget(self.versionlabel, 1)
         content_layout.addWidget(self.graph_page, 7)
