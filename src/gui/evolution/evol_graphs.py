@@ -13,7 +13,7 @@ from PyQt6.QtCore import Qt, QSize
 from src.static import PageState, GRAPH_VERSION_FOLDER, GRAPH_DATA
 from src.graph import Graph
 from src.gui.social_graph.graph import GraphCanvas
-from .modularity import Modularity
+from ..custom_buttons import BlueArrowButton
 
 matplotlib.use("Qt5Agg")
 
@@ -142,20 +142,14 @@ class GraphEvolution(QWidget):
 
     def _create_next_button(self):
         """Create a next button to this window"""
-        self.next_button = QPushButton(QIcon("res/icons/right.png"), "", self)
+        self.next_button = BlueArrowButton(QIcon("res/icons/right_white.png"), "", self)
         self.next_button.clicked.connect(self._next_button_on_click)
-        self.next_button.setFixedWidth(40)
-        self.next_button.setFixedHeight(40)
-        self.next_button.setIconSize(QSize(32, 32))
         self.hlayout.addWidget(self.next_button)
 
     def _create_prev_button(self):
         """Create a next button to this window"""
-        self.prev_button = QPushButton(QIcon("res/icons/left.png"), "", self)
+        self.prev_button = BlueArrowButton(QIcon("res/icons/left_white.png"), "", self)
         self.prev_button.clicked.connect(self._prev_button_on_click)
-        self.prev_button.setFixedWidth(40)
-        self.prev_button.setFixedHeight(40)
-        self.prev_button.setIconSize(QSize(32, 32))
         self.hlayout.addWidget(self.prev_button)
 
     def _create_plot(self, y_values, title):

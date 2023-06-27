@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from PyQt6 import QtCore
 
 shades = plt.get_cmap('Pastel2')
@@ -12,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib import colorbar
 from ..colors import cmap1
+from ..custom_buttons import MediumGreenButton
 
 
 class FullScreenWidget(QDialog):
@@ -29,9 +30,8 @@ class FullScreenWidget(QDialog):
 
         self.layout = QVBoxLayout()
 
-        self.button = QPushButton("Close", self)
+        self.button = MediumGreenButton("Close")
         self.button.clicked.connect(self.exit_fullscreen)
-        self.button.setStyleSheet("font-size: 24px; padding 10px;")
         self.layout.addWidget(self.button)
 
         self.update_figure()
@@ -68,7 +68,10 @@ class FullScreenWidget(QDialog):
         fig.subplots_adjust(top=0.95)
 
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ['white', cmap1(0.1)])
-        im = ax.matshow(bi_adj_matrix.todense(), cmap=cmap, )
+        im = ax.matshow(
+            bi_adj_matrix.todense(),
+            cmap=cmap,
+        )
 
         nodes = list(graph.nodes)
         ax.set_xticks(np.arange(len(nodes)))

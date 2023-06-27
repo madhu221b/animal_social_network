@@ -10,13 +10,14 @@ class NodeInfoPage(QWidget):
     def __init__(self, features, metrics, title="Features"):
         super(NodeInfoPage, self).__init__()
 
-        self.WIDTH = 200
+        self.WIDTH = 210
         self.CELL_HEIGHT = 30
         self.FEATURES = None
         self.METRICS = None  # None == select all
 
         self.features = features
         self.metrics = swap_dict_keys(metrics)
+        self.setFixedWidth(self.WIDTH)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)

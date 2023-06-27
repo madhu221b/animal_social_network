@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QPushButton, QScrollArea, QFrame, QLabel
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolBar, QVBoxLayout, QSizePolicy, QScrollArea, QFrame, QLabel
 from PyQt6.QtCore import Qt
 import matplotlib
 
 matplotlib.use("Qt5Agg")
 
+from ..custom_buttons import MediumGreenButton
 from .graph import GraphCanvas
 from .side_bar import NodeInfoPage
 from .info_page import InfoPage
@@ -30,7 +31,7 @@ class GraphPage(QWidget):
 
         # Page
         main_layout = QVBoxLayout()
-        hlayout = QHBoxLayout()
+        self.hlayout = QHBoxLayout()
         content_layout = QVBoxLayout()
 
         # Sub-pages definition
@@ -43,11 +44,10 @@ class GraphPage(QWidget):
         self.top_page = InfoPage(self.graph_page.graph.graph)
         self.color_bar = ColorBar(parent, self.graph_page.graph)
         self.adj_matrix = FullScreenWidget(self.graph_page.graph, self)
-        self.button = QPushButton("Adjacency Matrix")
+        self.button = MediumGreenButton("Adjacency Matrix")
 
         # button functionality
         self.button.clicked.connect(self.adj_matrix.showMaximized)
-        self.button.setStyleSheet("font-size: 24px; padding 10px;")
 
         # versionlabel positioning to right
         self.versionlabel.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -56,8 +56,10 @@ class GraphPage(QWidget):
         content_layout.addWidget(self.versionlabel, 1)
         content_layout.addWidget(self.graph_page, 7)
         content_layout.addWidget(self.color_bar, 2)
+
+        # Add last buttons
+        self.top_page.button_layout.addWidget(self.button, 1)
         content_layout.addWidget(self.top_page, 1)
-        content_layout.addWidget(self.button, 1)
 
         # Set margins
         content_layout.setSpacing(0)
@@ -78,13 +80,23 @@ class GraphPage(QWidget):
         self.scrollable_right_page.setContentsMargins(0, 0, 0, 0)
         self.scrollable_right_page.setFrameShape(QFrame.Shape.NoFrame)
 
+        # Create a QWidget and set content_layout as its layout
+        self.content_widget = QWidget()
+        self.content_widget.setLayout(content_layout)
+        self.content_widget.setSizePolicy(QSizePolicy.Policy.Expanding,
+                                          QSizePolicy.Policy.Preferred)
+
         # Sub-pages allocation on main page
-        hlayout.addWidget(self.scrollable_left_page)
-        hlayout.addLayout(content_layout)
-        hlayout.addWidget(self.scrollable_right_page)
+        self.hlayout.addWidget(self.scrollable_left_page)
+        self.hlayout.addWidget(self.content_widget)
+        self.hlayout.addWidget(self.scrollable_right_page)
+
+        self.hlayout.setStretchFactor(self.scrollable_left_page, 1)
+        self.hlayout.setStretchFactor(self.content_widget, 3)
+        self.hlayout.setStretchFactor(self.scrollable_right_page, 1)
         self.scrollable_right_page.hide()
 
-        main_layout.addLayout(hlayout)
+        main_layout.addLayout(self.hlayout)
 
         self.setLayout(main_layout)
 
@@ -125,4 +137,5 @@ class GraphPage(QWidget):
         self.color_bar.refresh()
 
         if self.right_page.must_be_visible:
+            self.hlayout.setStretchFactor(self.content_widget, 2)
             self.scrollable_right_page.show()
