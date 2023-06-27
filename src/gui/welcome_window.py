@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import QWidget, QDialog, QStackedWidget, QVBoxLayout, QHBox
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6 import QtCore
 
+from .custom_buttons import SmallGreenButton
+
 ICON_PATH = 'res/icons/'
 JSON_PATH = 'res/welcome.json'
 
@@ -69,7 +71,7 @@ class WelcomeScreen(QDialog):
         self.prev_button = QPushButton(QIcon(os.path.join(ICON_PATH, 'left.png')), "Previous")
         self.prev_button.clicked.connect(self.go_to_prev_page)
 
-        self.close_button = QPushButton("Close")
+        self.close_button = SmallGreenButton("Close")
         self.close_button.clicked.connect(self.hide)
 
         # Create the dialog layout
