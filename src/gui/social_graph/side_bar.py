@@ -31,7 +31,7 @@ class NodeInfoPage(QWidget):
         self.feature_table = self._create_table(self.features, self.WIDTH, self.FEATURES)
         self.layout.addWidget(self.feature_table)
 
-        self.metric_title_label = QLabel("Metrics")
+        self.metric_title_label = QLabel("Centrality Metrics")
         self.metric_title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         self.layout.addWidget(self.metric_title_label)
 
