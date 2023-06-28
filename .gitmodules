@@ -1,0 +1,3 @@
+[submodule "asnr"]
+	path = asnr
+	url = git@github.com:bansallab/asnr.git

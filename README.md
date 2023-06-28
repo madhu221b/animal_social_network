@@ -1,30 +1,59 @@
+<img src="res/tutorial/logo_orig.png" style="float:left; width:32px;"/>
+
+# ASNRVis
+
+ASNViz is a multimedia analytics solution that facilitates the visualization and analysis of animal social networks (ASNs). By modeling ASNs as networks of nodes and edges, ASNViz provides valuable insights into the dynamics and evolution of animal communities. The tool quantifies and visualizes the social structure at node and network levels, predicts future interactions when new individuals are added using deep-learning, and allows for manual updates based on empirical observations.
+
+<center>
+<img src="res/example_screenshot.png" style="width: 60%; max-width: 600px;"/>
+</center>
+
 ## Installation Guide
-```bash
-conda create -n mma python=3.9
-conda activate mma
 
-pip install pyqt5
-pip install netgraph
-pip install mycolorpy
-pip install holoviews
+Our solution does not require the use of GPU, enabling plug and play accessibility to a wide range of computer setups.
 
-conda clean --all
+### Step 1: Clonining
+This repository consists the [asnr](https://github.com/bansallab/asnr) repository as a submodule, therefore you will need recurisve strategy:
+```
+git clone --recursive git@github.com:madhurapawaruva/animalsocialnw_team7.git
+cd animalsocialnw_team7
+```
+If you have already cloned the repository, you can also download the submodule afterwards:
+```
+git submodule update --init
 ```
 
-## Launching Dashboard 
-```bash
-python src/dashboard/main.py
+### Step 2: Environment
+
+Conda:
+```
+conda env create -f env.yml
+conda activate t7ma
+```
+Pip:
+```
+pip install -r requirements.txt
 ```
 
-## Downloading the data
-Download [this](https://drive.google.com/file/d/1HSvRDI7EV1w1UDJNo65v7-AYT9HLaOm9/view?usp=sharing) file, place it in the `./datasets` directory and clone the ASNR repo with the following command: 
-
-```bash
-git clone https://github.com/bansallab/asnr.git
+## Run
+```
+python app.py
 ```
 
-## Training Graph-VAE Model 
-```bash
-python src/dashboard/models/train.py --animal <<animal_name>>
-```
+## Available social graphs
 
+<div style="overflow: auto; white-space: nowrap;">
+| Content                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------- |
+| Taxonomy: Aves<br>Animal Name: barnswallow<br>Image: ![Image](./res/animal_intro/images/barnswallow_association_weighted.jpg)           |
+| Taxonomy: Aves<br>Animal Name: songbird<br>Image: ![Image](./res/animal_intro/images/songbird_association_weighted.jpg)                 |
+| Taxonomy: Aves<br>Animal Name: sparrow<br>Image: ![Image](./res/animal_intro/images/sparrow_flockmembership_weighted.jpg)               |
+| Taxonomy: Mammalia<br>Animal Name: baboon<br>Image: ![Image](./res/animal_intro/images/baboon_association_weighted.jpg)                 |
+| Taxonomy: Mammalia<br>Animal Name: bats<br>Image: ![Image](./res/animal_intro/images/bats_foodsharing_weighted.jpg)                     |
+| Taxonomy: Mammalia<br>Animal Name: bison<br>Image: ![Image](./res/animal_intro/images/bison_dominance_weighted.jpg)                     |
+| Taxonomy: Mammalia<br>Animal Name: groundsquirrel<br>Image: ![Image](./res/animal_intro/images/groundsquirrel_association_weighted.jpg) |
+| Taxonomy: Mammalia<br>Animal Name: mouse<br>Image: ![Image](./res/animal_intro/images/mouse_social_projection_bipartite_weighted.jpg)   |
+| Taxonomy: Mammalia<br>Animal Name: rhesusmacaque<br>Image: ![Image](./res/animal_intro/images/rhesusmacaque_association_weighted.jpg)   |
+| Taxonomy: Insecta<br>Animal Name: ants<br>Image: ![Image](./res/animal_intro/images/ants_proximity_weighted.jpg)                        |
+| Taxonomy: Insecta<br>Animal Name: beetle<br>Image: ![Image](./res/animal_intro/images/beetle_proximity_weighted.jpg)                    |
+</div>
