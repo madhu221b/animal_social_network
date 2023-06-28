@@ -1,4 +1,4 @@
-<img src="res/tutorial/logo_orig.png" style="float:left; width:32px;"/>
+<img align="left" width="36" height="36" src="res/tutorial/logo_orig.png">
 
 # ASNRVis
 
