@@ -1,6 +1,6 @@
-<img align="left" width="36" height="36" src="res/tutorial/logo_orig.png">
+<img align="left" width="80" height="80" src="res/tutorial/logo_orig.png">
 
-# ASNRVis
+# ASNVis
 
 ASNViz is a multimedia analytics solution that facilitates the visualization and analysis of animal social networks (ASNs). By modeling ASNs as networks of nodes and edges, ASNViz provides valuable insights into the dynamics and evolution of animal communities. The tool quantifies and visualizes the social structure at node and network levels, predicts future interactions when new individuals are added using deep-learning, and allows for manual updates based on empirical observations.
 
