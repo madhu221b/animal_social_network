@@ -48,7 +48,7 @@ class Modularity(QWidget):
         start = len(communities[0])
         for k in range(len(communities)):
             y_vals.append(nx.community.modularity(self.graph, communities[k]))
-            x_vals.append(start+k+1)
+            x_vals.append(start+k)
         
         
         self.max_id = np.argmax(y_vals)
