@@ -300,6 +300,8 @@ class GraphAnalytics(QWidget):
         plots_widget = QWidget()
         plots_widget.setLayout(plots_layout)
         scroll.setWidget(plots_widget)
+        scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
         container_layout.addWidget(scroll)
 
         # add right column with table and button
@@ -378,7 +380,7 @@ class GraphAnalytics(QWidget):
         fig.colorbar(im, ax=ax, label="Correlation", cmap=cmap1, ticks=[0.5, 0, -0.5], shrink=0.5)
 
         ax.set_xticks(np.arange(len(attributes)), labels=attributes)
-        plt.setp(ax.get_xticklabels(), rotation=80, ha="right", rotation_mode="anchor", fontsize=6)
+        plt.setp(ax.get_xticklabels(), rotation=60, ha="right", rotation_mode="anchor", fontsize=6)
 
         # remove yticks
         ax.set_yticks([])
