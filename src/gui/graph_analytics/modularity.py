@@ -45,9 +45,10 @@ class Modularity(QWidget):
         rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
 
         x_vals, y_vals = [], []
+        start = len(communities[0])
         for k in range(len(communities)):
             y_vals.append(nx.community.modularity(self.graph, communities[k]))
-            x_vals.append(k+1)
+            x_vals.append(start+k)
         
         
         self.max_id = np.argmax(y_vals)
