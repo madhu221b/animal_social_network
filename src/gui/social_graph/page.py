@@ -49,8 +49,10 @@ class GraphPage(QWidget):
         # button functionality
         self.button.clicked.connect(self.adj_matrix.showMaximized)
 
-        # versionlabel positioning to right
-        self.versionlabel.setAlignment(Qt.AlignmentFlag.AlignRight)
+        # Some alignments and tweeks
+        self.color_bar.setMinimumHeight(100)
+        self.versionlabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.versionlabel.setStyleSheet("font-size: 12px; background-color: white;")
 
         # Add content
         content_layout.addWidget(self.versionlabel, 1)
@@ -131,10 +133,12 @@ class GraphPage(QWidget):
             icon.set_enabled_or_not()
 
     def refresh(self):
+        self.versionlabel.setText("Version: " + PageState.version)
         self.graph_page.refresh()
         self.top_page.refresh(self.graph_page.graph.graph)
         self.icons["pred"].refresh(self.graph_page.graph.predictable)
         self.color_bar.refresh()
+
 
         if self.right_page.must_be_visible:
             self.hlayout.setStretchFactor(self.content_widget, 2)
