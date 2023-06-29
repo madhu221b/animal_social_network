@@ -2,7 +2,7 @@
 
 # ASNVis
 
-ASNViz is a multimedia analytics solution that facilitates the visualization and analysis of animal social networks (ASNs). By modeling ASNs as networks of nodes and edges, ASNViz provides valuable insights into the dynamics and evolution of animal communities. The tool quantifies and visualizes the social structure at node and network levels, predicts future interactions when new individuals are added using deep-learning, and allows for manual updates based on empirical observations.
+ASNViz is a multimedia analytics solution that facilitates the visualization and analysis of animal social networks (ASNs). By modeling ASNs as networks of nodes and edges, ASNViz provides valuable insights into the dynamics and evolution of animal communities. The tool quantifies and visualizes the social structure at node and network levels, predicts future interactions when new individuals are added using deep learning and allows for manual updates based on empirical observations.
 
 <center>
 <img src="res/example_screenshot.png" style="width: 60%; max-width: 600px;"/>
@@ -10,15 +10,15 @@ ASNViz is a multimedia analytics solution that facilitates the visualization and
 
 ## Installation Guide
 
-Our solution does not require the use of GPU, enabling plug and play accessibility to a wide range of computer setups.
+Our solution does not require the use of GPU, enabling plug-and-play accessibility to a wide range of computer setups.
 
-### Step 1: Clonining
-This repository consists the [asnr](https://github.com/bansallab/asnr) repository as a submodule, therefore you will need recurisve strategy:
+### Step 1: Cloning
+This repository consists of the [asnr](https://github.com/bansallab/asnr) repository as a submodule, therefore you will need a recursive strategy:
 ```
 git clone --recursive git@github.com:madhurapawaruva/animalsocialnw_team7.git
 cd animalsocialnw_team7
 ```
-If you have already cloned the repository, you can also download the submodule afterwards:
+If you have already cloned the repository, you can also download the submodule afterward:
 ```
 git submodule update --init
 ```
