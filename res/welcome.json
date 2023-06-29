@@ -1,11 +1,11 @@
 [
     {
-        "text": "<h1>Welcome!</h1><br />This is a graphical interface for analysing social graphs. Here's a brief tutorial on how to navigate our application.",
+        "text": "<h1>Welcome!</h1><br />ASNViz is our tool for analyzing, visualzing, interacting and exploring Animal Social Networks. Here's a brief tutorial on how to navigate our application.",
         "image_path": "res/tutorial/logo.png",
         "image_alignment": "right"
     },
     {
-        "text": "In the center, you can find your central graph. Nodes and edges represent animals and their social interactions.",
+        "text": "In the center, you can find your chosen animal network. Nodes and edges represent animals and their social interactions.",
         "image_path": "res/tutorial/graph.png",
         "image_alignment": "top"
     },
