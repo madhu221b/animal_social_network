@@ -133,12 +133,12 @@ class GraphPage(QWidget):
             icon.set_enabled_or_not()
 
     def refresh(self):
+        print("called", PageState.version)
         self.versionlabel.setText("Version: " + PageState.version)
         self.graph_page.refresh()
         self.top_page.refresh(self.graph_page.graph.graph)
         self.icons["pred"].refresh(self.graph_page.graph.predictable)
         self.color_bar.refresh()
-
 
         if self.right_page.must_be_visible:
             self.hlayout.setStretchFactor(self.content_widget, 2)

@@ -54,7 +54,7 @@ class WelcomeScreen(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Welcome to My Application")
+        self.setWindowTitle("User Guide")
         self.setFixedSize(500, 350)
 
         # Create pages

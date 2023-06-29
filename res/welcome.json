@@ -1,6 +1,6 @@
 [
     {
-        "text": "<h1>Welcome!</h1><br />This is a graphical interface for analysing social graphs. This is a short tutorial on how to use our application.",
+        "text": "<h1>Welcome!</h1><br />This is a graphical interface for analysing social graphs. Here's a brief tutorial on how to navigate our application.",
         "image_path": "res/tutorial/logo.png",
         "image_alignment": "right"
     },
@@ -10,17 +10,27 @@
         "image_alignment": "top"
     },
     {
-        "text": "The sidebars help you to compare nodes of the graph. By hovering your mouse on a node, you can load information of the node to the left column. By clicking on a node, the information stored in the selected node will be shown in the right column.",
+        "text": "The sidebars help you to compare nodes of the graph. By hovering your mouse over a node, you can display information about the node in the left column. Clicking on a node will show its information in the right column.",
         "image_path": "res/tutorial/sidebars.png",
         "image_alignment": "top"
     },
     {
-        "text": "You can manipulate the graph with different actions: add nodes, edges, predict connections.",
+        "text": "You can interact with the graph in several ways: add nodes, create edges, and predict potential connections.",
         "image_path": "res/tutorial/icons.png",
         "image_alignment": "left"
     },
     {
-        "text": "If you need further assistance, please check out our FAQ page.",
+        "text": "The Graph Analytics page assists you in analyzing your graph. Here, you can access various metrics, statistical data, and visualizations of your graph.",
+        "image_path": "res/tutorial/analytics.png",
+        "image_alignment": "top"
+    },
+    {
+        "text": "As you adjust your graph, you may want to save and review your changes from time to time. You can check the Evolution tab to see how your graph has evolved over time.",
+        "image_path": "res/tutorial/evolution.png",
+        "image_alignment": "top"
+    },
+    {
+        "text": "If you need further assistance, don't hesitate to check out our FAQ page.",
         "image_path": "res/tutorial/faq.png",
         "image_alignment": "top"
     }

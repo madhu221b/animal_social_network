@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.graph_page, "Social Graph")
         self.tabs.addTab(QWidget(), "Graph Analytics")
 
-        self.tabs.addTab(QWidget(), "Evolution of the Network")
+        self.tabs.addTab(QWidget(), "Evolution")
 
         self.tabs.addTab(QWidget(), "FAQ")
         self.tabs.tabBarClicked.connect(self.updateTab)
@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
     def updateGraphEvolveTab(self):
         self.tabs.removeTab(2)
         self.graph_evolution = GraphEvolution(self)
-        self.tabs.insertTab(2, self.graph_evolution, "Evolution of the Network")
+        self.tabs.insertTab(2, self.graph_evolution, "Evolution")
 
     def openFAQTab(self):
         self.tabs.removeTab(3)
