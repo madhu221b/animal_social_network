@@ -55,7 +55,7 @@ class WelcomeScreen(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Welcome to My Application")
-        self.setFixedSize(400, 300)
+        self.setFixedSize(500, 350)
 
         # Create pages
         self.pages = QStackedWidget()
@@ -86,6 +86,11 @@ class WelcomeScreen(QDialog):
 
         layout.addLayout(button_layout)
         self.update_buttons()
+
+    def show(self):
+        """Bring window to the front and keep it there"""
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+        super().show()
 
     def go_to_next_page(self):
         if self.pages.currentIndex() < self.pages.count() - 1:

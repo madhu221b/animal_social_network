@@ -1,14 +1,12 @@
 import os
 import pickle
-import networkx as nx
-import pickle
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QSlider, QSpacerItem, QSizePolicy, QGridLayout
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QSpacerItem, QSizePolicy, QGridLayout
 from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt
 
 from src.static import PageState, GRAPH_VERSION_FOLDER, GRAPH_DATA
 from src.graph import Graph

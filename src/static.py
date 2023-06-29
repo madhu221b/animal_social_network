@@ -25,8 +25,8 @@ def parse_readme(path):
 # ==================================================
 
 LANDING_PAGE_TITLE = "ASNViz: Animal Social Network Visualization"
-LANDING_PAGE_WIDTH = 600
-LANDING_PAGE_HEIGHT = 360
+LANDING_PAGE_WIDTH = 650
+LANDING_PAGE_HEIGHT = 420
 
 MAIN_WINDOW_HEIGHT = 800
 MAIN_WINDOW_WIDTH = 1040
