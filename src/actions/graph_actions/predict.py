@@ -1,3 +1,5 @@
+import traceback
+
 from ..action import GraphAction
 from ...models.inference import get_pred_edges
 from ...static import PageState
@@ -34,7 +36,13 @@ class Predict(GraphAction):
         edges = []
         for node_name in self.nodes:
             try:
-                edges.extend(get_pred_edges(self.graph_gui.graph.graph, PageState.id, node_name))
-            except:
+                edges.extend(
+                    get_pred_edges(self.graph_gui.graph.graph,
+                                   PageState.id,
+                                   PageState.version,
+                                   node_name))
+            except Exception as e:
+                print(f"Exception occurred: {e}")
+                traceback.print_exc()
                 return None, False
         return edges, True

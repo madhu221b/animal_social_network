@@ -21,21 +21,24 @@ class Retrain(GlobalAction):
         self.graph_gui = graph_gui
 
     def do(self):
+
+        # Determine next version id
+        graph_folder = os.path.join(GRAPH_VERSION_FOLDER, str(PageState.id))
+        os.makedirs(graph_folder, exist_ok=True)
+        next_version = f"v{len(os.listdir(graph_folder))}"
+
         # Retraining graph
         features, edgelist, adj, _, _ = ASNRGraph(graph_obj=self.graph_gui.graph.graph).preprocess()
         try:
-            train_model(PageState.id, features, edgelist, adj)
+            train_model(PageState.id, next_version, features, edgelist, adj)
         except:
             return False
 
         logger.info("Graph retrained")
 
         # Increasing current version number
-        graph_folder = os.path.join(GRAPH_VERSION_FOLDER, str(PageState.id))
-        os.makedirs(graph_folder, exist_ok=True)
-        version_id = f"v{len(os.listdir(graph_folder))}"
-        VERSIONS[PageState.id].append(version_id)
-        PageState.step_version(version_id)
+        VERSIONS[PageState.id].append(next_version)
+        PageState.step_version(next_version)
         PageState.landing_page.update_version_dropdown()
 
         # Refresh on page

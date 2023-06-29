@@ -72,7 +72,7 @@ def get_preprocessed_adj(adj, features):
     )
 
 
-def train_model(animal, features, edgelist, adj):
+def train_model(animal, version, features, edgelist, adj):
     (
         adj_norm,
         adj_label,
@@ -108,6 +108,7 @@ def train_model(animal, features, edgelist, adj):
         test_edges,
         test_edges_false,
         animal,
+        version,
         save_dir,
         n_epochs,
     )
@@ -131,6 +132,6 @@ if __name__ == "__main__":
         path = path.replace("\n", "")       
         features, edgelist, adj, _, _ = ASNRGraph(path=path).preprocess()
         animal = path.split("/")[-2] #.split(".")[0]
-        train_model(animal, features, edgelist, adj)
+        train_model(animal, "default", features, edgelist, adj)
         print("Animal trained for: ", animal)
    

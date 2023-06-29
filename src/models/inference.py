@@ -26,9 +26,9 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-def get_pred_edges(graph, animal, new_name):
+def get_pred_edges(graph, animal, version, new_name):
     save_dir = os.getcwd().split("src")[0] + "/results/models/"
-    file_name = "model_{}.pt".format(animal)
+    file_name = "model_{}_{}.pt".format(animal, version)
     path_to_model = os.path.join(save_dir, file_name)
 
     features, edgelist, adj, node_dict, _ = ASNRGraph(graph_obj=graph).preprocess()

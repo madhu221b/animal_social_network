@@ -10,5 +10,25 @@
     {
         "Q": "What information is displayed on the right column?",
         "A": "The right column displays information about the object (node or edge) that was last clicked on."
+    },
+    {
+        "Q": "What does the color of the nodes represent?",
+        "A": "The color represents the degree of the node."
+    },
+    {
+        "Q": "Why did the save fail?",
+        "A": "Whenever we save a network, we save a neural network trained on the graph. However, sometimes the neural network fails to train. This is usually because the graph is too small, and therefore there is not enough data to train the neural network. In order to solve this, you need to collect more data and add it to the graph."
+    },
+    {
+        "Q": "Why did the prediction fail?",
+        "A": "Similarly to model training, sometimes the graph is too small and therefore there is no underlying neural network trained to predict the social connections."
+    },
+    {
+        "Q": "I cannot scroll on Graph Analytics page. What should I do?",
+        "A": "The application is in a beta stage, right now you need to navigate the cursor to the scollbar to scroll."
+    },
+    {
+        "Q": "I made changes to the graph but Evolution tab is not updating. What should I do?",
+        "A": "On the evolution tab, we only present the saved versions of the graph. If you add a new node, edge or predict new social connections, they will not immidiately show up on the evolution tab. You need to save the graph first."
     }
 ]

@@ -10,8 +10,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from netgraph import InteractiveGraph
 
-from src.utils.graph_utils import read_graph, get_edited_graph
-from src.models.inference import get_pred_edges
 from src.graph import Graph
 
 # SHADES = plt.get_cmap("Pastel1")
@@ -174,20 +172,6 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.remove_edges([new_edge], refresh)
         if refresh:
             self.parent.graph_page.refresh()
-
-    def predict_edges(self, nodes=None, refresh=True):
-        nodes = nodes if nodes else self.graph.selected_nodes
-        pred_edges = []
-        for node in nodes:
-            pred_edges.extend(get_pred_edges(self.graph, self.parent.id, node))
-        self.graph.add_edges(pred_edges)
-
-        if refresh:
-            self.parent.graph_page.refresh()
-
-    def add_node_and_predict_edges(self, new_node):
-        self.add_node(new_node, refresh=False)
-        self.predict_edges(nodes=[new_node], refresh=True)
 
     def onclick(self, event):
         if event.xdata is not None:

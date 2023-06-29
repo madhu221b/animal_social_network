@@ -22,20 +22,15 @@ from src.utils.gae_utils import get_roc_score
 
 
 def loss_function(preds, labels, mu, logvar, n_nodes, norm, pos_weight):
-    cost = norm * F.binary_cross_entropy_with_logits(
-        preds, labels, pos_weight=pos_weight
-    )
+    cost = norm * F.binary_cross_entropy_with_logits(preds, labels, pos_weight=pos_weight)
 
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     logvar = torch.nn.functional.normalize(logvar, dim=1)
-    KLD = (
-        -0.5
-        / n_nodes
-        * torch.mean(torch.sum(1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))
-    )
+    KLD = (-0.5 / n_nodes *
+           torch.mean(torch.sum(1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1)))
     return cost + KLD
 
 
@@ -64,17 +59,12 @@ class GraphConvolution(Module):
         return output
 
     def __repr__(self):
-        return (
-            self.__class__.__name__
-            + " ("
-            + str(self.in_features)
-            + " -> "
-            + str(self.out_features)
-            + ")"
-        )
+        return (self.__class__.__name__ + " (" + str(self.in_features) + " -> " +
+                str(self.out_features) + ")")
 
 
 class Encoder(nn.Module):
+
     def __init__(self, input_feat_dim, hidden_dim1=4, hidden_dim2=4, dropout=0):
         super(Encoder, self).__init__()
         self.gc1 = GraphConvolution(input_feat_dim, hidden_dim1, dropout, act=F.relu)
@@ -106,6 +96,7 @@ class Decoder(nn.Module):
 
 
 class GraphAutoEncoder(nn.Module):
+
     def __init__(
         self,
         encoder: Encoder,
@@ -208,6 +199,7 @@ class GraphAutoEncoder(nn.Module):
         test_edges,
         test_edges_false,
         animal,
+        version,
         save_dir: pathlib.Path,
         n_epoch: int = 100,
         patience: int = 10,
@@ -237,9 +229,7 @@ class GraphAutoEncoder(nn.Module):
                 optimizer,
                 scheduler,
             )
-            roc_curr, ap_curr = get_roc_score(
-                hidden_emb, adj_orig, val_edges, val_edges_false
-            )
+            roc_curr, ap_curr = get_roc_score(hidden_emb, adj_orig, val_edges, val_edges_false)
 
             print(
                 "Epoch:",
@@ -262,16 +252,14 @@ class GraphAutoEncoder(nn.Module):
                 break
         print(f"Saving the model in {save_dir}")
         self.cpu()
-        self.save(save_dir, animal)
+        self.save(save_dir, animal, version)
         self.to(device)
 
-        roc_score, ap_score = get_roc_score(
-            hidden_emb, adj_orig, test_edges, test_edges_false
-        )
+        roc_score, ap_score = get_roc_score(hidden_emb, adj_orig, test_edges, test_edges_false)
         print(f"Test ROC score: {str(roc_score)}")
         print(f"Test AP score: {str(ap_score)}")
 
-    def save(self, directory, animal) -> None:
+    def save(self, directory, animal, version) -> None:
         """Save a model and corresponding metadata.
 
         Parameters:
@@ -280,6 +268,6 @@ class GraphAutoEncoder(nn.Module):
             Path to the directory where to save the data.
         """
         model_name = self.name
-        file_name = "{}_{}.pt".format(model_name, animal)
+        file_name = "{}_{}_{}.pt".format(model_name, animal, version)
         path_to_model = os.path.join(directory, file_name)
         torch.save(self.state_dict(), path_to_model)
