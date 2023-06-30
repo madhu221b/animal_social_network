@@ -13,16 +13,23 @@ class AddEdgeIcon(IconAction):
     DESC = 'Click to add a new edge. Select two nodes before or after this event.'
     FILENAME = 'add_edge.png'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_active = False
+
     def onclick(self):
-        if self.enabled:
+        if self.enabled and not self.is_active:
             logger.info("Registered click.")
             self.parent.graph_page.graph.node_selection_changed.connect(self.try_send)
             self.try_send(self.parent.graph_page.graph.selected_nodes)
+            self.is_active = True
 
     def disconnect(self):
         logger.info("Disconnecting")
         try:
-            self.parent.graph_page.graph.node_selection_changed.disconnect(self.try_send)
+            if self.is_active:
+                self.parent.graph_page.graph.node_selection_changed.disconnect(self.try_send)
+            self.is_active = False
         except TypeError:
             logger.info("Ran into TypeError")
             pass
@@ -35,7 +42,7 @@ class AddEdgeIcon(IconAction):
     def try_send(self, selected_nodes):
         # Wait until 2 nodes are selected
         logger.info(f"Trying to send {selected_nodes}")
-        if len(selected_nodes) == 2:
+        if len(selected_nodes) == 2 and self.is_active:
             self.send()
             self.disconnect()
 
