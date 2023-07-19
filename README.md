@@ -15,7 +15,7 @@ Our solution does not require the use of GPU, enabling plug-and-play accessibili
 ### Step 1: Clonining
 This repository consists the [asnr](https://github.com/bansallab/asnr) [1] repository as a submodule, therefore you will need recurisve strategy:
 ```
-git clone --recursive git@github.com:madhurapawaruva/animalsocialnw_team7.git
+git clone --recursive git@github.com:madhu221b/animal_social_network.git
 cd animalsocialnw_team7
 ```
 If you have already cloned the repository, you can also download the submodule afterward:
